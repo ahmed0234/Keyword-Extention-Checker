@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Hardscaping Company Finder Pro",
+  "version": "4.0",
+  "description": "AI-powered hardscape contractor detection. Identifies genuine hardscaping companies using a 4-tier weighted keyword scoring system with negative keyword penalties.",
+  "permissions": ["activeTab", "tabs", "storage", "clipboardWrite", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Hardscape Finder — Analyze Site"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.html", "popup.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
