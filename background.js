@@ -1,4 +1,5 @@
 // Background Service Worker - Orchestrates deep scanning of multiple pages
+// v5.0: Now passes detection mode to each page's analyzer call.
 let scanState = {
   isScanning: false,
   tabIds: [],
@@ -9,7 +10,7 @@ let scanState = {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "startDeepScan") {
-    startDeepScan(request.url, request.pages).then(sendResponse);
+    startDeepScan(request.url, request.pages, request.mode || 'hardscaping').then(sendResponse);
     return true;
   }
   if (request.action === "getScanStatus") {
@@ -18,7 +19,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-async function startDeepScan(baseUrl, pages) {
+async function startDeepScan(baseUrl, pages, mode) {
   if (scanState.isScanning) return { error: "Scan already in progress" };
 
   scanState.isScanning = true;
@@ -59,15 +60,17 @@ async function startDeepScan(baseUrl, pages) {
       });
 
       // Inject content script and get results for this page
+      // Pass the detection mode so the correct engine runs
+      const detectionMode = mode;
       const results = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        func: () => {
-          // We'll call our content script's exposed function
+        func: (scanMode) => {
           if (window.__remodelAnalyzer) {
-            return window.__remodelAnalyzer();
+            return window.__remodelAnalyzer({ mode: scanMode });
           }
           return null;
         },
+        args: [detectionMode],
       });
 
       if (results && results[0] && results[0].result) {

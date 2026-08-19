@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hardscape Finder</title>
+  <title>HVAC & Hardscape Finder</title>
   <style>
     /* ── Reset ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,6 +21,8 @@
       --text-dim:     #484f58;
       --primary:      #f59e0b;
       --primary-glow: rgba(245,158,11,0.15);
+      --hvac-primary:      #3b82f6;
+      --hvac-primary-glow: rgba(59,130,246,0.15);
       --success:      #3fb950;
       --warn:         #d29922;
       --danger:       #f85149;
@@ -30,7 +32,7 @@
 
     /* ── Base ── */
     html, body {
-      width: 320px;
+      width: 340px;
       background: var(--bg);
       color: var(--text);
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -63,7 +65,8 @@
       color: var(--text);
       letter-spacing: -0.2px;
     }
-    .header-title .accent { color: var(--primary); }
+    .header-title .accent-hs  { color: var(--primary); }
+    .header-title .accent-hvac { color: var(--hvac-primary); }
     .ver-badge {
       font-size: 9px;
       font-weight: 600;
@@ -77,6 +80,43 @@
       display: flex;
       gap: 4px;
       align-items: center;
+    }
+
+    /* ── Mode Toggle ── */
+    .mode-toggle {
+      display: flex;
+      gap: 4px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 3px;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 5px 8px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      background: transparent;
+      color: var(--text-muted);
+      text-align: center;
+      letter-spacing: 0.2px;
+    }
+    .mode-btn:hover { color: var(--text); background: var(--surface3); }
+    .mode-btn.active-hvac {
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      border-color: #2563eb;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+    }
+    .mode-btn.active-hs {
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      border-color: #d97706;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(245,158,11,0.3);
     }
 
     /* ── Status chip ── */
@@ -106,6 +146,9 @@
       background: linear-gradient(90deg, var(--primary), #fbbf24);
       border-radius: 10px;
       transition: width 0.1s linear;
+    }
+    .progress-fill.hvac-fill {
+      background: linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa);
     }
 
     /* ── Icon Buttons ── */
@@ -146,6 +189,10 @@
       white-space: nowrap;
       box-shadow: 0 2px 8px rgba(245,158,11,0.25);
     }
+    .btn-scan-primary.hvac-mode {
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      box-shadow: 0 2px 8px rgba(59,130,246,0.25);
+    }
     .btn-scan-primary:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
     .btn-scan-primary:active:not(:disabled) { transform: translateY(0); }
     .btn-scan-primary:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -168,6 +215,7 @@
       white-space: nowrap;
     }
     .btn-scan-secondary:hover:not(:disabled) { border-color: var(--primary); background: var(--surface3); }
+    .btn-scan-secondary.hvac-mode:hover:not(:disabled) { border-color: var(--hvac-primary); }
     .btn-scan-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ── Primary Result Card ── */
@@ -186,6 +234,9 @@
       height: 2px;
       background: linear-gradient(90deg, #d97706, #f59e0b, #fbbf24);
     }
+    .primary-card.hvac-card::before {
+      background: linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa);
+    }
     .primary-top {
       display: flex;
       justify-content: space-between;
@@ -199,6 +250,7 @@
       color: var(--primary);
       margin-bottom: 2px;
     }
+    .primary-meta.hvac-meta { color: var(--hvac-primary); }
     .primary-name {
       font-size: 13px;
       font-weight: 800;
@@ -217,6 +269,22 @@
     .primary-conf.high   { color: #3fb950; }
     .primary-conf.medium { color: #d29922; }
     .primary-conf.low    { color: var(--text-muted); }
+
+    /* ── HVAC Verdict Badge ── */
+    .hvac-verdict {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 6px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .hvac-verdict.yes { background: rgba(63,185,80,0.15); border: 1px solid rgba(63,185,80,0.35); color: #3fb950; }
+    .hvac-verdict.no  { background: rgba(248,81,73,0.12); border: 1px solid rgba(248,81,73,0.30); color: #f85149; }
+    .hvac-verdict.uncertain { background: rgba(210,153,34,0.12); border: 1px solid rgba(210,153,34,0.30); color: #d29922; }
+
     .primary-reasons {
       font-size: 10px;
       color: var(--text-muted);
@@ -239,6 +307,7 @@
       color: var(--primary);
       margin-bottom: 5px;
     }
+    .section-label.hvac-label { color: var(--hvac-primary); }
     .section-label.muted    { color: var(--text-muted); }
     .section-label.negative { color: var(--danger); }
     .chip-row {
@@ -254,6 +323,11 @@
       color: #fbbf24;
       padding: 2px 7px;
       border-radius: 10px;
+    }
+    .service-chip.hvac-chip {
+      background: rgba(59,130,246,0.12);
+      border-color: rgba(59,130,246,0.35);
+      color: #93c5fd;
     }
     .sec-chip {
       font-size: 9px;
@@ -280,6 +354,7 @@
       grid-template-columns: 1fr 1fr;
       gap: 4px;
     }
+    .result-grid.three-col { grid-template-columns: 1fr 1fr 1fr; }
     .service-card {
       background: var(--surface2);
       border: 1px solid var(--border-soft);
@@ -292,8 +367,12 @@
       border-color: var(--primary);
       box-shadow: 0 0 0 1px var(--primary-glow);
     }
+    .service-card.is-primary-hvac {
+      border-color: var(--hvac-primary);
+      box-shadow: 0 0 0 1px var(--hvac-primary-glow);
+    }
     .service-icon  { font-size: 14px; line-height: 1; margin-bottom: 3px; }
-    .service-name  { font-size: 8.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 1px; line-height: 1.2; }
+    .service-name  { font-size: 8px; font-weight: 600; color: var(--text-muted); margin-bottom: 1px; line-height: 1.2; }
     .service-score {
       font-size: 17px;
       font-weight: 900;
@@ -425,6 +504,10 @@
       border-radius: 8px;
       font-weight: 600;
     }
+    .badge-zone.hvac-zone {
+      background: var(--hvac-primary-glow);
+      color: var(--hvac-primary);
+    }
     .badge-term {
       font-size: 9px;
       background: var(--surface3);
@@ -544,6 +627,12 @@
       color: #fbbf24;
     }
     .btn-action.amber:hover { background: rgba(245,158,11,0.2); }
+    .btn-action.blue {
+      background: rgba(59,130,246,0.12);
+      border-color: rgba(59,130,246,0.35);
+      color: #93c5fd;
+    }
+    .btn-action.blue:hover { background: rgba(59,130,246,0.2); }
 
     /* ── Clear highlights button ── */
     .btn-clear-hl {
@@ -568,7 +657,7 @@
     .hl-legend {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
       padding: 5px 8px;
       background: var(--surface);
@@ -640,13 +729,19 @@
     <!-- Header -->
     <div class="header">
       <div class="header-left">
-        <span class="header-title">🧱 <span class="accent">Hardscape</span> Finder</span>
-        <span class="ver-badge">v4.0</span>
+        <span class="header-title" id="headerTitle">🧱 <span class="accent-hs" id="headerAccent">Hardscape</span> Finder</span>
+        <span class="ver-badge">v5.0</span>
       </div>
       <div class="header-actions">
         <button class="btn-icon" id="debugToggleBtn" title="Toggle debug panel (D)">🛠</button>
         <span class="status-chip" id="pageIndicator">Ready</span>
       </div>
+    </div>
+
+    <!-- Mode Toggle -->
+    <div class="mode-toggle">
+      <button class="mode-btn active-hvac" id="modeHvacBtn">🌡️ HVAC</button>
+      <button class="mode-btn" id="modeHsBtn">🧱 Hardscaping</button>
     </div>
 
     <!-- Progress bar -->
@@ -656,8 +751,8 @@
 
     <!-- Scan buttons -->
     <div class="scan-row">
-      <button class="btn-scan-primary" id="scanBtn">🔍 Quick Scan</button>
-      <button class="btn-scan-secondary" id="deepScanBtn">🌐 Deep Scan</button>
+      <button class="btn-scan-primary hvac-mode" id="scanBtn">🔍 Quick Scan</button>
+      <button class="btn-scan-secondary hvac-mode" id="deepScanBtn">🌐 Deep Scan</button>
     </div>
 
     <!-- Debug panel (collapsible) -->
@@ -673,13 +768,13 @@
 
     <!-- Results -->
     <div id="resultContainer">
-      <div class="status-msg">Click <strong>Quick Scan</strong> to analyze this site for hardscaping services.</div>
+      <div class="status-msg">Select a mode above, then click <strong>Quick Scan</strong> to analyze this site.</div>
     </div>
 
     <!-- Copy / Action section -->
     <div id="copySection" class="hidden">
       <div class="action-row">
-        <button class="btn-action amber" id="copyPrimaryBtn">📋 Copy Score</button>
+        <button class="btn-action blue" id="copyPrimaryBtn">📋 Copy Score</button>
         <button class="btn-action" id="copyAllBtn">📄 Full Report</button>
       </div>
     </div>
@@ -690,24 +785,7 @@
     <!-- Highlight legend -->
     <div class="hl-legend hidden" id="hlLegend">
       <span class="hl-legend-title">Legend</span>
-      <span class="hl-swatch">
-        <span class="hl-swatch-dot" style="background:rgba(245,158,11,0.40);border-color:#d97706;"></span>Patios
-      </span>
-      <span class="hl-swatch">
-        <span class="hl-swatch-dot" style="background:rgba(148,163,184,0.40);border-color:#64748b;"></span>Walls
-      </span>
-      <span class="hl-swatch">
-        <span class="hl-swatch-dot" style="background:rgba(249,115,22,0.40);border-color:#ea580c;"></span>Living
-      </span>
-      <span class="hl-swatch">
-        <span class="hl-swatch-dot" style="background:rgba(96,165,250,0.40);border-color:#2563eb;"></span>Walks
-      </span>
-      <span class="hl-swatch">
-        <span class="hl-swatch-dot" style="background:rgba(52,211,153,0.40);border-color:#059669;"></span>Water
-      </span>
-      <span class="hl-swatch">
-        <span class="hl-swatch-dot" style="background:rgba(167,139,250,0.40);border-color:#7c3aed;"></span>Site
-      </span>
+      <span id="hlLegendSwatches"></span>
     </div>
 
   </div>
