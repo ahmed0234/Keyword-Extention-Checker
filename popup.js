@@ -6,7 +6,7 @@
 
 // ── GLOBAL STATE ──────────────────────────────────────────────────────────────
 let currentScanData = null;
-let currentMode = "hvac"; // 'hvac' | 'hardscaping' — default, overridden on boot
+let currentMode = "hvac"; // 'hvac' | 'hardscaping' | 'address' — default, overridden on boot
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CATEGORY DEFINITIONS
@@ -154,6 +154,25 @@ const HVAC_DEEP_SCAN_PAGES = [
   "/contact",
 ];
 
+// ── Address Finder Deep Scan Pages ──
+const ADDR_DEEP_SCAN_PAGES = [
+  "/",
+  "/contact",
+  "/contact-us",
+  "/about",
+  "/about-us",
+  "/location",
+  "/locations",
+  "/our-location",
+  "/find-us",
+];
+
+// ── Competitor Finder State ──
+let currentCompetitorData = null;
+let currentSheetInfo = null;
+let currentSheetRows = [];
+let activeRowNumber = 6;
+
 // ══════════════════════════════════════════════════════════════════════════════
 // BOOT — Wire events and restore saved mode
 // ══════════════════════════════════════════════════════════════════════════════
@@ -176,6 +195,42 @@ document
 document
   .getElementById("modeHsBtn")
   .addEventListener("click", () => setMode("hardscaping"));
+document
+  .getElementById("modeAddrBtn")
+  .addEventListener("click", () => setMode("address"));
+document
+  .getElementById("modeCompBtn")
+  .addEventListener("click", () => setMode("competitor"));
+
+// Wire Competitor Finder buttons (Single, Bulk & Google Auth)
+document.getElementById("compSubSingleBtn")?.addEventListener("click", () => setCompSubMode("single"));
+document.getElementById("compSubBulkBtn")?.addEventListener("click", () => setCompSubMode("bulk"));
+document.getElementById("compGoogleAuthBtn")?.addEventListener("click", handleGoogleAuthClick);
+document.getElementById("compSettingsToggleBtn")?.addEventListener("click", toggleCompSettings);
+document.getElementById("compSaveClientIdBtn")?.addEventListener("click", saveCustomClientId);
+document.getElementById("compConnectDirectTokenBtn")?.addEventListener("click", connectDirectAccessToken);
+document.getElementById("compSaveWebhookBtn")?.addEventListener("click", saveWebhookUrl);
+document.getElementById("compCopyRedirectUriBtn")?.addEventListener("click", copyRedirectUri);
+document.getElementById("compRefreshSheetBtn")?.addEventListener("click", () => refreshCompetitorSheet(true));
+document.getElementById("compWorksheetSelect")?.addEventListener("change", onWorksheetSelected);
+
+// Single Row mode buttons
+document.getElementById("compReadRowBtn")?.addEventListener("click", () => readActiveSheetRow(true));
+document.getElementById("compRowIncBtn")?.addEventListener("click", () => stepRow(1));
+document.getElementById("compRowDecBtn")?.addEventListener("click", () => stepRow(-1));
+document.getElementById("compRowNumInput")?.addEventListener("change", onRowNumberChanged);
+document.getElementById("compRowNumInput")?.addEventListener("keyup", (e) => { if (e.key === "Enter") onRowNumberChanged(); });
+document.getElementById("compFindBtn")?.addEventListener("click", runCompetitorFinder);
+document.getElementById("compSaveSheetBtn")?.addEventListener("click", () => saveCompetitorsToSheet(true));
+document.getElementById("compCopyTsvBtn")?.addEventListener("click", copyCompetitorsTsv);
+
+// Bulk Mode buttons
+document.getElementById("compBulkRunBtn")?.addEventListener("click", startBulkCompetitorFinder);
+document.getElementById("compBulkStopBtn")?.addEventListener("click", stopBulkCompetitorFinder);
+document.getElementById("compBulkRetryBtn")?.addEventListener("click", retryFailedBulkRows);
+document.getElementById("compBulkSaveSheetBtn")?.addEventListener("click", saveBulkCompetitorsToSheet);
+document.getElementById("compBulkCopyTsvBtn")?.addEventListener("click", copyBulkResultsTsv);
+document.getElementById("compBulkCopyTextBtn")?.addEventListener("click", copyBulkResultsFormattedText);
 
 // Restore persisted mode
 chrome.storage.local.get("detectionMode", (result) => {
@@ -189,65 +244,135 @@ chrome.storage.local.get("detectionMode", (result) => {
 })();
 
 // ══════════════════════════════════════════════════════════════════════════════
-// MODE MANAGEMENT
+// MODE MANAGEMENT (Fixed & Robust Architecture)
 // ══════════════════════════════════════════════════════════════════════════════
 
+let activeScanToken = 0; // Generation token to invalidate any in-flight async operations on mode switch
+
+function updateHeaderTitle(icon, name, accentClass) {
+  const headerTitle = document.getElementById("headerTitle");
+  if (!headerTitle) return;
+  headerTitle.innerHTML = `${icon} <span class="${accentClass}" id="headerAccent">${name}</span> Finder`;
+}
+
 function setMode(mode, saveToStorage = true) {
+  // 1. Cancel in-flight scan operations & reset timers
+  activeScanToken++;
   currentMode = mode;
   currentScanData = null;
+  showProgress(false);
 
   const isHvac = mode === "hvac";
+  const isAddr = mode === "address";
+  const isHs   = mode === "hardscaping";
+  const isComp = mode === "competitor";
 
-  // Toggle button appearance
+  // 2. Safely update button active classes
   const hvacBtn = document.getElementById("modeHvacBtn");
-  const hsBtn = document.getElementById("modeHsBtn");
-  hvacBtn.className = "mode-btn" + (isHvac ? " active-hvac" : "");
-  hsBtn.className = "mode-btn" + (!isHvac ? " active-hs" : "");
+  const hsBtn   = document.getElementById("modeHsBtn");
+  const addrBtn = document.getElementById("modeAddrBtn");
+  const compBtn = document.getElementById("modeCompBtn");
+  if (hvacBtn) hvacBtn.className = "mode-btn" + (isHvac ? " active-hvac" : "");
+  if (hsBtn)   hsBtn.className   = "mode-btn" + (isHs   ? " active-hs"   : "");
+  if (addrBtn) addrBtn.className = "mode-btn" + (isAddr ? " active-addr"  : "");
+  if (compBtn) compBtn.className = "mode-btn" + (isComp ? " active-comp"  : "");
 
-  // Header title
-  const headerTitle = document.getElementById("headerTitle");
-  const headerAccent = document.getElementById("headerAccent");
+  // 3. Safely update Header Title
   if (isHvac) {
-    headerTitle.childNodes[0].textContent = "🌡️ ";
-    headerAccent.textContent = "HVAC";
-    headerAccent.className = "accent-hvac";
-    headerTitle.childNodes[2].textContent = " Finder";
+    updateHeaderTitle("🌡️", "HVAC", "accent-hvac");
+  } else if (isAddr) {
+    updateHeaderTitle("📍", "Address", "accent-addr");
+  } else if (isComp) {
+    updateHeaderTitle("🎯", "Competitor", "accent-comp");
   } else {
-    headerTitle.childNodes[0].textContent = "🧱 ";
-    headerAccent.textContent = "Hardscape";
-    headerAccent.className = "accent-hs";
-    headerTitle.childNodes[2].textContent = " Finder";
+    updateHeaderTitle("🧱", "Hardscape", "accent-hs");
   }
 
-  // Scan button appearance
-  const scanBtn = document.getElementById("scanBtn");
-  const deepScanBtn = document.getElementById("deepScanBtn");
-  if (isHvac) {
-    scanBtn.className = "btn-scan-primary hvac-mode";
-    deepScanBtn.className = "btn-scan-secondary hvac-mode";
+  // 4. Panel visibility elements
+  const scanBtnRow   = document.getElementById("scanBtnRow");
+  const compSection  = document.getElementById("competitorSection");
+  const resContainer = document.getElementById("resultContainer");
+  const copySection  = document.getElementById("copySection");
+  const locSec       = document.getElementById("locationSection");
+  const clearHlBtn   = document.getElementById("clearHighlightsBtn");
+  const hlLegend     = document.getElementById("hlLegend");
+  const scanBtn      = document.getElementById("scanBtn");
+  const deepScanBtn  = document.getElementById("deepScanBtn");
+
+  // Hide common ephemeral sections
+  if (copySection) copySection.classList.add("hidden");
+  if (locSec)      locSec.classList.add("hidden");
+  if (clearHlBtn)  clearHlBtn.classList.add("hidden");
+  if (hlLegend)    hlLegend.classList.add("hidden");
+
+  // Re-enable all action buttons
+  if (scanBtn)     scanBtn.disabled = false;
+  if (deepScanBtn) deepScanBtn.disabled = false;
+
+  // 5. Mode specific panel activation
+  if (isComp) {
+    if (scanBtnRow)   scanBtnRow.classList.add("hidden");
+    if (resContainer) resContainer.classList.add("hidden");
+    if (compSection)  compSection.classList.remove("hidden");
+    setStatus("Google Sheets");
+    initCompetitorFinder();
   } else {
-    scanBtn.className = "btn-scan-primary";
-    deepScanBtn.className = "btn-scan-secondary";
+    if (scanBtnRow)   scanBtnRow.classList.remove("hidden");
+    if (resContainer) resContainer.classList.remove("hidden");
+    if (compSection)  compSection.classList.add("hidden");
+
+    if (isHvac) {
+      if (scanBtn) {
+        scanBtn.className = "btn-scan-primary hvac-mode";
+        scanBtn.textContent = "🔍 Quick Scan";
+      }
+      if (deepScanBtn) {
+        deepScanBtn.className = "btn-scan-secondary hvac-mode";
+        deepScanBtn.textContent = "🌐 Deep Scan";
+      }
+      if (resContainer) {
+        resContainer.innerHTML = `<div class="status-msg">Click <strong>Quick Scan</strong> to analyze this site for HVAC services.</div>`;
+      }
+      renderLegendSwatches(HVAC_LEGEND_SWATCHES);
+    } else if (isHs) {
+      if (scanBtn) {
+        scanBtn.className = "btn-scan-primary";
+        scanBtn.textContent = "🔍 Quick Scan";
+      }
+      if (deepScanBtn) {
+        deepScanBtn.className = "btn-scan-secondary";
+        deepScanBtn.textContent = "🌐 Deep Scan";
+      }
+      if (resContainer) {
+        resContainer.innerHTML = `<div class="status-msg">Click <strong>Quick Scan</strong> to analyze this site for hardscaping services.</div>`;
+      }
+      renderLegendSwatches(HS_LEGEND_SWATCHES);
+    } else if (isAddr) {
+      if (scanBtn) {
+        scanBtn.className = "btn-scan-primary addr-mode";
+        scanBtn.textContent = "🔍 Find Address";
+      }
+      if (deepScanBtn) {
+        deepScanBtn.className = "btn-scan-secondary";
+        deepScanBtn.textContent = "🌐 Deep Scan";
+      }
+      if (resContainer) {
+        resContainer.innerHTML = `<div class="status-msg">Click <strong>Find Address</strong> to locate this company's physical address.</div>`;
+      }
+    }
+    setStatus("Ready");
   }
 
-  // Progress fill
+  // 6. Progress fill styling
   const fill = document.getElementById("progressFill");
-  if (isHvac) {
-    fill.classList.add("hvac-fill");
-  } else {
-    fill.classList.remove("hvac-fill");
+  if (fill) {
+    fill.className = "progress-fill";
+    if (isHvac)      fill.classList.add("hvac-fill");
+    else if (isAddr) fill.classList.add("addr-fill");
+    else if (isComp) fill.classList.add("comp-fill");
   }
 
-  // Reset UI state
-  document.getElementById("resultContainer").innerHTML =
-    `<div class="status-msg">Click <strong>Quick Scan</strong> to analyze this site for ${isHvac ? "HVAC" : "hardscaping"} services.</div>`;
-  document.getElementById("copySection").classList.add("hidden");
-  document.getElementById("clearHighlightsBtn").classList.add("hidden");
-  document.getElementById("hlLegend").classList.add("hidden");
-
-  // Update legend swatches
-  renderLegendSwatches(isHvac ? HVAC_LEGEND_SWATCHES : HS_LEGEND_SWATCHES);
-
+  // 7. Persist mode
   if (saveToStorage) {
     chrome.storage.local.set({ detectionMode: mode });
   }
@@ -310,6 +435,14 @@ async function quickScan() {
       /* Already injected — OK */
     }
 
+    // ── ADDRESS FINDER MODE — completely skip service detection ──
+    if (currentMode === "address") {
+      await runAddressFinderScan(tab.id);
+      setStatus("Address Scan");
+      return;
+    }
+
+    // ── HVAC / HARDSCAPING MODE ──
     const response = await new Promise((resolve, reject) => {
       chrome.tabs.sendMessage(
         tab.id,
@@ -345,6 +478,8 @@ async function quickScan() {
       updateCopyButtons(currentMode);
       setStatus("Quick Scan");
       autoHighlight(tab.id, currentScanData, currentMode);
+      // Location extraction — runs after main scan (non-blocking)
+      extractAndRenderLocation(tab.id);
     } else if (response && response.error) {
       showError("Scan error: " + response.error);
     } else {
@@ -360,8 +495,153 @@ async function quickScan() {
     );
   } finally {
     btn.disabled = false;
-    btn.textContent = "🔍 Quick Scan";
+    btn.textContent = currentMode === "address" ? "🔍 Find Address" : "🔍 Quick Scan";
     showProgress(false);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ADDRESS FINDER SCAN — Completely independent; no service detection
+// ══════════════════════════════════════════════════════════════════════════════
+
+async function runAddressFinderScan(tabId) {
+  try {
+    const locationData = await new Promise((resolve, reject) => {
+      chrome.tabs.sendMessage(
+        tabId,
+        { action: "extractLocation" },
+        (res) => {
+          if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+          else resolve(res);
+        }
+      );
+    });
+
+    currentLocationData = locationData || null;
+    renderAddressFinderDashboard(locationData || { confidence: "none" });
+
+    // Visually highlight the detected address on the page
+    if (locationData && locationData.confidence !== "none") {
+      chrome.tabs.sendMessage(
+        tabId,
+        { action: "highlightAddresses", locationData },
+        (res) => {
+          if (chrome.runtime.lastError) return;
+          if (res && res.success && res.highlightCount > 0) {
+            const clearBtn = document.getElementById("clearHighlightsBtn");
+            if (clearBtn) clearBtn.classList.remove("hidden");
+            const legend = document.getElementById("hlLegend");
+            if (legend) {
+              renderLegendSwatches([{ label: "Address", bg: "rgba(34,211,238,0.28)", border: "#22d3ee" }]);
+              legend.classList.remove("hidden");
+            }
+          }
+        }
+      );
+    }
+  } catch (e) {
+    console.warn("[Popup] Address scan failed:", e.message);
+    renderAddressFinderDashboard({ confidence: "none", error: e.message });
+  }
+}
+
+// ── Address Finder Dashboard Renderer ──
+function renderAddressFinderDashboard(data) {
+  const container = document.getElementById("resultContainer");
+  const city       = data.primaryCity   || null;
+  const state      = data.primaryState  || null;
+  const confidence = data.confidence    || "none";
+  const others     = (data.otherLocations || []).filter(o => o.city || o.state);
+  const signals    = data.signals || [];
+  const matchedKws = data.matchedKeywords || [];
+
+  const confLabels = { high: "High Confidence", medium: "Medium Confidence", low: "Low Confidence", none: "Not Detected" };
+  const confLabel  = confLabels[confidence] || "Unknown";
+
+  let html = `<div class="addr-result-card" id="addrResultCard">`;
+  html += `<div class="addr-mode-label">📍 Address Finder — Company Location</div>`;
+
+  if (confidence === "none" || (!city && !state)) {
+    html += `
+      <div class="addr-not-detected">
+        <span class="addr-nd-icon">🔍</span>
+        No physical address detected on this page.<br>
+        <small style="color:var(--text-dim)">Try Deep Scan to check contact/about pages.</small>
+      </div>`;
+  } else {
+    // ── Big city, state display ──
+    html += `<div class="addr-city-state-display">`;
+    if (city)  html += `<span class="addr-city">${escHtml(city)}</span>`;
+    if (city && state) html += `<span class="addr-sep">,</span>`;
+    if (state) html += `<span class="addr-state">${escHtml(state)}</span>`;
+    html += `</div>`;
+
+    html += `<div class="addr-conf-row">
+      <span class="addr-conf-badge ${confidence}">${confLabel}</span>
+    </div>`;
+
+    // ── Source signals ──
+    if (signals.length > 0) {
+      const sigChips = [...new Set(signals)]
+        .slice(0, 6)
+        .map(s => `<span class="addr-source-chip">${escHtml(s.replace(/-/g, ' '))}</span>`)
+        .join("");
+      html += `<div class="addr-sources">
+        <div class="addr-sources-label">📡 Found In</div>
+        <div class="addr-source-chips">${sigChips}</div>
+      </div>`;
+    }
+
+    // ── Location keywords matched ──
+    if (matchedKws.length > 0) {
+      const kwChips = [...new Set(matchedKws)]
+        .slice(0, 8)
+        .map(k => `<span class="addr-kw-chip">${escHtml(k)}</span>`)
+        .join("");
+      html += `<div class="addr-keywords-found">
+        <div class="addr-keywords-label">🔑 Location Keywords Matched</div>
+        <div>${kwChips}</div>
+      </div>`;
+    }
+
+    // ── Other locations ──
+    if (others.length > 0) {
+      const otherItems = others.slice(0, 4).map(o => {
+        const parts = [o.city, o.state].filter(Boolean);
+        return `<div class="addr-other-item">📌 ${escHtml(parts.join(", "))}</div>`;
+      }).join("");
+      html += `<div class="addr-others">
+        <div class="addr-others-label">Other Locations Detected</div>
+        ${otherItems}
+      </div>`;
+    }
+
+    // ── Copy buttons ──
+    const copyValue = [city, state].filter(Boolean).join(", ");
+    html += `<div class="addr-copy-row">
+      <button class="btn-addr-copy" id="addrCopyBtn" data-copy="${escLoc(copyValue)}">📋 Copy ${escHtml(copyValue)}</button>
+    </div>`;
+
+    if (confidence !== "none") {
+      html += `<div class="addr-hl-note">✨ Address text highlighted on the page below</div>`;
+    }
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+
+  // Wire copy button
+  const copyBtn = document.getElementById("addrCopyBtn");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      const value = copyBtn.getAttribute("data-copy");
+      if (!value) return;
+      navigator.clipboard.writeText(value).then(() => {
+        const orig = copyBtn.textContent;
+        copyBtn.textContent = "✅ Copied!";
+        setTimeout(() => { copyBtn.textContent = orig; }, 1500);
+      });
+    });
   }
 }
 
@@ -375,6 +655,29 @@ function startDeepScan() {
   btn.textContent = "⏳ Scanning…";
   showProgress(true);
   setStatus("Deep scan…");
+
+  // ── Address Finder deep scan — different pages, no service detection ──
+  if (currentMode === "address") {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+      if (!tabs || !tabs[0]) {
+        showError("No active tab found.");
+        btn.disabled = false;
+        btn.textContent = "🌐 Deep Scan";
+        showProgress(false);
+        return;
+      }
+      const tabId = tabs[0].id;
+      try {
+        await chrome.scripting.executeScript({ target: { tabId }, files: ["content.js"] });
+      } catch (_) {}
+      await runAddressFinderScan(tabId);
+      setStatus("Addr Scan");
+      btn.disabled = false;
+      btn.textContent = "🌐 Deep Scan";
+      showProgress(false);
+    });
+    return;
+  }
 
   const pages =
     currentMode === "hvac" ? HVAC_DEEP_SCAN_PAGES : HS_DEEP_SCAN_PAGES;
@@ -436,6 +739,10 @@ function startDeepScan() {
           document.getElementById("copySection").classList.remove("hidden");
           updateCopyButtons(mode);
           setStatus(`Deep (${pageMeta.length}p)`);
+          // Location extraction on the active tab (non-blocking)
+          chrome.tabs.query({ active: true, currentWindow: true }, (activeTabs) => {
+            if (activeTabs && activeTabs[0]) extractAndRenderLocation(activeTabs[0].id);
+          });
         } else {
           showError(
             "Deep scan returned no data. The site may block automated scanning.",
@@ -1321,7 +1628,13 @@ function copyAll() {
     text += `Confidence Score : ${conf}% — ${d.confidenceLabel}\n`;
     text += `Positive Score   : ${d.totalPositiveScore || 0} pts\n`;
     text += `Penalty Score    : −${d.penaltyScore || 0} pts\n`;
-    text += `Net Score        : ${d.netScore || 0} pts\n\n`;
+    text += `Net Score        : ${d.netScore || 0} pts\n`;
+    if (currentLocationData) {
+      text += `Company City     : ${currentLocationData.primaryCity || "Not detected"}\n`;
+      text += `Company State    : ${currentLocationData.primaryState || "Not detected"}\n`;
+      text += `Location Conf.   : ${currentLocationData.confidence || "none"}\n`;
+    }
+    text += `\n`;
 
     text += `HVAC SERVICES DETECTED:\n`;
     if (d.detectedServices && d.detectedServices.length > 0) {
@@ -1361,7 +1674,13 @@ function copyAll() {
     text += `Confidence Score: ${conf}% — ${label}\n`;
     text += `Positive Score  : ${d.totalPositiveScore || 0} pts\n`;
     text += `Penalty Score   : −${d.penaltyScore || 0} pts\n`;
-    text += `Net Score       : ${d.netScore || 0} pts\n\n`;
+    text += `Net Score       : ${d.netScore || 0} pts\n`;
+    if (currentLocationData) {
+      text += `Company City    : ${currentLocationData.primaryCity || "Not detected"}\n`;
+      text += `Company State   : ${currentLocationData.primaryState || "Not detected"}\n`;
+      text += `Location Conf.  : ${currentLocationData.confidence || "none"}\n`;
+    }
+    text += `\n`;
 
     text += `HARDSCAPING SERVICES DETECTED:\n`;
     if (d.detectedServices && d.detectedServices.length > 0) {
@@ -1494,17 +1813,21 @@ document.addEventListener("keydown", (e) => {
 function showProgress(active) {
   const bar = document.getElementById("progressBar");
   const fill = document.getElementById("progressFill");
+  if (!bar || !fill) return;
+  if (fill._interval) {
+    clearInterval(fill._interval);
+    fill._interval = null;
+  }
   if (active) {
     bar.classList.add("active");
     let w = 0;
     fill._interval = setInterval(() => {
-      w = (w + 2) % 100;
+      w = (w + 3) % 100;
       fill.style.width = w + "%";
-    }, 30);
+    }, 35);
   } else {
     bar.classList.remove("active");
     fill.style.width = "0%";
-    if (fill._interval) clearInterval(fill._interval);
   }
 }
 
@@ -1580,3 +1903,1666 @@ async function clearPageHighlights() {
     if (legend) legend.classList.add("hidden");
   });
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LOCATION EXTRACTION — City & State Detection
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Stores last extracted location so copyAll() can include it
+let currentLocationData = null;
+
+async function extractAndRenderLocation(tabId) {
+  const section = document.getElementById("locationSection");
+  if (!section) return;
+
+  // Show loading state immediately
+  section.innerHTML = buildLocationCardHtml({ loading: true });
+  section.classList.remove("hidden");
+
+  try {
+    // Ensure content script is injected
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ["content.js"],
+      });
+    } catch (_) { /* Already injected */ }
+
+    const locationData = await new Promise((resolve, reject) => {
+      chrome.tabs.sendMessage(
+        tabId,
+        { action: "extractLocation" },
+        (res) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+          } else {
+            resolve(res);
+          }
+        }
+      );
+    });
+
+    currentLocationData = locationData || null;
+    section.innerHTML = buildLocationCardHtml(locationData || { confidence: "none" });
+    wireLocationCopyHandlers(section);
+
+  } catch (e) {
+    console.warn("[Popup] Location extraction failed:", e.message);
+    currentLocationData = null;
+    section.innerHTML = buildLocationCardHtml({ confidence: "none", error: e.message });
+    wireLocationCopyHandlers(section);
+  }
+}
+
+// ── Build the location card HTML ──────────────────────────────────────────────
+
+function buildLocationCardHtml(data) {
+  if (data.loading) {
+    return `<div class="location-card">
+      <div class="location-label">📍 Company Location</div>
+      <div style="font-size:10px;color:var(--text-dim);text-align:center;padding:4px 0;">Detecting location…</div>
+    </div>`;
+  }
+
+  const city       = data.primaryCity  || null;
+  const state      = data.primaryState || null;
+  const confidence = data.confidence   || "none";
+  const others     = (data.otherLocations || []).filter(o => o.city && o.state);
+  const signals    = data.signals || [];
+
+  const confLabels = { high: "High", medium: "Medium", low: "Low", none: "Not Detected" };
+  const confLabel  = confLabels[confidence] || "Unknown";
+
+  // ── City field ──
+  const cityHtml = city
+    ? `<span class="location-value" data-loc-copy="${escLoc(city)}" title="Click to copy city">${escHtml(city)}</span>
+       <span class="loc-copy-icon" data-loc-copy="${escLoc(city)}" title="Copy city">📋</span>`
+    : `<span class="location-value not-detected">Not detected</span>`;
+
+  // ── State field ──
+  const stateHtml = state
+    ? `<span class="location-value" data-loc-copy="${escLoc(state)}" title="Click to copy state">${escHtml(state)}</span>
+       <span class="loc-copy-icon" data-loc-copy="${escLoc(state)}" title="Copy state">📋</span>`
+    : `<span class="location-value not-detected">Not detected</span>`;
+
+  // ── Other locations ──
+  let othersHtml = "";
+  if (others.length > 0) {
+    const rows = others.slice(0, 5).map(o => `
+      <div class="location-other-row">
+        <span class="loc-other-city" data-loc-copy="${escLoc(o.city)}" title="Copy city">${escHtml(o.city)}</span>
+        <span class="loc-sep">|</span>
+        <span class="loc-other-state" data-loc-copy="${escLoc(o.state)}" title="Copy state">${escHtml(o.state)}</span>
+        <span class="loc-other-copy" data-loc-copy="${escLoc(o.city)}" title="Copy city">📋</span>
+        <span class="loc-other-copy" data-loc-copy="${escLoc(o.state)}" title="Copy state">📋</span>
+      </div>`).join("");
+    othersHtml = `
+      <div class="location-others">
+        <div class="location-others-label">Other Physical Locations</div>
+        ${rows}
+      </div>`;
+  }
+
+  // ── Source signals hint ──
+  let signalsHtml = "";
+  if (signals.length > 0 && confidence !== "none") {
+    const srcLabels = [...new Set(signals)].slice(0, 3).map(s => s.replace(/-/g, " ")).join(", ");
+    signalsHtml = `<div class="loc-signals">📡 Sources: ${escHtml(srcLabels)}</div>`;
+  } else if (confidence === "none") {
+    signalsHtml = `<div class="loc-signals">No physical address found on this page.</div>`;
+  }
+
+  return `
+    <div class="location-card" id="locationCard">
+      <div class="location-label">
+        📍 Company Location
+        <span class="loc-confidence ${confidence}">${confLabel}</span>
+      </div>
+      <div class="location-primary-row">
+        <div class="location-field">
+          <div class="location-field-label">City</div>
+          <div class="location-value-wrap">${cityHtml}</div>
+        </div>
+        <div class="location-field">
+          <div class="location-field-label">State</div>
+          <div class="location-value-wrap">${stateHtml}</div>
+        </div>
+      </div>
+      ${othersHtml}
+      ${signalsHtml}
+      <div class="loc-toast" id="locToast">Copied!</div>
+    </div>`;
+}
+
+// ── Wire click-to-copy handlers on all [data-loc-copy] elements ───────────────
+
+function wireLocationCopyHandlers(container) {
+  container.querySelectorAll("[data-loc-copy]").forEach(el => {
+    el.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const value = el.getAttribute("data-loc-copy");
+      if (!value) return;
+      copyLocationValue(value, container);
+    });
+  });
+}
+
+// ── Copy a location value and show toast ─────────────────────────────────────
+
+let _locToastTimer = null;
+
+function copyLocationValue(value, containerEl) {
+  navigator.clipboard.writeText(value).then(() => {
+    const toast = containerEl.querySelector("#locToast");
+    if (toast) {
+      toast.textContent = `"${value}" copied!`;
+      toast.classList.add("show");
+      if (_locToastTimer) clearTimeout(_locToastTimer);
+      _locToastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 1600);
+    }
+  }).catch(err => {
+    console.warn("[Popup] Location copy failed:", err);
+  });
+}
+
+// ── HTML escape helpers ───────────────────────────────────────────────────────
+
+function escHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function escLoc(str) {
+  if (!str) return "";
+  return String(str).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// COMPETITOR FINDER MODULE (v5.2 - Single Row & Bulk Mode with Google Sheets API)
+// ══════════════════════════════════════════════════════════════════════════════
+
+let compActiveSubMode = "single"; // "single" | "bulk"
+let googleAuthState = {
+  token: null,
+  user: null,
+  isConnected: false
+};
+let availableWorksheets = [];
+let selectedWorksheetTitle = "";
+let bulkProcessingState = {
+  isRunning: false,
+  isCancelled: false,
+  startRow: 1,
+  endRow: 50,
+  results: [],
+  stats: { total: 0, found: 0, empty: 0, failed: 0 }
+};
+
+async function initCompetitorFinder() {
+  setStatus("Competitor Finder");
+  const sheetStatusEl = document.getElementById("compSheetStatus");
+  const sheetNameEl   = document.getElementById("compSheetNameTitle");
+  const bulkSheetEl   = document.getElementById("compBulkSheetNameTitle");
+  const gidBadgeEl    = document.getElementById("compGidBadge");
+  const bulkGidBadgeEl= document.getElementById("compBulkGidBadge");
+
+  if (sheetStatusEl) sheetStatusEl.textContent = "Connecting…";
+
+  // 1. Initialize Google OAuth status
+  await checkGoogleAuthStatus();
+
+  // 2. Load Redirect URI for settings box
+  chrome.runtime.sendMessage({ action: "getRedirectUri" }, (res) => {
+    const uriEl = document.getElementById("compRedirectUriText");
+    if (uriEl && res && res.redirectUri) uriEl.textContent = res.redirectUri;
+  });
+
+  // 3. Load saved custom Client ID, Token, and Webhook into settings
+  chrome.storage.local.get(["googleOAuthClientId", "googleAppsScriptWebhook"], (res) => {
+    const idInput = document.getElementById("compCustomClientIdInput");
+    const whInput = document.getElementById("compWebhookUrlInput");
+    if (idInput && res.googleOAuthClientId) idInput.value = res.googleOAuthClientId;
+    if (whInput && res.googleAppsScriptWebhook) whInput.value = res.googleAppsScriptWebhook;
+  });
+
+  // 4. Detect open Google Sheet tab
+  try {
+    const sheetTab = await detectGoogleSheetTab();
+    if (sheetTab) {
+      currentSheetInfo = {
+        tabId: sheetTab.id,
+        url: sheetTab.url,
+        title: (sheetTab.title || "Google Sheet").replace(/\s*-\s*Google Sheets$/i, ""),
+        spreadsheetId: extractSpreadsheetId(sheetTab.url),
+        gid: extractGid(sheetTab.url)
+      };
+
+      if (sheetStatusEl) {
+        sheetStatusEl.textContent = "Connected";
+        sheetStatusEl.style.color = "#3fb950";
+        sheetStatusEl.style.borderColor = "rgba(63,185,80,0.4)";
+        sheetStatusEl.style.background = "rgba(63,185,80,0.15)";
+      }
+      if (sheetNameEl) sheetNameEl.textContent = currentSheetInfo.title;
+      if (bulkSheetEl) bulkSheetEl.textContent = currentSheetInfo.title;
+      if (gidBadgeEl)  gidBadgeEl.textContent  = `gid: ${currentSheetInfo.gid}`;
+      if (bulkGidBadgeEl) bulkGidBadgeEl.textContent = `gid: ${currentSheetInfo.gid}`;
+
+      // 5. Load worksheet tabs & sheet rows
+      if (googleAuthState.isConnected && currentSheetInfo.spreadsheetId) {
+        await loadSpreadsheetWorksheets(currentSheetInfo.spreadsheetId);
+      }
+      await readActiveSheetRow(true);
+    } else {
+      currentSheetInfo = null;
+      if (sheetStatusEl) {
+        sheetStatusEl.textContent = "No Sheet Open";
+        sheetStatusEl.style.color = "#d29922";
+        sheetStatusEl.style.borderColor = "rgba(210,153,34,0.4)";
+        sheetStatusEl.style.background = "rgba(210,153,34,0.15)";
+      }
+      if (sheetNameEl) sheetNameEl.textContent = "Please focus your Google Sheet tab";
+      if (bulkSheetEl) bulkSheetEl.textContent = "Please focus your Google Sheet tab";
+      if (gidBadgeEl)  gidBadgeEl.textContent  = "gid: —";
+      if (bulkGidBadgeEl) bulkGidBadgeEl.textContent = "gid: —";
+
+      loadSheetRowsAndDisplay(activeRowNumber);
+    }
+  } catch (err) {
+    console.error("[Competitor] init error:", err);
+    if (sheetStatusEl) sheetStatusEl.textContent = "Error";
+  }
+}
+
+// ── Google OAuth, Token & Settings Management ──
+
+async function checkGoogleAuthStatus() {
+  const btn = document.getElementById("compGoogleAuthBtn");
+  const res = await new Promise((r) => chrome.runtime.sendMessage({ action: "googleAuthGetToken", interactive: false }, r));
+
+  if (res && res.success && res.token) {
+    googleAuthState.token = res.token;
+    googleAuthState.isConnected = true;
+
+    // Fetch user profile
+    const userRes = await new Promise((r) => chrome.runtime.sendMessage({ action: "googleAuthGetUserInfo", token: res.token }, r));
+    if (userRes && userRes.success && userRes.user) {
+      googleAuthState.user = userRes.user;
+      if (btn) {
+        btn.textContent = `🟢 ${userRes.user.email ? userRes.user.email.split("@")[0] : "Connected"}`;
+        btn.title = `Connected as ${userRes.user.email} (Click to sign out)`;
+        btn.classList.add("connected");
+      }
+    } else {
+      if (btn) {
+        btn.textContent = "🟢 Connected";
+        btn.classList.add("connected");
+      }
+    }
+  } else {
+    googleAuthState.token = null;
+    googleAuthState.user = null;
+    googleAuthState.isConnected = false;
+    if (btn) {
+      btn.textContent = "👤 Sign in";
+      btn.title = "Sign in with Google to enable direct saving & sheet editing";
+      btn.classList.remove("connected");
+    }
+  }
+}
+
+async function handleGoogleAuthClick() {
+  const btn = document.getElementById("compGoogleAuthBtn");
+
+  if (googleAuthState.isConnected) {
+    const email = googleAuthState.user ? googleAuthState.user.email : "your Google account";
+    const proceed = confirm(`Currently connected as: ${email}\n\nDo you want to sign out or switch accounts?`);
+    if (proceed) {
+      if (btn) btn.textContent = "⏳ Signing out…";
+      await new Promise((r) => chrome.runtime.sendMessage({ action: "googleAuthSignOut", token: googleAuthState.token }, r));
+      await checkGoogleAuthStatus();
+      return;
+    }
+  }
+
+  // Check if client ID is set
+  const savedClientId = await new Promise((r) => chrome.storage.local.get(["googleOAuthClientId"], (res) => r(res.googleOAuthClientId)));
+  if (!savedClientId) {
+    toggleCompSettings(true);
+    alert("Please enter your Google Cloud OAuth Client ID (or paste an Access Token) in the settings panel below to connect.");
+    return;
+  }
+
+  if (btn) btn.textContent = "⏳ Connecting…";
+  try {
+    const res = await new Promise((r) => chrome.runtime.sendMessage({ action: "googleAuthGetToken", interactive: true }, r));
+    if (res && res.success && res.token) {
+      await checkGoogleAuthStatus();
+      if (currentSheetInfo && currentSheetInfo.spreadsheetId) {
+        await loadSpreadsheetWorksheets(currentSheetInfo.spreadsheetId);
+        await readActiveSheetRow(true);
+      }
+    } else {
+      alert("Google Sign-In Error: " + (res ? res.error : "Failed to sign in."));
+      await checkGoogleAuthStatus();
+    }
+  } catch (err) {
+    alert("Google Sign-In Error: " + err.message);
+    await checkGoogleAuthStatus();
+  }
+}
+
+function toggleCompSettings(forceOpen = null) {
+  const box = document.getElementById("compSettingsBox");
+  if (!box) return;
+  if (forceOpen === true) box.classList.remove("hidden");
+  else if (forceOpen === false) box.classList.add("hidden");
+  else box.classList.toggle("hidden");
+}
+
+async function saveCustomClientId() {
+  const input = document.getElementById("compCustomClientIdInput");
+  const msg = document.getElementById("compClientIdSavedMsg");
+  const val = (input ? input.value : "").trim();
+
+  await new Promise((r) => chrome.storage.local.set({ googleOAuthClientId: val }, r));
+  if (msg) {
+    msg.textContent = "✅ Saved!";
+    setTimeout(() => { if (msg) msg.textContent = ""; }, 2000);
+  }
+
+  // Automatically start auth flow if ID provided
+  if (val) {
+    await handleGoogleAuthClick();
+  }
+}
+
+async function connectDirectAccessToken() {
+  const input = document.getElementById("compDirectTokenInput");
+  const msg = document.getElementById("compDirectTokenMsg");
+  const token = (input ? input.value : "").trim();
+
+  if (!token) {
+    if (msg) msg.textContent = "⚠️ Please paste a token.";
+    return;
+  }
+
+  if (msg) msg.textContent = "⏳ Verifying token…";
+
+  try {
+    // Validate token by fetching user profile
+    const userRes = await new Promise((r) => chrome.runtime.sendMessage({ action: "googleAuthGetUserInfo", token }, r));
+    if (userRes && userRes.success && userRes.user) {
+      await new Promise((r) => chrome.storage.local.set({
+        googleAuthToken: token,
+        googleAuthTokenExpiry: Date.now() + (3600 * 1000)
+      }, r));
+
+      if (msg) {
+        msg.textContent = `✅ Connected as ${userRes.user.email}!`;
+        msg.style.color = "#3fb950";
+      }
+      await checkGoogleAuthStatus();
+      if (currentSheetInfo && currentSheetInfo.spreadsheetId) {
+        await loadSpreadsheetWorksheets(currentSheetInfo.spreadsheetId);
+        await readActiveSheetRow(true);
+      }
+    } else {
+      if (msg) {
+        msg.textContent = "❌ Invalid or expired token.";
+        msg.style.color = "#f85149";
+      }
+    }
+  } catch (err) {
+    if (msg) {
+      msg.textContent = "❌ Error: " + err.message;
+      msg.style.color = "#f85149";
+    }
+  }
+}
+
+async function saveWebhookUrl() {
+  const input = document.getElementById("compWebhookUrlInput");
+  const msg = document.getElementById("compWebhookSavedMsg");
+  const val = (input ? input.value : "").trim();
+
+  await new Promise((r) => chrome.storage.local.set({ googleAppsScriptWebhook: val }, r));
+  if (msg) {
+    msg.textContent = "✅ Webhook Saved!";
+    setTimeout(() => { if (msg) msg.textContent = ""; }, 2000);
+  }
+}
+
+function copyRedirectUri() {
+  const uriEl = document.getElementById("compRedirectUriText");
+  const uri = uriEl ? uriEl.textContent : chrome.identity.getRedirectURL();
+  navigator.clipboard.writeText(uri).then(() => {
+    const btn = document.getElementById("compCopyRedirectUriBtn");
+    if (btn) {
+      btn.textContent = "✅ Copied!";
+      setTimeout(() => { btn.textContent = "📋 Copy"; }, 1500);
+    }
+  });
+}
+
+// ── Worksheet Selection & Metadata ──
+
+async function loadSpreadsheetWorksheets(spreadsheetId) {
+  const select = document.getElementById("compWorksheetSelect");
+  if (!select || !spreadsheetId) return;
+
+  try {
+    const res = await new Promise((r) => {
+      chrome.runtime.sendMessage({ action: "sheetsApiGetMetadata", spreadsheetId }, r);
+    });
+
+    if (res && res.success && Array.isArray(res.sheets) && res.sheets.length > 0) {
+      availableWorksheets = res.sheets;
+      select.innerHTML = "";
+
+      let matchedIndex = 0;
+      availableWorksheets.forEach((sh, idx) => {
+        const opt = document.createElement("option");
+        opt.value = sh.title;
+        opt.textContent = `${sh.title} (${sh.rowCount} rows)`;
+        select.appendChild(opt);
+
+        if (currentSheetInfo && String(sh.sheetId) === String(currentSheetInfo.gid)) {
+          matchedIndex = idx;
+        }
+      });
+
+      select.selectedIndex = matchedIndex;
+      selectedWorksheetTitle = availableWorksheets[matchedIndex] ? availableWorksheets[matchedIndex].title : "";
+    }
+  } catch (err) {
+    console.warn("[Competitor] loadSpreadsheetWorksheets error:", err);
+  }
+}
+
+function onWorksheetSelected() {
+  const select = document.getElementById("compWorksheetSelect");
+  if (!select) return;
+  selectedWorksheetTitle = select.value;
+  readActiveSheetRow(true);
+}
+
+async function refreshCompetitorSheet(force = true) {
+  const btn = document.getElementById("compRefreshSheetBtn");
+  if (btn) btn.textContent = "⏳";
+  await initCompetitorFinder();
+  if (btn) {
+    btn.textContent = "✅";
+    setTimeout(() => { if (btn) btn.textContent = "🔄"; }, 1200);
+  }
+}
+
+// ── Sub-Mode Navigation (Single Row vs Bulk Mode) ──
+
+function setCompSubMode(subMode) {
+  compActiveSubMode = subMode;
+  const singleBtn = document.getElementById("compSubSingleBtn");
+  const bulkBtn   = document.getElementById("compSubBulkBtn");
+  const singleWrap= document.getElementById("compSingleModeWrap");
+  const bulkWrap  = document.getElementById("compBulkModeWrap");
+
+  if (subMode === "bulk") {
+    if (singleBtn) singleBtn.classList.remove("active");
+    if (bulkBtn)   bulkBtn.classList.add("active");
+    if (singleWrap) singleWrap.classList.add("hidden");
+    if (bulkWrap)   bulkWrap.classList.remove("hidden");
+
+    // Sync sheet info to bulk card
+    const bulkSheetEl = document.getElementById("compBulkSheetNameTitle");
+    const bulkGidBadgeEl = document.getElementById("compBulkGidBadge");
+    if (bulkSheetEl && currentSheetInfo) bulkSheetEl.textContent = currentSheetInfo.title;
+    if (bulkGidBadgeEl && currentSheetInfo) bulkGidBadgeEl.textContent = `gid: ${currentSheetInfo.gid}`;
+  } else {
+    if (singleBtn) singleBtn.classList.add("active");
+    if (bulkBtn)   bulkBtn.classList.remove("active");
+    if (singleWrap) singleWrap.classList.remove("hidden");
+    if (bulkWrap)   bulkWrap.classList.add("hidden");
+  }
+}
+
+// ── Tab & Row Detection ──
+
+async function detectGoogleSheetTab() {
+  // 1. Check current active tab
+  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (activeTab && activeTab.url && activeTab.url.includes("docs.google.com/spreadsheets")) {
+    return activeTab;
+  }
+
+  // 2. Otherwise search all open tabs for any Google Sheet
+  const sheetTabs = await chrome.tabs.query({ url: "*://docs.google.com/spreadsheets/*" });
+  if (sheetTabs && sheetTabs.length > 0) {
+    return sheetTabs[0];
+  }
+
+  return null;
+}
+
+function extractSpreadsheetId(url) {
+  if (!url) return null;
+  const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return m ? m[1] : null;
+}
+
+function extractGid(url) {
+  if (!url) return "0";
+  const m = url.match(/gid=(\d+)/);
+  return m ? m[1] : "0";
+}
+
+// Helper: Parse Google Visualization JSON table into 2D Array
+function parseGvizData(gvizJson) {
+  if (!gvizJson || !gvizJson.table || !Array.isArray(gvizJson.table.rows)) return [];
+  const rows = [];
+  
+  // Header row from cols
+  if (Array.isArray(gvizJson.table.cols)) {
+    const headers = gvizJson.table.cols.map(c => (c && c.label != null ? String(c.label) : ""));
+    rows.push(headers);
+  }
+
+  for (const r of gvizJson.table.rows) {
+    if (!r || !Array.isArray(r.c)) {
+      rows.push([]);
+      continue;
+    }
+    const rowVals = r.c.map(cell => {
+      if (!cell) return "";
+      if (cell.v !== null && cell.v !== undefined) return String(cell.v);
+      if (cell.f !== null && cell.f !== undefined) return String(cell.f);
+      return "";
+    });
+    rows.push(rowVals);
+  }
+  return rows;
+}
+
+// Helper: Parse CSV text into 2D Array
+function parseCSV(text) {
+  if (!text) return [];
+  const lines = [];
+  let row = [];
+  let inQuotes = false;
+  let currentVal = "";
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        currentVal += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === "," && !inQuotes) {
+      row.push(currentVal);
+      currentVal = "";
+    } else if ((char === "\r" || char === "\n") && !inQuotes) {
+      if (char === "\r" && nextChar === "\n") i++;
+      row.push(currentVal);
+      lines.push(row);
+      row = [];
+      currentVal = "";
+    } else {
+      currentVal += char;
+    }
+  }
+
+  if (currentVal || row.length > 0) {
+    row.push(currentVal);
+    lines.push(row);
+  }
+
+  return lines;
+}
+
+async function readActiveSheetRow(forceFetchSheet = false) {
+  showProgress(true);
+  try {
+    const sheetTab = await detectGoogleSheetTab();
+    if (!sheetTab || !sheetTab.id) {
+      loadSheetRowsAndDisplay(activeRowNumber);
+      return;
+    }
+
+    currentSheetInfo = {
+      tabId: sheetTab.id,
+      url: sheetTab.url,
+      title: (sheetTab.title || "Google Sheet").replace(/\s*-\s*Google Sheets$/i, ""),
+      spreadsheetId: extractSpreadsheetId(sheetTab.url),
+      gid: extractGid(sheetTab.url)
+    };
+
+    if (forceFetchSheet || currentSheetRows.length === 0) {
+      let fetched = false;
+
+      // Method 1: Same-origin fetch inside the open Google Sheet tab (Has active user session!)
+      try {
+        const tabRes = await chrome.scripting.executeScript({
+          target: { tabId: sheetTab.id },
+          func: (spreadsheetId, gid) => {
+            const gvizUrl = `/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&gid=${gid}`;
+            return fetch(gvizUrl, { credentials: "include" })
+              .then((r) => r.text())
+              .catch(() => null);
+          },
+          args: [currentSheetInfo.spreadsheetId, currentSheetInfo.gid]
+        });
+
+        if (tabRes && tabRes[0] && tabRes[0].result) {
+          const gvizText = tabRes[0].result;
+          const jsonMatch = gvizText.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);/);
+          if (jsonMatch && jsonMatch[1]) {
+            const data = JSON.parse(jsonMatch[1]);
+            const parsed = parseGvizData(data);
+            if (parsed && parsed.length > 0) {
+              currentSheetRows = parsed;
+              fetched = true;
+            }
+          }
+        }
+      } catch (tabErr) {
+        console.warn("[Competitor] Tab GViz fetch error:", tabErr);
+      }
+
+      // Method 2: CSV export inside active tab
+      if (!fetched) {
+        try {
+          const csvRes = await chrome.scripting.executeScript({
+            target: { tabId: sheetTab.id },
+            func: (spreadsheetId, gid) => {
+              const csvUrl = `/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
+              return fetch(csvUrl, { credentials: "include" })
+                .then((r) => r.text())
+                .catch(() => null);
+            },
+            args: [currentSheetInfo.spreadsheetId, currentSheetInfo.gid]
+          });
+
+          if (csvRes && csvRes[0] && csvRes[0].result) {
+            const parsed = parseCSV(csvRes[0].result);
+            if (parsed && parsed.length > 0) {
+              currentSheetRows = parsed;
+              fetched = true;
+            }
+          }
+        } catch (_) {}
+      }
+
+      // Method 3: Google Sheets API v4 (if signed in)
+      if (!fetched && googleAuthState.isConnected) {
+        const range = selectedWorksheetTitle ? `'${selectedWorksheetTitle}'!A1:Z5000` : "A1:Z5000";
+        const apiRes = await new Promise((resolve) => {
+          chrome.runtime.sendMessage({
+            action: "sheetsApiGetValues",
+            spreadsheetId: currentSheetInfo.spreadsheetId,
+            range: range
+          }, resolve);
+        });
+
+        if (apiRes && apiRes.success && Array.isArray(apiRes.values) && apiRes.values.length > 0) {
+          currentSheetRows = apiRes.values;
+          fetched = true;
+        }
+      }
+
+      // Method 4: Background fetch fallback
+      if (!fetched) {
+        const dataRes = await new Promise((resolve) => {
+          chrome.runtime.sendMessage({
+            action: "fetchGoogleSheetData",
+            spreadsheetId: currentSheetInfo.spreadsheetId,
+            gid: currentSheetInfo.gid
+          }, resolve);
+        });
+
+        if (dataRes && dataRes.success) {
+          currentSheetRows = dataRes.rows || dataRes.data || [];
+        }
+      }
+    }
+
+    // Display row data in UI
+    loadSheetRowsAndDisplay(activeRowNumber);
+  } catch (e) {
+    console.error("[Competitor] readActiveSheetRow error:", e);
+    loadSheetRowsAndDisplay(activeRowNumber);
+  } finally {
+    showProgress(false);
+  }
+}
+
+function loadSheetRowsAndDisplay(rowNum) {
+  activeRowNumber = Math.max(1, parseInt(rowNum, 10) || 1);
+  const inputEl = document.getElementById("compRowNumInput");
+  if (inputEl) inputEl.value = activeRowNumber;
+
+  // Zero-indexed row in array (Row 1 -> index 0)
+  const rowIndex = activeRowNumber - 1;
+  const rowValues = (currentSheetRows && currentSheetRows[rowIndex]) ? currentSheetRows[rowIndex] : [];
+
+  // Google Sheet Column Mapping:
+  // Col F = index 5 (Company Name)
+  // Col G = index 6 (Main Service)
+  // Col H = index 7 (Competitor 1)
+  // Col I = index 8 (Competitor 2)
+  // Col J = index 9 (Company City)
+  // Col K = index 10 (Company State)
+  const companyName   = (rowValues[5]  || "").trim();
+  const mainService   = (rowValues[6]  || "").trim();
+  const existingComp1 = (rowValues[7]  || "").trim();
+  const existingComp2 = (rowValues[8]  || "").trim();
+  const companyCity   = (rowValues[9]  || "").trim();
+  const companyState  = (rowValues[10] || "").trim();
+
+  // Populate Field Values in UI
+  const valCompEl = document.getElementById("compValCompany");
+  const valServEl = document.getElementById("compValService");
+  const valCityEl = document.getElementById("compValCity");
+  const valStatEl = document.getElementById("compValState");
+
+  if (valCompEl) {
+    valCompEl.textContent = companyName || "—";
+    valCompEl.className = "comp-field-val" + (!companyName ? " missing" : "");
+  }
+  if (valServEl) {
+    valServEl.textContent = mainService || "Missing";
+    valServEl.className = "comp-field-val" + (!mainService ? " missing" : "");
+  }
+  if (valCityEl) {
+    valCityEl.textContent = companyCity || "Missing";
+    valCityEl.className = "comp-field-val" + (!companyCity ? " missing" : "");
+  }
+  if (valStatEl) {
+    valStatEl.textContent = companyState || "Missing";
+    valStatEl.className = "comp-field-val" + (!companyState ? " missing" : "");
+  }
+
+  // Validation Check: Main Service required, City & State recommended
+  const missing = [];
+  if (!mainService)  missing.push("Main Service (Col G)");
+  if (!companyCity)  missing.push("City (Col J)");
+  if (!companyState) missing.push("State (Col K)");
+
+  const warnBanner = document.getElementById("compWarnBanner");
+  const warnMsg    = document.getElementById("compWarnMsg");
+  const findBtn    = document.getElementById("compFindBtn");
+  const queryText  = document.getElementById("compQueryText");
+
+  let query = "";
+  if (!mainService && !companyName) {
+    if (warnBanner) warnBanner.classList.remove("hidden");
+    if (warnMsg) warnMsg.textContent = `Row ${activeRowNumber} is empty or missing required columns.`;
+    if (findBtn) {
+      findBtn.disabled = true;
+      findBtn.textContent = "⚠️ Fill Required Fields to Search";
+    }
+    if (queryText) queryText.textContent = "—";
+  } else {
+    // Generate clean query
+    const serviceTerm = mainService || "HVAC contractors";
+    const locParts = [companyCity, companyState].filter(Boolean).join(", ");
+    query = locParts ? `${serviceTerm} in ${locParts}` : serviceTerm;
+
+    if (missing.length > 0) {
+      if (warnBanner) warnBanner.classList.remove("hidden");
+      if (warnMsg) warnMsg.textContent = `Missing ${missing.join(", ")} in Row ${activeRowNumber}. Searching with available info.`;
+    } else {
+      if (warnBanner) warnBanner.classList.add("hidden");
+    }
+
+    if (findBtn) {
+      findBtn.disabled = false;
+      findBtn.textContent = "🔍 Find Competitors";
+    }
+    if (queryText) queryText.textContent = query;
+  }
+
+  // Existing Competitor notice & Overwrite Protection
+  const existNotice   = document.getElementById("compExistingNotice");
+  const overwriteLbl  = document.getElementById("compOverwriteLabel");
+  const overwriteChk  = document.getElementById("compOverwriteCheck");
+
+  if (existingComp1 || existingComp2) {
+    const parts = [];
+    if (existingComp1) parts.push(`H: "${existingComp1}"`);
+    if (existingComp2) parts.push(`I: "${existingComp2}"`);
+    if (existNotice) existNotice.classList.remove("hidden");
+    if (overwriteLbl) overwriteLbl.textContent = `Overwrite existing ${parts.join(" and ")} in Row ${activeRowNumber}`;
+    if (overwriteChk) overwriteChk.checked = false; // safe by default
+  } else {
+    if (existNotice) existNotice.classList.add("hidden");
+  }
+
+  // Reset Results card for new row
+  const resultsCard = document.getElementById("compResultsCard");
+  const saveStatus  = document.getElementById("compSaveStatus");
+  if (resultsCard) resultsCard.classList.add("hidden");
+  if (saveStatus)  saveStatus.classList.add("hidden");
+
+  currentCompetitorData = {
+    row: activeRowNumber,
+    companyName,
+    mainService,
+    city: companyCity,
+    state: companyState,
+    query,
+    existingComp1,
+    existingComp2,
+    isValid: !!query && query !== "—"
+  };
+}
+
+function stepRow(delta) {
+  const newRow = Math.max(1, activeRowNumber + delta);
+  loadSheetRowsAndDisplay(newRow);
+}
+
+function onRowNumberChanged() {
+  const inputEl = document.getElementById("compRowNumInput");
+  if (!inputEl) return;
+  const row = parseInt(inputEl.value, 10);
+  if (!isNaN(row) && row >= 1) {
+    loadSheetRowsAndDisplay(row);
+  }
+}
+
+// ── Single Row Competitor Search ──
+
+async function runCompetitorFinder() {
+  if (!currentCompetitorData || !currentCompetitorData.isValid) {
+    alert("Please select a row with a Main Service or Company Name.");
+    return;
+  }
+
+  const findBtn = document.getElementById("compFindBtn");
+  const resCard = document.getElementById("compResultsCard");
+  const res1El  = document.getElementById("compRes1");
+  const res2El  = document.getElementById("compRes2");
+  const statusEl = document.getElementById("compSaveStatus");
+
+  findBtn.disabled = true;
+  findBtn.textContent = "⏳ Searching Google…";
+  showProgress(true);
+  setStatus("Finding competitors…");
+
+  try {
+    const response = await new Promise((resolve) => {
+      chrome.runtime.sendMessage({
+        action: "findCompetitors",
+        query: currentCompetitorData.query,
+        originalCompany: currentCompetitorData.companyName
+      }, resolve);
+    });
+
+    if (response && response.success) {
+      const c1 = response.competitor1 || "";
+      const c2 = response.competitor2 || "";
+
+      currentCompetitorData.foundComp1 = c1;
+      currentCompetitorData.foundComp2 = c2;
+
+      // Update Results Display
+      if (resCard) resCard.classList.remove("hidden");
+
+      if (res1El) {
+        if (c1) {
+          res1El.textContent = c1;
+          res1El.className = "comp-result-val";
+        } else {
+          res1El.textContent = "No suitable competitor found.";
+          res1El.className = "comp-result-val comp-result-none";
+        }
+      }
+
+      if (res2El) {
+        if (c2) {
+          res2El.textContent = c2;
+          res2El.className = "comp-result-val";
+        } else {
+          res2El.textContent = "No suitable competitor found.";
+          res2El.className = "comp-result-val comp-result-none";
+        }
+      }
+
+      setStatus(`Found ${response.totalFound} competitors`);
+
+      // Auto-save logic:
+      // If cells H & I were empty, or user explicitly enabled overwrite checkbox, auto-save directly!
+      const overwriteChecked = document.getElementById("compOverwriteCheck")?.checked;
+      const hasExisting = currentCompetitorData.existingComp1 || currentCompetitorData.existingComp2;
+
+      if (!hasExisting || overwriteChecked) {
+        await saveCompetitorsToSheet(false);
+      } else {
+        if (statusEl) {
+          statusEl.textContent = "⚠️ Existing values found. Click 'Save to Google Sheet' or check Overwrite to update.";
+          statusEl.style.color = "#d29922";
+          statusEl.classList.remove("hidden");
+        }
+      }
+    } else {
+      showError("Competitor search failed: " + (response ? response.error : "Unknown error"));
+    }
+  } catch (err) {
+    console.error("[Competitor] Search error:", err);
+    showError("Search failed: " + err.message);
+  } finally {
+    findBtn.disabled = false;
+    findBtn.textContent = "🔍 Find Competitors";
+    showProgress(false);
+  }
+}
+
+// ── Single Row Save to Sheet ──
+
+async function saveCompetitorsToSheet(userClicked = true) {
+  if (!currentCompetitorData || (!currentCompetitorData.foundComp1 && !currentCompetitorData.foundComp2)) return;
+
+  const c1 = currentCompetitorData.foundComp1 || "";
+  const c2 = currentCompetitorData.foundComp2 || "";
+  const row = currentCompetitorData.row;
+  const statusEl = document.getElementById("compSaveStatus");
+  const saveBtn  = document.getElementById("compSaveSheetBtn");
+
+  if (saveBtn) saveBtn.textContent = "⏳ Saving…";
+
+  try {
+    let saved = false;
+
+    // 1. If Google OAuth / Bearer token is connected, save directly via Google Sheets API v4
+    if (googleAuthState.isConnected && currentSheetInfo && currentSheetInfo.spreadsheetId) {
+      const apiRes = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({
+          action: "sheetsApiUpdateRow",
+          spreadsheetId: currentSheetInfo.spreadsheetId,
+          sheetTitle: selectedWorksheetTitle,
+          row: row,
+          competitor1: c1,
+          competitor2: c2
+        }, resolve);
+      });
+
+      if (apiRes && apiRes.success) {
+        saved = true;
+      } else if (apiRes && apiRes.error) {
+        console.warn("[Competitor] Sheets API save error:", apiRes.error);
+      }
+    }
+
+    // 2. Try Apps Script Webhook if configured
+    if (!saved) {
+      const webhookUrl = await new Promise((r) => chrome.storage.local.get(["googleAppsScriptWebhook"], (res) => r(res.googleAppsScriptWebhook)));
+      if (webhookUrl) {
+        try {
+          const whResp = await fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "updateRow",
+              spreadsheetId: currentSheetInfo ? currentSheetInfo.spreadsheetId : "",
+              sheetTitle: selectedWorksheetTitle || "",
+              row: row,
+              competitor1: c1,
+              competitor2: c2
+            })
+          });
+          if (whResp.ok) saved = true;
+        } catch (_) {}
+      }
+    }
+
+    // 3. Always copy to clipboard as TSV
+    await navigator.clipboard.writeText(`${c1}\t${c2}`).catch(() => {});
+
+    // 4. Update local cache row
+    const rowIndex = row - 1;
+    if (currentSheetRows && currentSheetRows[rowIndex]) {
+      currentSheetRows[rowIndex][7] = c1;
+      currentSheetRows[rowIndex][8] = c2;
+    }
+
+    if (statusEl) {
+      if (saved) {
+        statusEl.textContent = `✅ Saved to Sheet: H${row}="${c1 || '—'}" | I${row}="${c2 || '—'}"`;
+        statusEl.style.color = "#3fb950";
+      } else {
+        statusEl.textContent = `⚠️ Copied to clipboard ("${c1}\t${c2}"). Sign in with Google to enable 1-click sheet save.`;
+        statusEl.style.color = "#d29922";
+      }
+      statusEl.classList.remove("hidden");
+    }
+
+    if (saveBtn) {
+      saveBtn.textContent = saved ? "✅ Saved to Sheet!" : "📋 Copied!";
+      setTimeout(() => { if (saveBtn) saveBtn.textContent = "💾 Save to Google Sheet"; }, 2000);
+    }
+  } catch (err) {
+    console.error("[Competitor] Save error:", err);
+    if (statusEl) {
+      statusEl.textContent = `⚠️ Saved to clipboard: "${c1}\t${c2}". Paste in cell H${row}.`;
+      statusEl.style.color = "#d29922";
+      statusEl.classList.remove("hidden");
+    }
+  }
+}
+
+function copyCompetitorsTsv() {
+  if (!currentCompetitorData) return;
+  const c1 = currentCompetitorData.foundComp1 || "";
+  const c2 = currentCompetitorData.foundComp2 || "";
+  const tsv = `${c1}\t${c2}`;
+
+  const copyBtn = document.getElementById("compCopyTsvBtn");
+  navigator.clipboard.writeText(tsv).then(() => {
+    if (copyBtn) {
+      const orig = copyBtn.textContent;
+      copyBtn.textContent = "✅ Copied!";
+      setTimeout(() => { copyBtn.textContent = orig; }, 1500);
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// BULK MODE ENGINE (Iterates single-row logic across range)
+// ══════════════════════════════════════════════════════════════════════════════
+
+async function startBulkCompetitorFinder() {
+  const startInput = document.getElementById("compBulkStartInput");
+  const endInput   = document.getElementById("compBulkEndInput");
+  const runBtn     = document.getElementById("compBulkRunBtn");
+  const stopBtn    = document.getElementById("compBulkStopBtn");
+  const retryBtn   = document.getElementById("compBulkRetryBtn");
+  const progCard   = document.getElementById("compBulkProgressCard");
+  const resultsWrap= document.getElementById("compBulkResultsWrap");
+  const actionsBar = document.getElementById("compBulkActionsBar");
+
+  const startRow = Math.max(1, parseInt(startInput?.value, 10) || 1);
+  const endRow   = Math.max(startRow, parseInt(endInput?.value, 10) || startRow);
+
+  const skipExisting = document.getElementById("compBulkSkipExisting")?.checked !== false;
+  const delayMs = parseInt(document.getElementById("compBulkDelaySelect")?.value, 10) || 1500;
+
+  // Make sure sheet rows are loaded
+  if (!currentSheetRows || currentSheetRows.length === 0) {
+    await readActiveSheetRow(true);
+  }
+
+  // Initialize Bulk State
+  bulkProcessingState = {
+    isRunning: true,
+    isCancelled: false,
+    startRow,
+    endRow,
+    results: [],
+    stats: {
+      total: endRow - startRow + 1,
+      found: 0,
+      empty: 0,
+      failed: 0
+    }
+  };
+
+  // Update UI for Bulk Run
+  if (runBtn) { runBtn.disabled = true; runBtn.textContent = "⏳ Running Bulk Search…"; }
+  if (stopBtn) stopBtn.disabled = false;
+  if (retryBtn) retryBtn.disabled = true;
+  if (progCard) progCard.classList.remove("hidden");
+  if (resultsWrap) resultsWrap.classList.remove("hidden");
+  if (actionsBar) actionsBar.classList.add("hidden");
+
+  renderBulkResultsContainer();
+  updateBulkProgressUI(0, bulkProcessingState.stats.total, "Starting bulk competitor search…");
+
+  const totalRows = endRow - startRow + 1;
+  let processedCount = 0;
+
+  for (let row = startRow; row <= endRow; row++) {
+    if (bulkProcessingState.isCancelled) {
+      break;
+    }
+
+    processedCount++;
+    const progressPercent = Math.round((processedCount / totalRows) * 100);
+    updateBulkProgressUI(processedCount, totalRows, `Processing row ${row} of ${endRow}…`, progressPercent);
+
+    // 1. Extract row data from in-memory sheet rows
+    const rowIndex = row - 1;
+    const rowValues = (currentSheetRows && currentSheetRows[rowIndex]) ? currentSheetRows[rowIndex] : [];
+
+    const companyName   = (rowValues[5]  || "").trim();
+    const mainService   = (rowValues[6]  || "").trim();
+    const existingComp1 = (rowValues[7]  || "").trim();
+    const existingComp2 = (rowValues[8]  || "").trim();
+    const companyCity   = (rowValues[9]  || "").trim();
+    const companyState  = (rowValues[10] || "").trim();
+
+    // Check if row already has competitors
+    if (skipExisting && (existingComp1 || existingComp2)) {
+      const rowRes = {
+        row,
+        companyName,
+        mainService,
+        city: companyCity,
+        state: companyState,
+        query: `${mainService} in ${companyCity}, ${companyState}`,
+        competitor1: existingComp1,
+        competitor2: existingComp2,
+        status: "skipped",
+        reason: "Existing competitors in sheet",
+        hasExisting: true
+      };
+      bulkProcessingState.results.push(rowRes);
+      if (existingComp1 || existingComp2) bulkProcessingState.stats.found++;
+      updateBulkRowItemInList(rowRes);
+      updateBulkStatsUI();
+      continue;
+    }
+
+    // 2. Construct Search Query
+    const serviceTerm = mainService || "HVAC contractors";
+    const locParts = [companyCity, companyState].filter(Boolean).join(", ");
+    const query = locParts ? `${serviceTerm} in ${locParts}` : serviceTerm;
+
+    if (!mainService && !companyName) {
+      const rowRes = {
+        row,
+        companyName,
+        mainService,
+        city: companyCity,
+        state: companyState,
+        query: "—",
+        competitor1: "",
+        competitor2: "",
+        status: "skipped",
+        reason: "Empty row",
+        hasExisting: false
+      };
+      bulkProcessingState.results.push(rowRes);
+      bulkProcessingState.stats.failed++;
+      updateBulkRowItemInList(rowRes);
+      updateBulkStatsUI();
+      continue;
+    }
+
+    // Mark row as active in UI
+    updateBulkRowItemInList({
+      row,
+      companyName,
+      mainService,
+      city: companyCity,
+      state: companyState,
+      query,
+      status: "searching"
+    });
+
+    // 3. Run Google Search (exact same logic)
+    try {
+      const response = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({
+          action: "findCompetitors",
+          query: query,
+          originalCompany: companyName
+        }, resolve);
+      });
+
+      if (response && response.success) {
+        const c1 = response.competitor1 || "";
+        const c2 = response.competitor2 || "";
+        const hasAny = !!(c1 || c2);
+
+        const rowRes = {
+          row,
+          companyName,
+          mainService,
+          city: companyCity,
+          state: companyState,
+          query,
+          competitor1: c1,
+          competitor2: c2,
+          status: hasAny ? "found" : "none",
+          reason: hasAny ? "" : "No suitable competitor found.",
+          totalFound: response.totalFound || 0
+        };
+
+        if (hasAny) {
+          bulkProcessingState.stats.found++;
+          // Update in-memory sheet row
+          if (currentSheetRows && currentSheetRows[rowIndex]) {
+            currentSheetRows[rowIndex][7] = c1;
+            currentSheetRows[rowIndex][8] = c2;
+          }
+        } else {
+          bulkProcessingState.stats.empty++;
+        }
+
+        bulkProcessingState.results.push(rowRes);
+        updateBulkRowItemInList(rowRes);
+      } else {
+        const errMsg = response ? response.error : "Search failed";
+        const rowRes = {
+          row,
+          companyName,
+          mainService,
+          city: companyCity,
+          state: companyState,
+          query,
+          competitor1: "",
+          competitor2: "",
+          status: "error",
+          reason: errMsg
+        };
+        bulkProcessingState.stats.failed++;
+        bulkProcessingState.results.push(rowRes);
+        updateBulkRowItemInList(rowRes);
+      }
+    } catch (err) {
+      const rowRes = {
+        row,
+        companyName,
+        mainService,
+        city: companyCity,
+        state: companyState,
+        query,
+        competitor1: "",
+        competitor2: "",
+        status: "error",
+        reason: err.message
+      };
+      bulkProcessingState.stats.failed++;
+      bulkProcessingState.results.push(rowRes);
+      updateBulkRowItemInList(rowRes);
+    }
+
+    updateBulkStatsUI();
+
+    // 4. Throttle pause before next search (unless last row or stopped)
+    if (row < endRow && !bulkProcessingState.isCancelled) {
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+
+  // Complete / Halt
+  finishBulkCompetitorFinder();
+}
+
+function stopBulkCompetitorFinder() {
+  bulkProcessingState.isCancelled = true;
+  const textEl = document.getElementById("compBulkProgressText");
+  const stopBtn = document.getElementById("compBulkStopBtn");
+  if (textEl) textEl.textContent = "Stopping bulk search…";
+  if (stopBtn) stopBtn.disabled = true;
+}
+
+function finishBulkCompetitorFinder() {
+  bulkProcessingState.isRunning = false;
+  const runBtn     = document.getElementById("compBulkRunBtn");
+  const stopBtn    = document.getElementById("compBulkStopBtn");
+  const retryBtn   = document.getElementById("compBulkRetryBtn");
+  const actionsBar = document.getElementById("compBulkActionsBar");
+  const textEl     = document.getElementById("compBulkProgressText");
+  const countLabel = document.getElementById("compBulkCountLabel");
+
+  if (runBtn) { runBtn.disabled = false; runBtn.textContent = "🔍 Find Competitors"; }
+  if (stopBtn) stopBtn.disabled = true;
+
+  const hasFailed = bulkProcessingState.stats.failed > 0;
+  if (retryBtn) retryBtn.disabled = !hasFailed;
+
+  if (actionsBar) actionsBar.classList.remove("hidden");
+  if (countLabel) countLabel.textContent = bulkProcessingState.results.length;
+
+  if (bulkProcessingState.isCancelled) {
+    if (textEl) textEl.textContent = `⏸️ Bulk search paused (${bulkProcessingState.results.length} rows processed).`;
+    setStatus("Bulk search stopped");
+  } else {
+    if (textEl) {
+      textEl.textContent = `✅ Completed: ${bulkProcessingState.results.length} / ${bulkProcessingState.stats.total} rows (${bulkProcessingState.stats.found} found, ${bulkProcessingState.stats.failed} failed).`;
+    }
+    setStatus("Bulk search complete");
+  }
+}
+
+async function retryFailedBulkRows() {
+  const failedRows = bulkProcessingState.results.filter(r => r.status === "error");
+  if (failedRows.length === 0) return;
+
+  const runBtn   = document.getElementById("compBulkRunBtn");
+  const stopBtn  = document.getElementById("compBulkStopBtn");
+  const retryBtn = document.getElementById("compBulkRetryBtn");
+  const delayMs  = parseInt(document.getElementById("compBulkDelaySelect")?.value, 10) || 1500;
+
+  bulkProcessingState.isRunning = true;
+  bulkProcessingState.isCancelled = false;
+
+  if (runBtn) runBtn.disabled = true;
+  if (stopBtn) stopBtn.disabled = false;
+  if (retryBtn) retryBtn.disabled = true;
+
+  let retriedCount = 0;
+  const totalRetries = failedRows.length;
+
+  for (const item of failedRows) {
+    if (bulkProcessingState.isCancelled) break;
+
+    retriedCount++;
+    const row = item.row;
+    updateBulkProgressUI(retriedCount, totalRetries, `Retrying row ${row} (${retriedCount}/${totalRetries})…`);
+
+    const query = item.query !== "—" ? item.query : `${item.mainService} in ${item.city}, ${item.state}`;
+
+    updateBulkRowItemInList({ ...item, status: "searching" });
+
+    try {
+      const response = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({
+          action: "findCompetitors",
+          query: query,
+          originalCompany: item.companyName
+        }, resolve);
+      });
+
+      if (response && response.success) {
+        const c1 = response.competitor1 || "";
+        const c2 = response.competitor2 || "";
+        const hasAny = !!(c1 || c2);
+
+        item.competitor1 = c1;
+        item.competitor2 = c2;
+        item.status = hasAny ? "found" : "none";
+        item.reason = hasAny ? "" : "No suitable competitor found.";
+
+        bulkProcessingState.stats.failed = Math.max(0, bulkProcessingState.stats.failed - 1);
+        if (hasAny) bulkProcessingState.stats.found++;
+        else bulkProcessingState.stats.empty++;
+
+        // Update in-memory row
+        const rowIndex = row - 1;
+        if (currentSheetRows && currentSheetRows[rowIndex]) {
+          currentSheetRows[rowIndex][7] = c1;
+          currentSheetRows[rowIndex][8] = c2;
+        }
+
+        updateBulkRowItemInList(item);
+      }
+    } catch (_) {}
+
+    updateBulkStatsUI();
+    if (retriedCount < totalRetries && !bulkProcessingState.isCancelled) {
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+
+  finishBulkCompetitorFinder();
+}
+
+// ── Bulk UI Rendering Helpers ──
+
+function updateBulkProgressUI(current, total, text, percent = null) {
+  const textEl = document.getElementById("compBulkProgressText");
+  const pctEl  = document.getElementById("compBulkProgressPercent");
+  const fillEl = document.getElementById("compBulkProgressFill");
+
+  const calcPct = percent !== null ? percent : (total > 0 ? Math.round((current / total) * 100) : 0);
+
+  if (textEl) textEl.textContent = text;
+  if (pctEl)  pctEl.textContent  = `${calcPct}%`;
+  if (fillEl) fillEl.style.width = `${calcPct}%`;
+}
+
+function updateBulkStatsUI() {
+  const totEl = document.getElementById("compStatTotal");
+  const fndEl = document.getElementById("compStatSuccess");
+  const empEl = document.getElementById("compStatEmpty");
+  const fldEl = document.getElementById("compStatFailed");
+
+  if (totEl) totEl.textContent = bulkProcessingState.stats.total;
+  if (fndEl) fndEl.textContent = bulkProcessingState.stats.found;
+  if (empEl) empEl.textContent = bulkProcessingState.stats.empty;
+  if (fldEl) fldEl.textContent = bulkProcessingState.stats.failed;
+}
+
+function renderBulkResultsContainer() {
+  const listEl = document.getElementById("compBulkResultsList");
+  if (listEl) listEl.innerHTML = "";
+}
+
+function updateBulkRowItemInList(rowRes) {
+  const listEl = document.getElementById("compBulkResultsList");
+  if (!listEl) return;
+
+  const rowId = `bulkRow_${rowRes.row}`;
+  let card = document.getElementById(rowId);
+
+  if (!card) {
+    card = document.createElement("div");
+    card.id = rowId;
+    listEl.appendChild(card);
+  }
+
+  let statusClass = "item-empty";
+  let statusBadgeText = "None Found";
+  let statusBadgeClass = "none";
+
+  if (rowRes.status === "searching") {
+    statusClass = "item-active";
+    statusBadgeText = "Searching…";
+    statusBadgeClass = "skipped";
+  } else if (rowRes.status === "found") {
+    statusClass = "item-success";
+    statusBadgeText = "Found (2)";
+    statusBadgeClass = "found";
+  } else if (rowRes.status === "skipped") {
+    statusClass = "item-empty";
+    statusBadgeText = rowRes.hasExisting ? "Existing" : "Skipped";
+    statusBadgeClass = "skipped";
+  } else if (rowRes.status === "error") {
+    statusClass = "item-failed";
+    statusBadgeText = "Error";
+    statusBadgeClass = "error";
+  }
+
+  const c1 = rowRes.competitor1;
+  const c2 = rowRes.competitor2;
+
+  card.className = `comp-bulk-item ${statusClass}`;
+  card.innerHTML = `
+    <div class="comp-bulk-item-head">
+      <div>
+        <span class="comp-bulk-row-badge">Row ${rowRes.row}</span>
+        <span class="comp-bulk-company-name">${escHtml(rowRes.companyName || "No Company Name")}</span>
+      </div>
+      <span class="comp-bulk-status-badge ${statusBadgeClass}">${statusBadgeText}</span>
+    </div>
+    <div class="comp-bulk-query-line" title="${escHtml(rowRes.query)}">🔎 ${escHtml(rowRes.query || "—")}</div>
+    ${rowRes.status !== "searching" ? `
+      <div class="comp-bulk-results-line">
+        <div class="comp-bulk-c-row">
+          <span class="comp-bulk-c-label">Comp 1:</span>
+          <span class="comp-bulk-c-val ${!c1 ? 'none' : ''}">${escHtml(c1 || (rowRes.reason || 'No suitable competitor found.'))}</span>
+        </div>
+        <div class="comp-bulk-c-row">
+          <span class="comp-bulk-c-label">Comp 2:</span>
+          <span class="comp-bulk-c-val ${!c2 ? 'none' : ''}">${escHtml(c2 || (rowRes.reason || 'No suitable competitor found.'))}</span>
+        </div>
+      </div>
+    ` : ''}
+  `;
+
+  // Auto-scroll to latest card
+  card.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
+// ── Bulk Actions (Save & Copy) ──
+
+async function saveBulkCompetitorsToSheet() {
+  const saveBtn  = document.getElementById("compBulkSaveSheetBtn");
+  const statusEl = document.getElementById("compBulkSaveStatus");
+
+  const toSave = bulkProcessingState.results.filter(r => (r.competitor1 || r.competitor2) && r.status !== "skipped");
+  if (toSave.length === 0) {
+    if (statusEl) {
+      statusEl.textContent = "⚠️ No new competitors to save in this batch.";
+      statusEl.style.color = "#d29922";
+      statusEl.classList.remove("hidden");
+    }
+    return;
+  }
+
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "⏳ Saving Batch…"; }
+
+  try {
+    let saved = false;
+
+    // 1. Google Sheets API v4 batch update if connected
+    if (googleAuthState.isConnected && currentSheetInfo && currentSheetInfo.spreadsheetId) {
+      const updates = toSave.map(r => ({
+        row: r.row,
+        competitor1: r.competitor1 || "",
+        competitor2: r.competitor2 || ""
+      }));
+
+      const apiRes = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({
+          action: "sheetsApiBatchUpdate",
+          spreadsheetId: currentSheetInfo.spreadsheetId,
+          sheetTitle: selectedWorksheetTitle,
+          updates: updates
+        }, resolve);
+      });
+
+      if (apiRes && apiRes.success) {
+        saved = true;
+      } else if (apiRes && apiRes.error) {
+        console.warn("[Bulk] Sheets API batch save error:", apiRes.error);
+      }
+    }
+
+    // 2. Apps Script Webhook fallback
+    if (!saved) {
+      const webhookUrl = await new Promise((r) => chrome.storage.local.get(["googleAppsScriptWebhook"], (res) => r(res.googleAppsScriptWebhook)));
+      if (webhookUrl) {
+        try {
+          const updates = toSave.map(r => ({
+            row: r.row,
+            competitor1: r.competitor1 || "",
+            competitor2: r.competitor2 || ""
+          }));
+          const whResp = await fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "batchUpdate",
+              spreadsheetId: currentSheetInfo ? currentSheetInfo.spreadsheetId : "",
+              sheetTitle: selectedWorksheetTitle || "",
+              updates: updates
+            })
+          });
+          if (whResp.ok) saved = true;
+        } catch (_) {}
+      }
+    }
+
+    if (saved) {
+      if (statusEl) {
+        statusEl.textContent = `✅ Successfully saved ${toSave.length} rows directly into Google Sheet ('${selectedWorksheetTitle || 'Active Sheet'}')!`;
+        statusEl.style.color = "#3fb950";
+        statusEl.classList.remove("hidden");
+      }
+      if (saveBtn) {
+        saveBtn.textContent = "✅ Saved to Sheet!";
+        setTimeout(() => { if (saveBtn) saveBtn.textContent = "💾 Save to Google Sheet"; }, 2500);
+      }
+    } else {
+      // Fallback: Copy TSV for manual paste
+      await copyBulkResultsTsv();
+      if (statusEl) {
+        statusEl.textContent = `⚠️ Copied TSV to clipboard (${toSave.length} rows). Sign in with Google or configure Webhook to enable automatic 1-click sheet saving.`;
+        statusEl.style.color = "#d29922";
+        statusEl.classList.remove("hidden");
+      }
+    }
+  } catch (err) {
+    console.error("[Bulk] Save error:", err);
+    if (statusEl) {
+      statusEl.textContent = `⚠️ Save error: ${err.message}. Use 'Copy Results' to paste directly.`;
+      statusEl.style.color = "#f85149";
+      statusEl.classList.remove("hidden");
+    }
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
+}
+
+async function copyBulkResultsTsv() {
+  const copyBtn = document.getElementById("compBulkCopyTsvBtn");
+  if (!bulkProcessingState.results || bulkProcessingState.results.length === 0) return;
+
+  // Build TSV matching the contiguous range [startRow..endRow]
+  const startRow = bulkProcessingState.startRow;
+  const endRow   = bulkProcessingState.endRow;
+  const resultMap = new Map();
+  bulkProcessingState.results.forEach(r => resultMap.set(r.row, r));
+
+  const tsvLines = [];
+  for (let r = startRow; r <= endRow; r++) {
+    const item = resultMap.get(r);
+    const c1 = item ? (item.competitor1 || "") : "";
+    const c2 = item ? (item.competitor2 || "") : "";
+    tsvLines.push(`${c1}\t${c2}`);
+  }
+
+  const tsv = tsvLines.join("\n");
+  try {
+    await navigator.clipboard.writeText(tsv);
+    if (copyBtn) {
+      const orig = copyBtn.textContent;
+      copyBtn.textContent = "✅ Copied TSV!";
+      setTimeout(() => { if (copyBtn) copyBtn.textContent = orig; }, 1800);
+    }
+  } catch (err) {
+    console.warn("[Bulk] Copy TSV error:", err);
+  }
+}
+
+async function copyBulkResultsFormattedText() {
+  const copyBtn = document.getElementById("compBulkCopyTextBtn");
+  if (!bulkProcessingState.results || bulkProcessingState.results.length === 0) return;
+
+  const lines = [];
+  bulkProcessingState.results.forEach(r => {
+    lines.push(`Row ${r.row} - ${r.companyName || 'Unknown Company'}`);
+    lines.push(`Search Query: ${r.query || '—'}`);
+    lines.push(`Competitor 1: ${r.competitor1 || (r.reason || 'No suitable competitor found.')}`);
+    lines.push(`Competitor 2: ${r.competitor2 || (r.reason || 'No suitable competitor found.')}`);
+    lines.push("");
+  });
+
+  const text = lines.join("\n");
+  try {
+    await navigator.clipboard.writeText(text);
+    if (copyBtn) {
+      const orig = copyBtn.textContent;
+      copyBtn.textContent = "✅ Copied Text!";
+      setTimeout(() => { if (copyBtn) copyBtn.textContent = orig; }, 1800);
+    }
+  } catch (err) {
+    console.warn("[Bulk] Copy text error:", err);
+  }
+}
+
+
+

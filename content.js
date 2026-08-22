@@ -4525,5 +4525,1251 @@
     return true;
   });
 
-  console.log("🌡️🧱 HVAC & Hardscaping Finder Engine v5.0 loaded.");
+  // ══════════════════════════════════════════════════════════════════════════
+  // SECTION L: COMPANY LOCATION EXTRACTION ENGINE
+  // Identifies the company's primary physical city & state using multi-signal
+  // evidence. Prioritises structured data, footer/contact addresses, and maps
+  // embeds over generic service-area mentions.
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // ── US State Abbreviation → Full Name ──
+  const US_STATES = {
+    AL: "Alabama",
+    AK: "Alaska",
+    AZ: "Arizona",
+    AR: "Arkansas",
+    CA: "California",
+    CO: "Colorado",
+    CT: "Connecticut",
+    DE: "Delaware",
+    DC: "District of Columbia",
+    FL: "Florida",
+    GA: "Georgia",
+    HI: "Hawaii",
+    ID: "Idaho",
+    IL: "Illinois",
+    IN: "Indiana",
+    IA: "Iowa",
+    KS: "Kansas",
+    KY: "Kentucky",
+    LA: "Louisiana",
+    ME: "Maine",
+    MD: "Maryland",
+    MA: "Massachusetts",
+    MI: "Michigan",
+    MN: "Minnesota",
+    MS: "Mississippi",
+    MO: "Missouri",
+    MT: "Montana",
+    NE: "Nebraska",
+    NV: "Nevada",
+    NH: "New Hampshire",
+    NJ: "New Jersey",
+    NM: "New Mexico",
+    NY: "New York",
+    NC: "North Carolina",
+    ND: "North Dakota",
+    OH: "Ohio",
+    OK: "Oklahoma",
+    OR: "Oregon",
+    PA: "Pennsylvania",
+    RI: "Rhode Island",
+    SC: "South Carolina",
+    SD: "South Dakota",
+    TN: "Tennessee",
+    TX: "Texas",
+    UT: "Utah",
+    VT: "Vermont",
+    VA: "Virginia",
+    WA: "Washington",
+    WV: "West Virginia",
+    WI: "Wisconsin",
+    WY: "Wyoming",
+  };
+
+  // Full state names (lowercase) for matching
+  const US_STATE_NAMES_LOWER = new Set(
+    Object.values(US_STATES).map((s) => s.toLowerCase()),
+  );
+
+  // State abbreviations for regex
+  const STATE_ABBR_LIST = Object.keys(US_STATES).join("|");
+
+  // ── Service-Area Suppression Patterns ──
+  // Text containing these patterns indicates a list of service areas, NOT a business address.
+  const SERVICE_AREA_PATTERNS = [
+    /\b(serv(?:ing|ice[sd]?)|areas?\s+(?:we\s+)?serv(?:e|ed)|service\s+area[s]?|serving\s+the\s+(?:greater|entire|local)|proud(?:ly)?\s+serv(?:ing|e))\b/i,
+    /\b(communit(?:y|ies)\s+(?:we\s+)?serv(?:e|ed)|neighborhoods?\s+(?:we\s+)?serv(?:e|ed)|locations?\s+(?:we\s+)?serv(?:e|ed))\b/i,
+    /\b(and\s+surrounding\s+area[s]?|and\s+nearby\s+cit(?:y|ies)|and\s+the\s+surrounding)\b/i,
+    /\b(project[s]?\s+(?:in|near|around)|we\s+work\s+(?:in|near|around|throughout))\b/i,
+  ];
+
+  // ── Phone Area Code → State (US) ──
+  // Covers the most common area codes; best-effort only (used as low-confidence signal)
+  const AREA_CODE_STATE = {
+    205: "Alabama",
+    251: "Alabama",
+    256: "Alabama",
+    334: "Alabama",
+    907: "Alaska",
+    480: "Arizona",
+    520: "Arizona",
+    602: "Arizona",
+    623: "Arizona",
+    928: "Arizona",
+    479: "Arkansas",
+    501: "Arkansas",
+    870: "Arkansas",
+    209: "California",
+    213: "California",
+    310: "California",
+    323: "California",
+    408: "California",
+    415: "California",
+    424: "California",
+    442: "California",
+    510: "California",
+    530: "California",
+    559: "California",
+    562: "California",
+    619: "California",
+    626: "California",
+    628: "California",
+    650: "California",
+    657: "California",
+    661: "California",
+    669: "California",
+    707: "California",
+    714: "California",
+    747: "California",
+    760: "California",
+    805: "California",
+    818: "California",
+    831: "California",
+    858: "California",
+    909: "California",
+    916: "California",
+    925: "California",
+    949: "California",
+    951: "California",
+    303: "Colorado",
+    719: "Colorado",
+    720: "Colorado",
+    970: "Colorado",
+    203: "Connecticut",
+    475: "Connecticut",
+    860: "Connecticut",
+    959: "Connecticut",
+    302: "Delaware",
+    202: "District of Columbia",
+    239: "Florida",
+    305: "Florida",
+    321: "Florida",
+    352: "Florida",
+    386: "Florida",
+    407: "Florida",
+    561: "Florida",
+    727: "Florida",
+    754: "Florida",
+    772: "Florida",
+    786: "Florida",
+    813: "Florida",
+    850: "Florida",
+    863: "Florida",
+    904: "Florida",
+    941: "Florida",
+    954: "Florida",
+    229: "Georgia",
+    404: "Georgia",
+    470: "Georgia",
+    478: "Georgia",
+    678: "Georgia",
+    706: "Georgia",
+    762: "Georgia",
+    770: "Georgia",
+    912: "Georgia",
+    808: "Hawaii",
+    208: "Idaho",
+    217: "Illinois",
+    224: "Illinois",
+    309: "Illinois",
+    312: "Illinois",
+    331: "Illinois",
+    618: "Illinois",
+    630: "Illinois",
+    708: "Illinois",
+    773: "Illinois",
+    815: "Illinois",
+    847: "Illinois",
+    872: "Illinois",
+    219: "Indiana",
+    260: "Indiana",
+    317: "Indiana",
+    463: "Indiana",
+    574: "Indiana",
+    765: "Indiana",
+    812: "Indiana",
+    930: "Indiana",
+    319: "Iowa",
+    515: "Iowa",
+    563: "Iowa",
+    641: "Iowa",
+    712: "Iowa",
+    316: "Kansas",
+    620: "Kansas",
+    785: "Kansas",
+    913: "Kansas",
+    270: "Kentucky",
+    364: "Kentucky",
+    502: "Kentucky",
+    606: "Kentucky",
+    859: "Kentucky",
+    225: "Louisiana",
+    318: "Louisiana",
+    337: "Louisiana",
+    504: "Louisiana",
+    985: "Louisiana",
+    207: "Maine",
+    240: "Maryland",
+    301: "Maryland",
+    410: "Maryland",
+    443: "Maryland",
+    667: "Maryland",
+    339: "Massachusetts",
+    351: "Massachusetts",
+    413: "Massachusetts",
+    508: "Massachusetts",
+    617: "Massachusetts",
+    774: "Massachusetts",
+    781: "Massachusetts",
+    857: "Massachusetts",
+    978: "Massachusetts",
+    231: "Michigan",
+    248: "Michigan",
+    269: "Michigan",
+    313: "Michigan",
+    517: "Michigan",
+    586: "Michigan",
+    616: "Michigan",
+    734: "Michigan",
+    810: "Michigan",
+    906: "Michigan",
+    947: "Michigan",
+    989: "Michigan",
+    218: "Minnesota",
+    320: "Minnesota",
+    507: "Minnesota",
+    612: "Minnesota",
+    651: "Minnesota",
+    763: "Minnesota",
+    952: "Minnesota",
+    228: "Mississippi",
+    601: "Mississippi",
+    662: "Mississippi",
+    769: "Mississippi",
+    314: "Missouri",
+    417: "Missouri",
+    557: "Missouri",
+    573: "Missouri",
+    636: "Missouri",
+    660: "Missouri",
+    816: "Missouri",
+    406: "Montana",
+    308: "Nebraska",
+    402: "Nebraska",
+    531: "Nebraska",
+    702: "Nevada",
+    725: "Nevada",
+    775: "Nevada",
+    603: "New Hampshire",
+    201: "New Jersey",
+    551: "New Jersey",
+    609: "New Jersey",
+    640: "New Jersey",
+    732: "New Jersey",
+    848: "New Jersey",
+    856: "New Jersey",
+    862: "New Jersey",
+    908: "New Jersey",
+    973: "New Jersey",
+    505: "New Mexico",
+    575: "New Mexico",
+    212: "New York",
+    315: "New York",
+    332: "New York",
+    347: "New York",
+    516: "New York",
+    518: "New York",
+    585: "New York",
+    607: "New York",
+    631: "New York",
+    646: "New York",
+    680: "New York",
+    716: "New York",
+    718: "New York",
+    838: "New York",
+    845: "New York",
+    914: "New York",
+    917: "New York",
+    929: "New York",
+    934: "New York",
+    252: "North Carolina",
+    336: "North Carolina",
+    704: "North Carolina",
+    743: "North Carolina",
+    828: "North Carolina",
+    910: "North Carolina",
+    919: "North Carolina",
+    980: "North Carolina",
+    984: "North Carolina",
+    701: "North Dakota",
+    216: "Ohio",
+    220: "Ohio",
+    234: "Ohio",
+    330: "Ohio",
+    380: "Ohio",
+    419: "Ohio",
+    440: "Ohio",
+    513: "Ohio",
+    567: "Ohio",
+    614: "Ohio",
+    740: "Ohio",
+    937: "Ohio",
+    405: "Oklahoma",
+    539: "Oklahoma",
+    580: "Oklahoma",
+    918: "Oklahoma",
+    458: "Oregon",
+    503: "Oregon",
+    541: "Oregon",
+    971: "Oregon",
+    215: "Pennsylvania",
+    223: "Pennsylvania",
+    267: "Pennsylvania",
+    272: "Pennsylvania",
+    412: "Pennsylvania",
+    445: "Pennsylvania",
+    484: "Pennsylvania",
+    570: "Pennsylvania",
+    610: "Pennsylvania",
+    717: "Pennsylvania",
+    724: "Pennsylvania",
+    814: "Pennsylvania",
+    878: "Pennsylvania",
+    401: "Rhode Island",
+    803: "South Carolina",
+    839: "South Carolina",
+    843: "South Carolina",
+    854: "South Carolina",
+    864: "South Carolina",
+    605: "South Dakota",
+    423: "Tennessee",
+    615: "Tennessee",
+    629: "Tennessee",
+    731: "Tennessee",
+    865: "Tennessee",
+    901: "Tennessee",
+    931: "Tennessee",
+    210: "Texas",
+    214: "Texas",
+    254: "Texas",
+    281: "Texas",
+    325: "Texas",
+    346: "Texas",
+    361: "Texas",
+    409: "Texas",
+    430: "Texas",
+    432: "Texas",
+    469: "Texas",
+    512: "Texas",
+    682: "Texas",
+    713: "Texas",
+    726: "Texas",
+    737: "Texas",
+    806: "Texas",
+    817: "Texas",
+    830: "Texas",
+    832: "Texas",
+    903: "Texas",
+    915: "Texas",
+    936: "Texas",
+    940: "Texas",
+    945: "Texas",
+    956: "Texas",
+    972: "Texas",
+    979: "Texas",
+    385: "Utah",
+    435: "Utah",
+    801: "Utah",
+    802: "Vermont",
+    276: "Virginia",
+    434: "Virginia",
+    540: "Virginia",
+    571: "Virginia",
+    703: "Virginia",
+    757: "Virginia",
+    804: "Virginia",
+    206: "Washington",
+    253: "Washington",
+    360: "Washington",
+    425: "Washington",
+    509: "Washington",
+    564: "Washington",
+    304: "West Virginia",
+    681: "West Virginia",
+    262: "Wisconsin",
+    414: "Wisconsin",
+    534: "Wisconsin",
+    608: "Wisconsin",
+    715: "Wisconsin",
+    920: "Wisconsin",
+    307: "Wyoming",
+  };
+
+  // ── Address Regex Patterns ──
+  // Matches "City, ST 12345" or "City, State"
+  const ADDR_FULL_RE = new RegExp(
+    `([A-Za-z][A-Za-z\\s\\.\\-]{1,30}),\\s*(${STATE_ABBR_LIST})\\b(?:\\s+\\d{5}(?:-\\d{4})?)?`,
+    "gi",
+  );
+
+  const ADDR_FULLSTATE_RE = new RegExp(
+    `([A-Za-z][A-Za-z\\s\\.\\-]{1,30}),\\s*(${Object.values(US_STATES).join("|")})\\b`,
+    "gi",
+  );
+
+  // Street-number prefix — helps confirm a text block is an actual address
+  const STREET_NUMBER_RE = /\b\d{1,5}\s+[A-Za-z]/;
+
+  // ── Utility: normalize state to full name ──
+  function normalizeState(raw) {
+    if (!raw) return null;
+    const upper = raw.trim().toUpperCase();
+    if (US_STATES[upper]) return US_STATES[upper];
+    const lower = raw.trim().toLowerCase();
+    for (const full of Object.values(US_STATES)) {
+      if (full.toLowerCase() === lower) return full;
+    }
+    return null;
+  }
+
+  // ── Utility: normalize city name ──
+  function normalizeCity(raw) {
+    if (!raw) return null;
+    return raw
+      .trim()
+      .replace(/\s+/g, " ")
+      .replace(/^(city\s+of\s+)/i, "")
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(" ");
+  }
+
+  // ── Check if text appears to be in a service-area context ──
+  function isServiceAreaContext(text) {
+    return SERVICE_AREA_PATTERNS.some((re) => re.test(text));
+  }
+
+  // ── Parse city+state from a text string ──
+  // Returns array of {city, state, hasStreetNumber} objects
+  function parseAddressesFromText(text) {
+    if (!text || text.length < 4) return [];
+    const results = [];
+    const seen = new Set();
+
+    // Try "City, ST" / "City, ST XXXXX"
+    const re1 = new RegExp(ADDR_FULL_RE.source, "gi");
+    let m;
+    while ((m = re1.exec(text)) !== null) {
+      const city = normalizeCity(m[1]);
+      const state = normalizeState(m[2]);
+      if (!city || !state) continue;
+      if (city.length < 2 || city.length > 35) continue;
+      // Filter out false positives (single generic words)
+      if (
+        /^(the|and|for|our|new|old|north|south|east|west|upper|lower)$/i.test(
+          city,
+        )
+      )
+        continue;
+      const key = `${city.toLowerCase()}|${state}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const hasStreetNum = STREET_NUMBER_RE.test(text);
+      results.push({ city, state, hasStreetNumber: hasStreetNum });
+    }
+
+    // Try "City, Full State Name"
+    const re2 = new RegExp(ADDR_FULLSTATE_RE.source, "gi");
+    while ((m = re2.exec(text)) !== null) {
+      const city = normalizeCity(m[1]);
+      const state = normalizeState(m[2]);
+      if (!city || !state) continue;
+      if (city.length < 2 || city.length > 35) continue;
+      const key = `${city.toLowerCase()}|${state}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const hasStreetNum = STREET_NUMBER_RE.test(text);
+      results.push({ city, state, hasStreetNumber: hasStreetNum });
+    }
+
+    return results;
+  }
+
+  // ── Extract locations from JSON-LD / Microdata structured data ──
+  function extractStructuredDataLocation() {
+    const found = [];
+
+    // JSON-LD
+    document
+      .querySelectorAll('script[type="application/ld+json"]')
+      .forEach((script) => {
+        try {
+          const parse = (obj) => {
+            if (!obj || typeof obj !== "object") return;
+            // Check for address-bearing types
+            const types = []
+              .concat(obj["@type"] || [])
+              .map((t) => (t || "").toLowerCase());
+            const isRelevant = types.some((t) =>
+              [
+                "localbusiness",
+                "organization",
+                "corporation",
+                "restaurant",
+                "store",
+                "hotel",
+                "place",
+                "postaladdress",
+                "contactpoint",
+                "service",
+                "professionalservice",
+                "homeandconstructionbusiness",
+              ].includes(t),
+            );
+
+            const addr = obj.address || obj.location?.address || null;
+            if (addr) {
+              const addrObj = typeof addr === "string" ? null : addr;
+              const city =
+                addrObj?.addressLocality || addrObj?.["@value"] || null;
+              const stateRaw = addrObj?.addressRegion || null;
+              if (city && stateRaw) {
+                const state = normalizeState(stateRaw);
+                if (state)
+                  found.push({
+                    city: normalizeCity(city),
+                    state,
+                    weight: 100,
+                    source: "json-ld-schema",
+                  });
+              } else if (typeof addr === "string") {
+                const parsed = parseAddressesFromText(addr);
+                parsed.forEach((p) =>
+                  found.push({ ...p, weight: 100, source: "json-ld-schema" }),
+                );
+              }
+            }
+
+            // Recursively check nested objects
+            for (const key of Object.keys(obj)) {
+              if (typeof obj[key] === "object" && obj[key] !== null)
+                parse(obj[key]);
+            }
+          };
+
+          const data = JSON.parse(script.textContent);
+          if (Array.isArray(data)) data.forEach(parse);
+          else parse(data);
+        } catch (e) {}
+      });
+
+    // Microdata / RDFa
+    document.querySelectorAll("[itemprop='addressLocality']").forEach((el) => {
+      const cityRaw = (
+        el.getAttribute("content") ||
+        el.textContent ||
+        ""
+      ).trim();
+      if (!cityRaw) return;
+      // Look for sibling/parent addressRegion
+      const parent = el.closest("[itemscope]") || el.parentElement;
+      const regionEl = parent?.querySelector("[itemprop='addressRegion']");
+      const stateRaw = regionEl
+        ? (
+            regionEl.getAttribute("content") ||
+            regionEl.textContent ||
+            ""
+          ).trim()
+        : "";
+      const state = normalizeState(stateRaw);
+      const city = normalizeCity(cityRaw);
+      if (city) {
+        if (state)
+          found.push({ city, state, weight: 100, source: "microdata" });
+        else
+          found.push({
+            city,
+            state: null,
+            weight: 60,
+            source: "microdata-city-only",
+          });
+      }
+    });
+
+    return found;
+  }
+
+  // ── Extract location from Google Maps / other map embed src ──
+  function extractGoogleMapsLocation(src) {
+    if (!src) return null;
+    try {
+      // Standard embed: ...q=City+Name,+ST&... or place/City+Name,...
+      const qMatch = src.match(/[?&]q=([^&]+)/i);
+      if (qMatch) {
+        const decoded = decodeURIComponent(qMatch[1].replace(/\+/g, " "));
+        const parsed = parseAddressesFromText(decoded);
+        if (parsed.length > 0)
+          return { ...parsed[0], weight: 80, source: "google-maps-embed" };
+      }
+      // Newer embed: /place/City+Name,+ST/...
+      const placeMatch = src.match(/\/place\/([^/]+)/i);
+      if (placeMatch) {
+        const decoded = decodeURIComponent(placeMatch[1].replace(/\+/g, " "));
+        const parsed = parseAddressesFromText(decoded);
+        if (parsed.length > 0)
+          return { ...parsed[0], weight: 75, source: "google-maps-place" };
+      }
+      // !2sCity+Name !3sState
+      const s2 = src.match(/!2s([^!]+)/);
+      if (s2) {
+        const decoded = decodeURIComponent(s2[1].replace(/\+/g, " "));
+        const parsed = parseAddressesFromText(decoded);
+        if (parsed.length > 0)
+          return { ...parsed[0], weight: 70, source: "google-maps-pin" };
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  // ── Score and select a primary location from evidence pool ──
+  function resolveLocation(signals) {
+    if (!signals || signals.length === 0) return null;
+
+    // Aggregate scores per unique city+state pair
+    const scoreMap = new Map();
+
+    for (const sig of signals) {
+      if (!sig.city) continue;
+      const state = sig.state || "?";
+      const key = `${sig.city.toLowerCase()}|${state.toLowerCase()}`;
+      const prev = scoreMap.get(key) || {
+        city: sig.city,
+        state: sig.state,
+        score: 0,
+        sources: [],
+        isServiceArea: false,
+      };
+
+      // Service area suppression: heavily penalise locations that ONLY appear in service-area context
+      const addScore = sig.isServiceArea
+        ? Math.round(sig.weight * 0.05)
+        : sig.hasStreetNumber
+          ? sig.weight * 1.5
+          : sig.weight;
+      prev.score += addScore;
+      prev.sources.push(sig.source);
+      if (sig.isServiceArea) prev.isServiceArea = true;
+      scoreMap.set(key, prev);
+    }
+
+    // Sort by score descending
+    const sorted = [...scoreMap.values()]
+      .filter((e) => e.city && e.state)
+      .sort((a, b) => b.score - a.score);
+
+    if (sorted.length === 0) {
+      // Try city-only entries as last resort
+      const cityOnly = [...scoreMap.values()].filter((e) => e.city && !e.state);
+      if (cityOnly.length === 0) return null;
+      cityOnly.sort((a, b) => b.score - a.score);
+      return {
+        city: cityOnly[0].city,
+        state: null,
+        confidence: "low",
+        others: [],
+      };
+    }
+
+    const best = sorted[0];
+    const others = sorted.slice(1).filter((e) => !e.isServiceArea);
+
+    // Confidence thresholds
+    let confidence;
+    if (best.score >= 100) confidence = "high";
+    else if (best.score >= 50) confidence = "medium";
+    else confidence = "low";
+
+    // If all entries appear to be service area only, downgrade confidence
+    if (
+      best.isServiceArea &&
+      !best.sources.includes("json-ld-schema") &&
+      !best.sources.includes("microdata")
+    ) {
+      confidence = "low";
+    }
+
+    return {
+      city: best.city,
+      state: best.state,
+      confidence,
+      others: others.map((o) => ({ city: o.city, state: o.state })),
+      signals: best.sources,
+    };
+  }
+
+  // ── Phone number area code extraction ──
+  function extractAreaCodeState() {
+    const phoneRe = /\((\d{3})\)\s*\d{3}-\d{4}|\b(\d{3})-\d{3}-\d{4}\b/g;
+    const bodyText = document.body ? document.body.innerText || "" : "";
+    let m;
+    const states = new Map();
+    while ((m = phoneRe.exec(bodyText)) !== null) {
+      const code = m[1] || m[2];
+      const state = AREA_CODE_STATE[code];
+      if (state) states.set(state, (states.get(state) || 0) + 1);
+    }
+    // Return the most frequent
+    if (states.size === 0) return null;
+    const top = [...states.entries()].sort((a, b) => b[1] - a[1])[0];
+    return top[0];
+  }
+
+  // ── Main: Collect all location signals from the page ──
+  function extractCompanyLocation() {
+    const allSignals = [];
+
+    // ── Tier 1: Structured data ──
+    const schemaLocs = extractStructuredDataLocation();
+    allSignals.push(...schemaLocs);
+
+    // ── Tier 2: High-value DOM zones ──
+    const highValueSelectors = [
+      // Footer
+      { sel: "footer", weight: 70, label: "footer" },
+      { sel: "[class*='footer']", weight: 70, label: "footer" },
+      { sel: "[id*='footer']", weight: 70, label: "footer" },
+      // Contact sections
+      { sel: "[class*='contact']", weight: 65, label: "contact-section" },
+      { sel: "[id*='contact']", weight: 65, label: "contact-section" },
+      // Address tags
+      { sel: "address", weight: 60, label: "address-tag" },
+      // Header
+      { sel: "header", weight: 55, label: "header" },
+      { sel: "[class*='header']", weight: 55, label: "header" },
+      // Location / about sections
+      { sel: "[class*='location']", weight: 50, label: "location-section" },
+      { sel: "[id*='location']", weight: 50, label: "location-section" },
+      { sel: "[class*='about']", weight: 40, label: "about-section" },
+      { sel: "[id*='about']", weight: 40, label: "about-section" },
+      // Sidebar / info
+      { sel: "[class*='sidebar']", weight: 35, label: "sidebar" },
+      { sel: "[class*='info']", weight: 30, label: "info-block" },
+    ];
+
+    const processedEls = new Set();
+
+    for (const { sel, weight, label } of highValueSelectors) {
+      let els;
+      try {
+        els = document.querySelectorAll(sel);
+      } catch (e) {
+        continue;
+      }
+      for (const el of els) {
+        if (processedEls.has(el)) continue;
+        processedEls.add(el);
+
+        const text = (el.innerText || el.textContent || "").trim();
+        if (!text || text.length < 5) continue;
+
+        const isServiceArea = isServiceAreaContext(text);
+        const addresses = parseAddressesFromText(text);
+        for (const addr of addresses) {
+          allSignals.push({ ...addr, weight, source: label, isServiceArea });
+        }
+      }
+    }
+
+    // ── Tier 2b: Google Maps iframes ──
+    document
+      .querySelectorAll(
+        'iframe[src*="google.com/maps"], iframe[src*="maps.google"]',
+      )
+      .forEach((iframe) => {
+        const loc = extractGoogleMapsLocation(
+          iframe.src || iframe.getAttribute("src") || "",
+        );
+        if (loc) allSignals.push({ ...loc, isServiceArea: false });
+      });
+
+    // ── Tier 3: Remaining visible page text (low priority) ──
+    // Only scan if we don't have high-confidence signals yet
+    const hasTier1 = allSignals.some((s) => s.weight >= 100);
+    const hasTier2 = allSignals.some((s) => s.weight >= 55);
+
+    if (!hasTier1 && !hasTier2) {
+      // Meta tags
+      const metaDesc =
+        document.querySelector('meta[name="description"]')?.content || "";
+      const pageTitle = document.title || "";
+      const ogDesc =
+        document.querySelector('meta[property="og:description"]')?.content ||
+        "";
+      for (const text of [metaDesc, pageTitle, ogDesc]) {
+        if (!text) continue;
+        const isServiceArea = isServiceAreaContext(text);
+        const addresses = parseAddressesFromText(text);
+        for (const addr of addresses) {
+          allSignals.push({
+            ...addr,
+            weight: 20,
+            source: "meta",
+            isServiceArea,
+          });
+        }
+      }
+    }
+
+    // ── Resolve primary location ──
+    const result = resolveLocation(allSignals);
+
+    // ── Tier 4: Area code fallback (state only, no city) ──
+    let areaCodeState = null;
+    if (!result || !result.state) {
+      areaCodeState = extractAreaCodeState();
+    }
+
+    if (!result) {
+      if (areaCodeState) {
+        return {
+          primaryCity: null,
+          primaryState: areaCodeState,
+          confidence: "low",
+          otherLocations: [],
+          signals: ["phone-area-code"],
+          note: "State inferred from phone area code only",
+        };
+      }
+      return {
+        primaryCity: null,
+        primaryState: null,
+        confidence: "none",
+        otherLocations: [],
+        signals: [],
+      };
+    }
+
+    return {
+      primaryCity: result.city || null,
+      primaryState: result.state || areaCodeState || null,
+      confidence: result.confidence,
+      otherLocations: result.others || [],
+      signals: result.signals || [],
+    };
+  }
+
+  // ── Location keywords that hint at a business address ──
+  // These phrases commonly appear near a company's physical address.
+  const LOCATION_KEYWORDS = [
+    // "Located in" / "Based in" phrases
+    /\b(locat(?:ed|ion)(?:\s+(?:in|at|near))?)\s+([A-Z][a-z])/g,
+    /\b(bas(?:ed|e)(?:\s+(?:in|out\s+of))?)\s+([A-Z][a-z])/g,
+    /\b(headquarter(?:ed|s)?(?:\s+(?:in|at))?)\s+([A-Z][a-z])/g,
+    /\b(our\s+(?:office|location|headquarters|shop|showroom|facility|home\s+base)(?:\s+(?:is|are|in|at))?)/gi,
+    /\b(visit\s+us\s+(?:at|in))\b/gi,
+    /\b(find\s+us\s+(?:at|in))\b/gi,
+    /\b(come\s+(?:see|visit)\s+us\b)/gi,
+    /\b(we(?:'re|\s+are)\s+(?:located|based|situated)(?:\s+(?:in|at))?)/gi,
+    /\b(proudly\s+(?:located|serving|based)\s+(?:in|out\s+of))\b/gi,
+    /\b(local(?:ly)?\s+(?:owned|operated|based)(?:\s+(?:in|out\s+of))?)/gi,
+    /\b(family[\s-]owned(?:\s+(?:and|&)\s+operated)?(?:\s+(?:in|out\s+of))?)/gi,
+    /\b(serving\s+(?:the\s+)?(?:greater\s+)?[A-Z][a-z])/g,
+    /\b(office(?:s)?\s+(?:in|at|near))\b/gi,
+    /\b(get\s+directions)\b/gi,
+    /\b(physical\s+(?:address|location))\b/gi,
+    /\b(mailing\s+address)\b/gi,
+  ];
+
+  // ── Scan text for location hint keywords and return which ones matched ──
+  function findLocationKeywords(text) {
+    if (!text) return [];
+    const matched = [];
+    const concise = [
+      "located in",
+      "based in",
+      "headquartered in",
+      "our office",
+      "our location",
+      "visit us at",
+      "find us at",
+      "we are located",
+      "we're located",
+      "proudly serving",
+      "locally owned",
+      "family-owned",
+      "serving the",
+      "get directions",
+      "physical address",
+      "mailing address",
+    ];
+    const lc = text.toLowerCase();
+    for (const kw of concise) {
+      if (lc.includes(kw)) matched.push(kw);
+    }
+    return matched;
+  }
+
+  // ── Inject address highlight styles ──
+  function injectAddressHighlightStyles() {
+    const existingId = "__finder_addr_hl_styles__";
+    const existing = document.getElementById(existingId);
+    if (existing) existing.remove();
+    const style = document.createElement("style");
+    style.id = existingId;
+    style.textContent = `
+      mark[data-finder-hl="address"] {
+        background: rgba(34,211,238,0.28) !important;
+        color: inherit !important;
+        outline: 2px solid #22d3ee !important;
+        border-radius: 4px !important;
+        padding: 1px 3px !important;
+        box-shadow: 0 0 10px rgba(34,211,238,0.45) !important;
+        text-decoration: none !important;
+        animation: __finder_addr_pop__ 0.4s ease-out !important;
+        cursor: default !important;
+      }
+      mark[data-finder-hl="address-kw"] {
+        background: rgba(245,158,11,0.22) !important;
+        color: inherit !important;
+        outline: 1.5px solid #f59e0b !important;
+        border-radius: 4px !important;
+        padding: 1px 3px !important;
+        box-shadow: 0 0 6px rgba(245,158,11,0.35) !important;
+        text-decoration: none !important;
+        animation: __finder_addr_pop__ 0.4s ease-out !important;
+        cursor: default !important;
+      }
+      @keyframes __finder_addr_pop__ {
+        from { opacity: 0; transform: scaleX(0.9); }
+        to   { opacity: 1; transform: scaleX(1); }
+      }
+    `;
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  // ── Highlight address text on the page (Address Finder mode only) ──
+  function highlightAddressesOnPage(locationData) {
+    if (!locationData) return 0;
+
+    clearHighlights(); // Clear any existing highlights first
+    injectAddressHighlightStyles();
+
+    const city = locationData.primaryCity || null;
+    const state = locationData.primaryState || null;
+    if (!city && !state) return 0;
+
+    // Build patterns to search for
+    // 1. Full address patterns: "City, ST" or "City, State" with optional zip
+    const addrPatterns = [];
+
+    // State abbreviations map (reverse lookup)
+    const stateAbbr = {
+      Alabama: "AL",
+      Alaska: "AK",
+      Arizona: "AZ",
+      Arkansas: "AR",
+      California: "CA",
+      Colorado: "CO",
+      Connecticut: "CT",
+      Delaware: "DE",
+      "District of Columbia": "DC",
+      Florida: "FL",
+      Georgia: "GA",
+      Hawaii: "HI",
+      Idaho: "ID",
+      Illinois: "IL",
+      Indiana: "IN",
+      Iowa: "IA",
+      Kansas: "KS",
+      Kentucky: "KY",
+      Louisiana: "LA",
+      Maine: "ME",
+      Maryland: "MD",
+      Massachusetts: "MA",
+      Michigan: "MI",
+      Minnesota: "MN",
+      Mississippi: "MS",
+      Missouri: "MO",
+      Montana: "MT",
+      Nebraska: "NE",
+      Nevada: "NV",
+      "New Hampshire": "NH",
+      "New Jersey": "NJ",
+      "New Mexico": "NM",
+      "New York": "NY",
+      "North Carolina": "NC",
+      "North Dakota": "ND",
+      Ohio: "OH",
+      Oklahoma: "OK",
+      Oregon: "OR",
+      Pennsylvania: "PA",
+      "Rhode Island": "RI",
+      "South Carolina": "SC",
+      "South Dakota": "SD",
+      Tennessee: "TN",
+      Texas: "TX",
+      Utah: "UT",
+      Vermont: "VT",
+      Virginia: "VA",
+      Washington: "WA",
+      "West Virginia": "WV",
+      Wisconsin: "WI",
+      Wyoming: "WY",
+    };
+
+    if (city && state) {
+      const abbr = stateAbbr[state] || "";
+      // "City, State" and "City, ST"
+      const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      addrPatterns.push({
+        re: new RegExp(
+          `${esc(city)},?\\s+${esc(state)}(?:\\s+\\d{5}(?:-\\d{4})?)?`,
+          "gi",
+        ),
+        type: "address",
+      });
+      if (abbr) {
+        addrPatterns.push({
+          re: new RegExp(
+            `${esc(city)},?\\s+${abbr}(?:\\s+\\d{5}(?:-\\d{4})?)?\\b`,
+            "g",
+          ),
+          type: "address",
+        });
+      }
+      // Street-level: "123 [Street], City" — preceding address numbers
+      addrPatterns.push({
+        re: new RegExp(
+          `\\b\\d{1,5}\\s+[A-Za-z][A-Za-z0-9\\s\\.\\-]{3,40},?\\s+${esc(city)}`,
+          "gi",
+        ),
+        type: "address",
+      });
+    } else if (city) {
+      const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      addrPatterns.push({
+        re: new RegExp(`\\b${esc(city)}\\b`, "gi"),
+        type: "address",
+      });
+    }
+
+    // 2. Location keywords
+    const LOCATION_KWS_PLAIN = [
+      "located in",
+      "based in",
+      "headquartered in",
+      "our office",
+      "our location",
+      "visit us at",
+      "find us at",
+      "we are located",
+      "we're located",
+      "proudly serving",
+      "locally owned",
+      "family-owned",
+      "get directions",
+      "physical address",
+    ];
+    for (const kw of LOCATION_KWS_PLAIN) {
+      addrPatterns.push({
+        re: new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"),
+        type: "address-kw",
+      });
+    }
+
+    let count = 0;
+
+    // Walk text nodes
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node) {
+          const parent = node.parentElement;
+          if (!parent) return NodeFilter.FILTER_REJECT;
+          const tag = parent.tagName;
+          if (
+            [
+              "SCRIPT",
+              "STYLE",
+              "NOSCRIPT",
+              "META",
+              "HEAD",
+              "TEMPLATE",
+              "TEXTAREA",
+              "INPUT",
+            ].includes(tag)
+          )
+            return NodeFilter.FILTER_REJECT;
+          if (
+            tag === "MARK" &&
+            (parent.hasAttribute("data-finder-hl") ||
+              parent.hasAttribute(HIGHLIGHT_MARK_ATTR))
+          )
+            return NodeFilter.FILTER_REJECT;
+          if (!isElementVisible(parent)) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        },
+      },
+    );
+
+    // Collect all matching text nodes
+    const textNodes = [];
+    let node;
+    while ((node = walker.nextNode())) {
+      const raw = node.textContent;
+      for (const { re } of addrPatterns) {
+        re.lastIndex = 0;
+        if (re.test(raw)) {
+          textNodes.push(node);
+          break;
+        }
+      }
+    }
+
+    // Replace text nodes with highlighted fragments
+    for (const textNode of textNodes) {
+      const raw = textNode.textContent;
+
+      // Find all matches across all patterns, sorted by position
+      const allMatches = [];
+      for (const { re, type } of addrPatterns) {
+        re.lastIndex = 0;
+        let m;
+        while ((m = re.exec(raw)) !== null) {
+          allMatches.push({
+            start: m.index,
+            end: m.index + m[0].length,
+            text: m[0],
+            type,
+          });
+        }
+      }
+      if (allMatches.length === 0) continue;
+
+      // Sort by start, remove overlaps
+      allMatches.sort((a, b) => a.start - b.start);
+      const merged = [];
+      for (const m of allMatches) {
+        if (merged.length > 0 && m.start < merged[merged.length - 1].end)
+          continue;
+        merged.push(m);
+      }
+
+      const frag = document.createDocumentFragment();
+      let last = 0;
+      for (const { start, end, text, type } of merged) {
+        if (start > last)
+          frag.appendChild(document.createTextNode(raw.slice(last, start)));
+        const mark = document.createElement("mark");
+        mark.setAttribute("data-finder-hl", type);
+        mark.textContent = text;
+        frag.appendChild(mark);
+        count++;
+        last = end;
+      }
+      if (last < raw.length)
+        frag.appendChild(document.createTextNode(raw.slice(last)));
+
+      try {
+        textNode.parentNode.replaceChild(frag, textNode);
+      } catch (_) {}
+    }
+
+    return count;
+  }
+
+  // ── Enhanced extractCompanyLocation with keyword matching ──
+  // Wraps the original and appends matchedKeywords to the result.
+  // Defined before the message listener so it's available in scope.
+  function extractCompanyLocationWithKeywords() {
+    const result = extractCompanyLocation();
+
+    // Scan visible page text for location hint keywords
+    const bodyText = document.body ? document.body.innerText || "" : "";
+    const matched = findLocationKeywords(bodyText);
+
+    // Also check footer / contact / address elements
+    const selectors = [
+      "footer",
+      "address",
+      "[class*='contact']",
+      "[class*='footer']",
+      "[class*='location']",
+    ];
+    for (const sel of selectors) {
+      try {
+        document.querySelectorAll(sel).forEach((el) => {
+          const t = (el.innerText || el.textContent || "").trim();
+          if (t) {
+            const kws = findLocationKeywords(t);
+            for (const kw of kws) {
+              if (!matched.includes(kw)) matched.push(kw);
+            }
+          }
+        });
+      } catch (_) {}
+    }
+
+    return { ...result, matchedKeywords: matched };
+  }
+
+  // ── Register "extractLocation" + "highlightAddresses" message handler ──
+  // (Separate lightweight listener just for the location/address actions)
+
+  chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+    if (request.action === "extractLocation") {
+      try {
+        const locationData = extractCompanyLocationWithKeywords();
+        sendResponse(locationData);
+      } catch (e) {
+        console.error("[Finder v5.1] Location extraction error:", e);
+        sendResponse({
+          primaryCity: null,
+          primaryState: null,
+          confidence: "none",
+          otherLocations: [],
+          matchedKeywords: [],
+          error: e.message,
+        });
+      }
+      return true;
+    }
+
+    if (request.action === "highlightAddresses") {
+      try {
+        const count = highlightAddressesOnPage(request.locationData || null);
+        sendResponse({ success: true, highlightCount: count });
+      } catch (e) {
+        console.error("[Finder v5.1] Address highlight error:", e);
+        sendResponse({ success: false, error: e.message, highlightCount: 0 });
+      }
+      return true;
+    }
+
+    // Not handled here — let other listeners handle it
+  });
+
+  console.log("🌡️🧱📍 HVAC, Hardscaping & Address Finder Engine v5.1 loaded.");
 })();

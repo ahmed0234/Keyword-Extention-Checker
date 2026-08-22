@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "HVAC & Hardscape Company Finder Pro",
-  "version": "5.0",
-  "description": "Dual-mode detection: identifies genuine HVAC contractors and hardscaping companies using weighted keyword analysis with evidence-based confidence scoring.",
-  "permissions": ["activeTab", "tabs", "storage", "clipboardWrite", "scripting"],
+  "version": "5.2",
+  "description": "Multi-mode tool: HVAC & Hardscaping contractor detection, Address Finder, and Competitor Finder that automatically identifies competitors from Google Sheets.",
+  "permissions": ["activeTab", "tabs", "storage", "clipboardWrite", "scripting", "identity"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
