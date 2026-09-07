@@ -401,25 +401,27 @@
       weight: 15,
       label: "Landscape Construction",
     },
+    // NOTE: "outdoor construction" / "outdoor contractor" demoted to tier 2 (weight=5).
+    // These phrases are too generic at tier 1 — many non-hardscape businesses use them.
     {
       kw: "outdoor construction",
       category: "site_work",
-      tier: 1,
-      weight: 15,
+      tier: 2,
+      weight: 5,
       label: "Outdoor Construction",
     },
     {
       kw: "outdoor contractor",
       category: "site_work",
-      tier: 1,
-      weight: 15,
+      tier: 2,
+      weight: 5,
       label: "Outdoor Contractor",
     },
     {
       kw: "outdoor contractors",
       category: "site_work",
-      tier: 1,
-      weight: 15,
+      tier: 2,
+      weight: 5,
       label: "Outdoor Contractor",
     },
 
@@ -747,27 +749,10 @@
     },
 
     // ── Outdoor Living (tier 2) ──
-    {
-      kw: "outdoor living space",
-      category: "outdoor_living",
-      tier: 2,
-      weight: 10,
-      label: "Outdoor Living Space",
-    },
-    {
-      kw: "outdoor living spaces",
-      category: "outdoor_living",
-      tier: 2,
-      weight: 10,
-      label: "Outdoor Living Space",
-    },
-    {
-      kw: "outdoor living area",
-      category: "outdoor_living",
-      tier: 2,
-      weight: 10,
-      label: "Outdoor Living Area",
-    },
+    // NOTE: Generic "outdoor living" phrases have been demoted to tier 4 (weight=1)
+    // because they are used by many non-hardscape businesses (furniture stores,
+    // realtors, general contractors, etc.). Only specific hardscape structures
+    // (fireplaces, fire pits, courtyards) are kept at tier 2.
     {
       kw: "outdoor fireplace",
       category: "outdoor_living",
@@ -811,20 +796,6 @@
       label: "Fire Feature",
     },
     {
-      kw: "outdoor entertainment",
-      category: "outdoor_living",
-      tier: 2,
-      weight: 10,
-      label: "Outdoor Entertainment",
-    },
-    {
-      kw: "outdoor entertaining",
-      category: "outdoor_living",
-      tier: 2,
-      weight: 10,
-      label: "Outdoor Entertainment",
-    },
-    {
       kw: "backyard transformation",
       category: "outdoor_living",
       tier: 2,
@@ -837,41 +808,6 @@
       tier: 2,
       weight: 10,
       label: "Backyard Transformation",
-    },
-    {
-      kw: "outdoor renovation",
-      category: "outdoor_living",
-      tier: 2,
-      weight: 10,
-      label: "Outdoor Renovation",
-    },
-    {
-      kw: "outdoor renovations",
-      category: "outdoor_living",
-      tier: 2,
-      weight: 10,
-      label: "Outdoor Renovation",
-    },
-    {
-      kw: "luxury outdoor living",
-      category: "outdoor_living",
-      tier: 2,
-      weight: 10,
-      label: "Luxury Outdoor Living",
-    },
-    {
-      kw: "luxury outdoor",
-      category: "outdoor_living",
-      tier: 2,
-      weight: 10,
-      label: "Luxury Outdoor",
-    },
-    {
-      kw: "outdoor living design",
-      category: "outdoor_living",
-      tier: 2,
-      weight: 10,
-      label: "Outdoor Living Design",
     },
     {
       kw: "courtyard",
@@ -900,6 +836,80 @@
       tier: 2,
       weight: 10,
       label: "Courtyard Installation",
+    },
+    // DEMOTED: generic "outdoor living" phrases are now tier 4, weight 1.
+    // They may appear on ANY company website and cannot alone indicate hardscaping.
+    {
+      kw: "outdoor living space",
+      category: "outdoor_living",
+      tier: 4,
+      weight: 1,
+      label: "Outdoor Living Space",
+    },
+    {
+      kw: "outdoor living spaces",
+      category: "outdoor_living",
+      tier: 4,
+      weight: 1,
+      label: "Outdoor Living Space",
+    },
+    {
+      kw: "outdoor living area",
+      category: "outdoor_living",
+      tier: 4,
+      weight: 1,
+      label: "Outdoor Living Area",
+    },
+    {
+      kw: "outdoor living design",
+      category: "outdoor_living",
+      tier: 4,
+      weight: 1,
+      label: "Outdoor Living Design",
+    },
+    {
+      kw: "outdoor entertainment",
+      category: "outdoor_living",
+      tier: 4,
+      weight: 1,
+      label: "Outdoor Entertainment",
+    },
+    {
+      kw: "outdoor entertaining",
+      category: "outdoor_living",
+      tier: 4,
+      weight: 1,
+      label: "Outdoor Entertainment",
+    },
+    {
+      kw: "outdoor renovation",
+      category: "outdoor_living",
+      tier: 4,
+      weight: 1,
+      label: "Outdoor Renovation",
+    },
+    {
+      kw: "outdoor renovations",
+      category: "outdoor_living",
+      tier: 4,
+      weight: 1,
+      label: "Outdoor Renovation",
+    },
+    // "luxury outdoor living" kept at tier 3 (weight=3) — the "luxury" qualifier
+    // makes it somewhat more specific, but it still isn't a confirmed hardscape signal.
+    {
+      kw: "luxury outdoor living",
+      category: "outdoor_living",
+      tier: 3,
+      weight: 3,
+      label: "Luxury Outdoor Living",
+    },
+    {
+      kw: "luxury outdoor",
+      category: "outdoor_living",
+      tier: 4,
+      weight: 1,
+      label: "Luxury Outdoor",
     },
 
     // ── Walkways & Driveways (tier 2) ──
@@ -1518,11 +1528,13 @@
       weight: 5,
       label: "Slope Stabilization",
     },
+    // DEMOTED: "outdoor living" alone is used by furniture stores, realtors,
+    // general contractors, and many others. Weight reduced to near-zero.
     {
       kw: "outdoor living",
       category: "outdoor_living",
-      tier: 3,
-      weight: 5,
+      tier: 4,
+      weight: 1,
       label: "Outdoor Living",
     },
     {
@@ -2043,18 +2055,22 @@
       weight: 2,
       label: "Landscape Design",
     },
+    // DEMOTED: "outdoor spaces" / "outdoor space" are extremely generic — weight 0 (excluded).
+    // Any business can use these phrases (furniture stores, real estate, etc.).
+    // They are kept in the lexicon with weight=0 so they appear in evidence
+    // but contribute nothing to the score.
     {
       kw: "outdoor spaces",
       category: "outdoor_living",
       tier: 4,
-      weight: 2,
+      weight: 0,
       label: "Outdoor Spaces",
     },
     {
       kw: "outdoor space",
       category: "outdoor_living",
       tier: 4,
-      weight: 2,
+      weight: 0,
       label: "Outdoor Space",
     },
     {
@@ -3733,6 +3749,258 @@
   ];
 
   // ══════════════════════════════════════════════════════════════════════════
+  // SECTION B2: ROOFING KEYWORD LEXICON
+  // ══════════════════════════════════════════════════════════════════════════
+  // Tier 1 (weight=15): Dedicated core roofing contractor identity & primary services
+  //                     (installation, replacement, repair, inspection, shingle, metal, commercial, residential)
+  // Tier 2 (weight=10): Strong supporting roofing service phrases & materials
+  // Tier 3 (weight=4):  Supporting roofing terminology
+  // Tier 4 (weight=1-2): Contextual / ancillary signals (low weight, cannot trigger strong signal alone)
+  // Negative (weight=−10): Non-roofing business signals (pressure washing, solar, windows, siding, inspections, etc.)
+
+  const ROOFING_KEYWORDS = [
+    // ════════════════════════════════════════════════════════════════════════
+    // TIER 1 — CORE ROOFING CONTRACTOR IDENTITY & DEDICATED SERVICES (weight = 15)
+    // ════════════════════════════════════════════════════════════════════════
+    // Contractor Identity
+    { kw: "roofing contractor", category: "roof_replacement", tier: 1, weight: 15, label: "Roofing Contractor" },
+    { kw: "roofing contractors", category: "roof_replacement", tier: 1, weight: 15, label: "Roofing Contractor" },
+    { kw: "roofing company", category: "roof_replacement", tier: 1, weight: 15, label: "Roofing Company" },
+    { kw: "roofing companies", category: "roof_replacement", tier: 1, weight: 15, label: "Roofing Company" },
+    { kw: "roof contractor", category: "roof_replacement", tier: 1, weight: 15, label: "Roof Contractor" },
+    { kw: "roof contractors", category: "roof_replacement", tier: 1, weight: 15, label: "Roof Contractor" },
+    { kw: "licensed roofing contractor", category: "roof_replacement", tier: 1, weight: 15, label: "Licensed Roofing Contractor" },
+    { kw: "certified roofing contractor", category: "roof_replacement", tier: 1, weight: 15, label: "Certified Roofing Contractor" },
+    { kw: "licensed roofer", category: "roof_replacement", tier: 1, weight: 15, label: "Licensed Roofer" },
+    { kw: "certified roofer", category: "roof_replacement", tier: 1, weight: 15, label: "Certified Roofer" },
+    { kw: "insured roofer", category: "roof_replacement", tier: 1, weight: 15, label: "Insured Roofer" },
+    { kw: "roofing specialist", category: "roof_replacement", tier: 1, weight: 15, label: "Roofing Specialist" },
+    { kw: "roofing specialists", category: "roof_replacement", tier: 1, weight: 15, label: "Roofing Specialist" },
+    { kw: "roofing expert", category: "roof_replacement", tier: 1, weight: 15, label: "Roofing Expert" },
+    { kw: "roofing experts", category: "roof_replacement", tier: 1, weight: 15, label: "Roofing Expert" },
+    { kw: "roofing professional", category: "roof_replacement", tier: 1, weight: 15, label: "Roofing Professional" },
+    { kw: "roofing professionals", category: "roof_replacement", tier: 1, weight: 15, label: "Roofing Professional" },
+    { kw: "roofing services", category: "roof_installation", tier: 1, weight: 15, label: "Roofing Services" },
+    { kw: "roofing service", category: "roof_installation", tier: 1, weight: 15, label: "Roofing Services" },
+
+    // Roof Installation (Dedicated Primary Service)
+    { kw: "roof installation services", category: "roof_installation", tier: 1, weight: 15, label: "Roof Installation Services" },
+    { kw: "roof installation", category: "roof_installation", tier: 1, weight: 15, label: "Roof Installation" },
+    { kw: "roof installations", category: "roof_installation", tier: 1, weight: 15, label: "Roof Installation" },
+    { kw: "new roof installation", category: "roof_installation", tier: 1, weight: 15, label: "New Roof Installation" },
+    { kw: "residential roofing services", category: "roof_installation", tier: 1, weight: 15, label: "Residential Roofing Services" },
+    { kw: "residential roof installation", category: "roof_installation", tier: 1, weight: 15, label: "Residential Roof Installation" },
+    { kw: "residential roofing", category: "roof_installation", tier: 1, weight: 15, label: "Residential Roofing" },
+    { kw: "roofing solutions", category: "roof_installation", tier: 1, weight: 15, label: "Roofing Solutions" },
+    { kw: "roofing systems", category: "roof_installation", tier: 1, weight: 15, label: "Roofing Systems" },
+
+    // Roof Replacement (Dedicated Primary Service)
+    { kw: "roof replacement services", category: "roof_replacement", tier: 1, weight: 15, label: "Roof Replacement Services" },
+    { kw: "roof replacement contractor", category: "roof_replacement", tier: 1, weight: 15, label: "Roof Replacement Contractor" },
+    { kw: "roof replacement", category: "roof_replacement", tier: 1, weight: 15, label: "Roof Replacement" },
+    { kw: "roof replacements", category: "roof_replacement", tier: 1, weight: 15, label: "Roof Replacement" },
+    { kw: "re-roofing services", category: "roof_replacement", tier: 1, weight: 15, label: "Re-Roofing" },
+    { kw: "re-roofing", category: "roof_replacement", tier: 1, weight: 15, label: "Re-Roofing" },
+    { kw: "reroofing", category: "roof_replacement", tier: 1, weight: 15, label: "Re-Roofing" },
+    { kw: "re-roof", category: "roof_replacement", tier: 1, weight: 15, label: "Re-Roofing" },
+    { kw: "reroof", category: "roof_replacement", tier: 1, weight: 15, label: "Re-Roofing" },
+    { kw: "roof tear-off", category: "roof_replacement", tier: 1, weight: 15, label: "Roof Tear-Off" },
+    { kw: "roof tear off", category: "roof_replacement", tier: 1, weight: 15, label: "Roof Tear-Off" },
+    { kw: "roof restoration", category: "roof_replacement", tier: 1, weight: 15, label: "Roof Restoration" },
+    { kw: "residential roof replacement", category: "roof_replacement", tier: 1, weight: 15, label: "Residential Roof Replacement" },
+
+    // Roof Repair (Dedicated Primary Service)
+    { kw: "roof repair services", category: "roof_repair", tier: 1, weight: 15, label: "Roof Repair Services" },
+    { kw: "roof repair contractor", category: "roof_repair", tier: 1, weight: 15, label: "Roof Repair Contractor" },
+    { kw: "roof repair", category: "roof_repair", tier: 1, weight: 15, label: "Roof Repair" },
+    { kw: "roof repairs", category: "roof_repair", tier: 1, weight: 15, label: "Roof Repair" },
+    { kw: "roof leak repair", category: "roof_repair", tier: 1, weight: 15, label: "Roof Leak Repair" },
+    { kw: "roof leak detection", category: "roof_repair", tier: 1, weight: 15, label: "Roof Leak Detection" },
+    { kw: "residential roof repair", category: "roof_repair", tier: 1, weight: 15, label: "Residential Roof Repair" },
+    { kw: "emergency roof repair", category: "emergency_roofing", tier: 1, weight: 15, label: "Emergency Roof Repair" },
+    { kw: "emergency roof repairs", category: "emergency_roofing", tier: 1, weight: 15, label: "Emergency Roof Repair" },
+    { kw: "storm damage roof repair", category: "emergency_roofing", tier: 1, weight: 15, label: "Storm Damage Roof Repair" },
+    { kw: "storm damage roofing", category: "emergency_roofing", tier: 1, weight: 15, label: "Storm Damage Roofing" },
+
+    // Roof Inspection (Dedicated Primary Service - Promoted to Tier 1)
+    { kw: "roof inspection services", category: "roof_repair", tier: 1, weight: 15, label: "Roof Inspection Services" },
+    { kw: "roof inspection", category: "roof_repair", tier: 1, weight: 15, label: "Roof Inspection" },
+    { kw: "roof inspections", category: "roof_repair", tier: 1, weight: 15, label: "Roof Inspection" },
+    { kw: "roof certification", category: "roof_repair", tier: 1, weight: 15, label: "Roof Certification" },
+
+    // Shingle Roofing (Dedicated Primary Service - Promoted to Tier 1)
+    { kw: "shingle roof replacement", category: "roofing_materials", tier: 1, weight: 15, label: "Shingle Roof Replacement" },
+    { kw: "shingle roof repair", category: "roofing_materials", tier: 1, weight: 15, label: "Shingle Roof Repair" },
+    { kw: "shingle roofing", category: "roofing_materials", tier: 1, weight: 15, label: "Shingle Roofing" },
+    { kw: "shingle roof", category: "roofing_materials", tier: 1, weight: 15, label: "Shingle Roof" },
+    { kw: "shingle roofs", category: "roofing_materials", tier: 1, weight: 15, label: "Shingle Roof" },
+    { kw: "asphalt shingle roofing", category: "roofing_materials", tier: 1, weight: 15, label: "Asphalt Shingle Roofing" },
+    { kw: "asphalt shingle roof", category: "roofing_materials", tier: 1, weight: 15, label: "Asphalt Shingle Roof" },
+    { kw: "architectural shingles", category: "roofing_materials", tier: 1, weight: 15, label: "Architectural Shingles" },
+
+    // Metal Roofing (Dedicated Primary Service - Promoted to Tier 1)
+    { kw: "metal roof installation", category: "roofing_materials", tier: 1, weight: 15, label: "Metal Roof Installation" },
+    { kw: "metal roof replacement", category: "roofing_materials", tier: 1, weight: 15, label: "Metal Roof Replacement" },
+    { kw: "metal roof repair", category: "roofing_materials", tier: 1, weight: 15, label: "Metal Roof Repair" },
+    { kw: "metal roofing", category: "roofing_materials", tier: 1, weight: 15, label: "Metal Roofing" },
+    { kw: "metal roof", category: "roofing_materials", tier: 1, weight: 15, label: "Metal Roof" },
+    { kw: "metal roofs", category: "roofing_materials", tier: 1, weight: 15, label: "Metal Roof" },
+    { kw: "standing seam metal roof", category: "roofing_materials", tier: 1, weight: 15, label: "Standing Seam Metal Roof" },
+    { kw: "standing seam roofing", category: "roofing_materials", tier: 1, weight: 15, label: "Standing Seam Roofing" },
+
+    // Commercial & Flat Roofing (Dedicated Primary Service)
+    { kw: "commercial roofing services", category: "commercial_roofing", tier: 1, weight: 15, label: "Commercial Roofing Services" },
+    { kw: "commercial roofing contractor", category: "commercial_roofing", tier: 1, weight: 15, label: "Commercial Roofing Contractor" },
+    { kw: "commercial roof replacement", category: "commercial_roofing", tier: 1, weight: 15, label: "Commercial Roof Replacement" },
+    { kw: "commercial roof repair", category: "commercial_roofing", tier: 1, weight: 15, label: "Commercial Roof Repair" },
+    { kw: "commercial roofing", category: "commercial_roofing", tier: 1, weight: 15, label: "Commercial Roofing" },
+    { kw: "flat roof replacement", category: "commercial_roofing", tier: 1, weight: 15, label: "Flat Roof Replacement" },
+    { kw: "flat roof installation", category: "commercial_roofing", tier: 1, weight: 15, label: "Flat Roof Installation" },
+    { kw: "flat roof repair", category: "commercial_roofing", tier: 1, weight: 15, label: "Flat Roof Repair" },
+    { kw: "flat roofing", category: "commercial_roofing", tier: 1, weight: 15, label: "Flat Roofing" },
+    { kw: "flat roof", category: "commercial_roofing", tier: 1, weight: 15, label: "Flat Roof" },
+    { kw: "flat roofs", category: "commercial_roofing", tier: 1, weight: 15, label: "Flat Roof" },
+    { kw: "industrial roofing", category: "commercial_roofing", tier: 1, weight: 15, label: "Industrial Roofing" },
+
+    // ════════════════════════════════════════════════════════════════════════
+    // TIER 2 — STRONG ROOFING SERVICE TERMS (weight = 10)
+    // ════════════════════════════════════════════════════════════════════════
+    { kw: "new roof", category: "roof_replacement", tier: 2, weight: 10, label: "New Roof" },
+    { kw: "new roofs", category: "roof_replacement", tier: 2, weight: 10, label: "New Roof" },
+    { kw: "roof maintenance", category: "roof_repair", tier: 2, weight: 10, label: "Roof Maintenance" },
+    { kw: "roof tune-up", category: "roof_repair", tier: 2, weight: 10, label: "Roof Tune-Up" },
+    { kw: "roof tune up", category: "roof_repair", tier: 2, weight: 10, label: "Roof Tune-Up" },
+    { kw: "asphalt shingles", category: "roofing_materials", tier: 2, weight: 10, label: "Asphalt Shingles" },
+    { kw: "asphalt shingle", category: "roofing_materials", tier: 2, weight: 10, label: "Asphalt Shingles" },
+    { kw: "roof shingles", category: "roofing_materials", tier: 2, weight: 10, label: "Roof Shingles" },
+    { kw: "tile roofing", category: "roofing_materials", tier: 2, weight: 10, label: "Tile Roofing" },
+    { kw: "tile roof", category: "roofing_materials", tier: 2, weight: 10, label: "Tile Roofing" },
+    { kw: "tile roofs", category: "roofing_materials", tier: 2, weight: 10, label: "Tile Roofing" },
+    { kw: "tile roof repair", category: "roofing_materials", tier: 2, weight: 10, label: "Tile Roof Repair" },
+    { kw: "slate roofing", category: "roofing_materials", tier: 2, weight: 10, label: "Slate Roofing" },
+    { kw: "slate roof", category: "roofing_materials", tier: 2, weight: 10, label: "Slate Roofing" },
+    { kw: "cedar shake roofing", category: "roofing_materials", tier: 2, weight: 10, label: "Cedar Shake Roofing" },
+    { kw: "cedar roofing", category: "roofing_materials", tier: 2, weight: 10, label: "Cedar Roofing" },
+    { kw: "cedar shake", category: "roofing_materials", tier: 2, weight: 10, label: "Cedar Shake" },
+    { kw: "tpo roofing", category: "commercial_roofing", tier: 2, weight: 10, label: "TPO Roofing" },
+    { kw: "epdm roofing", category: "commercial_roofing", tier: 2, weight: 10, label: "EPDM Roofing" },
+    { kw: "pvc roofing", category: "commercial_roofing", tier: 2, weight: 10, label: "PVC Roofing" },
+    { kw: "roof coating", category: "commercial_roofing", tier: 2, weight: 10, label: "Roof Coating" },
+    { kw: "roof coatings", category: "commercial_roofing", tier: 2, weight: 10, label: "Roof Coating" },
+    { kw: "modified bitumen", category: "commercial_roofing", tier: 2, weight: 10, label: "Modified Bitumen" },
+    { kw: "built-up roofing", category: "commercial_roofing", tier: 2, weight: 10, label: "Built-Up Roofing" },
+    { kw: "hail damage roof", category: "emergency_roofing", tier: 2, weight: 10, label: "Hail Damage Roofing" },
+    { kw: "hail damage roofing", category: "emergency_roofing", tier: 2, weight: 10, label: "Hail Damage Roofing" },
+    { kw: "wind damage roof", category: "emergency_roofing", tier: 2, weight: 10, label: "Wind Damage Roofing" },
+    { kw: "roof replacement cost", category: "roof_replacement", tier: 2, weight: 10, label: "Roof Replacement Cost" },
+    { kw: "free roof estimate", category: "roof_replacement", tier: 2, weight: 10, label: "Free Roof Estimate" },
+    { kw: "free roofing estimate", category: "roof_replacement", tier: 2, weight: 10, label: "Free Roofing Estimate" },
+    { kw: "roofing and gutters", category: "roof_installation", tier: 2, weight: 10, label: "Roofing & Gutters" },
+    { kw: "roofing & gutters", category: "roof_installation", tier: 2, weight: 10, label: "Roofing & Gutters" },
+
+    // ════════════════════════════════════════════════════════════════════════
+    // TIER 3 — SUPPORTING ROOFING TERMINOLOGY (weight = 4)
+    // ════════════════════════════════════════════════════════════════════════
+    { kw: "roofer", category: "roof_replacement", tier: 3, weight: 4, label: "Roofer" },
+    { kw: "roofers", category: "roof_replacement", tier: 3, weight: 4, label: "Roofer" },
+    { kw: "roof leaks", category: "roof_repair", tier: 3, weight: 4, label: "Roof Leaks" },
+    { kw: "roof leak", category: "roof_repair", tier: 3, weight: 4, label: "Roof Leak" },
+    { kw: "flashing repair", category: "roof_repair", tier: 3, weight: 4, label: "Flashing Repair" },
+    { kw: "roof flashing", category: "roof_repair", tier: 3, weight: 4, label: "Roof Flashing" },
+    { kw: "roof decking", category: "roof_installation", tier: 3, weight: 4, label: "Roof Decking" },
+    { kw: "roof underlayment", category: "roofing_materials", tier: 3, weight: 4, label: "Roof Underlayment" },
+    { kw: "underlayment", category: "roofing_materials", tier: 3, weight: 3, label: "Underlayment" },
+    { kw: "ice dam", category: "emergency_roofing", tier: 3, weight: 4, label: "Ice Dam" },
+    { kw: "ice dams", category: "emergency_roofing", tier: 3, weight: 4, label: "Ice Dams" },
+    { kw: "insurance claim roofing", category: "emergency_roofing", tier: 3, weight: 4, label: "Insurance Claim Roofing" },
+    { kw: "storm restoration", category: "emergency_roofing", tier: 3, weight: 4, label: "Storm Restoration" },
+
+    // ════════════════════════════════════════════════════════════════════════
+    // TIER 4 — CONTEXTUAL / ANCILLARY SIGNALS (weight = 1-2)
+    // Ancillary terms and standalone words cannot validate a roofing business alone
+    // ════════════════════════════════════════════════════════════════════════
+    { kw: "roofing", category: "roof_replacement", tier: 4, weight: 2, label: "Roofing" },
+    { kw: "roofs", category: "roof_replacement", tier: 4, weight: 1, label: "Roofs" },
+    { kw: "roof", category: "roof_replacement", tier: 4, weight: 1, label: "Roof" },
+    { kw: "shingles", category: "roofing_materials", tier: 4, weight: 2, label: "Shingles" },
+    { kw: "shingle", category: "roofing_materials", tier: 4, weight: 2, label: "Shingle" },
+    { kw: "gutter installation", category: "roof_installation", tier: 4, weight: 2, label: "Gutter Installation" },
+    { kw: "gutter replacement", category: "roof_installation", tier: 4, weight: 2, label: "Gutter Replacement" },
+    { kw: "gutter repair", category: "roof_installation", tier: 4, weight: 2, label: "Gutter Repair" },
+    { kw: "gutters", category: "roof_installation", tier: 4, weight: 2, label: "Gutters" },
+    { kw: "skylight installation", category: "roof_installation", tier: 4, weight: 2, label: "Skylight Installation" },
+    { kw: "skylights", category: "roof_installation", tier: 4, weight: 2, label: "Skylights" },
+    { kw: "attic ventilation", category: "roof_installation", tier: 4, weight: 2, label: "Attic Ventilation" },
+  ];
+
+  // ── ROOFING NEGATIVE KEYWORDS (PENALTY = −10 pts each) ──────────────────
+  // Distinguishes non-roofing trades, incidental cleaners, solar, and retailers
+  const ROOFING_NEGATIVE_KEYWORDS = [
+    // Non-roofing primary contractor trades
+    "hvac contractor",
+    "hvac company",
+    "air conditioning contractor",
+    "heating and cooling",
+    "plumbing contractor",
+    "plumbing service",
+    "electrician",
+    "electrical contractor",
+    "patio installation",
+    "hardscape contractor",
+    "lawn mowing",
+    "lawn care service",
+    "landscaping company",
+    "pest control",
+    "exterminator",
+    // Power / Pressure washing (cleaning only, not contractor repair/replacement)
+    "pressure washing",
+    "power washing",
+    "soft washing",
+    "roof cleaning service",
+    "roof wash",
+    "roof soft wash",
+    "pressure washing service",
+    // Solar installers (solar mounted on roof, not a roofing company)
+    "solar panel installation",
+    "solar panel installer",
+    "solar panels",
+    "solar contractor",
+    "solar energy company",
+    "solar power system",
+    // Window / Siding only companies
+    "window replacement company",
+    "replacement windows",
+    "window contractor",
+    "vinyl siding contractor",
+    "siding replacement",
+    // Home inspection / Chimney / Gutter-only
+    "home inspector",
+    "home inspection",
+    "certified home inspector",
+    "property inspection",
+    "chimney sweep",
+    "chimney cleaning",
+    "gutter cleaning service",
+    "gutter clean out",
+    // Flooring / Interior / Auto
+    "flooring contractor",
+    "hardwood flooring",
+    "carpet cleaning",
+    "interior painting",
+    "auto body shop",
+    "car repair",
+    // Roofing materials retail/wholesale only (not a contractor)
+    "roofing supply store",
+    "roofing supplies",
+    "roofing manufacturer",
+    "roofing distributor",
+    "wholesale roofing",
+    "roofing products",
+    "roofing materials store",
+    "roofing supplier",
+  ];
+
+  // ══════════════════════════════════════════════════════════════════════════
   // SECTION C: BUILD KEYWORD MAPS
   // ══════════════════════════════════════════════════════════════════════════
 
@@ -3786,6 +4054,37 @@
   );
   for (const kw of sortedHvacNeg) {
     HVAC_NEGATIVE_MAP.set(kw.toLowerCase(), -10);
+  }
+
+  // ── Roofing Maps & Precompiled Word-Boundary Regexes ──
+  const ROOFING_KEYWORD_MAP = new Map();
+  const ROOFING_KEYWORD_REGEXES = [];
+  const sortedRoofingKws = [...ROOFING_KEYWORDS].sort(
+    (a, b) => b.kw.length - a.kw.length,
+  );
+  for (const entry of sortedRoofingKws) {
+    const lowerKw = entry.kw.toLowerCase();
+    const info = {
+      category: entry.category,
+      tier: entry.tier,
+      weight: entry.weight,
+      label: entry.label,
+    };
+    ROOFING_KEYWORD_MAP.set(lowerKw, info);
+    const escaped = lowerKw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    ROOFING_KEYWORD_REGEXES.push({
+      kw: lowerKw,
+      info,
+      regex: new RegExp(`\\b${escaped}\\b`, "gi"),
+    });
+  }
+
+  const ROOFING_NEGATIVE_MAP = new Map();
+  const sortedRoofingNeg = [...ROOFING_NEGATIVE_KEYWORDS].sort(
+    (a, b) => b.length - a.length,
+  );
+  for (const kw of sortedRoofingNeg) {
+    ROOFING_NEGATIVE_MAP.set(kw.toLowerCase(), -10);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -3859,6 +4158,7 @@
   // SECTION F: TEXT EXTRACTION STRATEGIES (shared by both modes)
   // Content is extracted ONCE and reused by whichever engine is active.
   // ══════════════════════════════════════════════════════════════════════════
+
 
   function extractFromTreeWalker() {
     const results = [];
@@ -4022,6 +4322,60 @@
     return findMatchesInMap(text, HVAC_KEYWORD_MAP);
   }
 
+  // ── Roofing Non-Contractor Idioms & False Positive Suppression ──
+  const ROOFING_IDIOM_PATTERNS = [
+    /\b(?:all\s+)?(?:under\s+(?:one|the\s+same|our)\s+roof)\b/gi,
+    /\b(?:everything\s+under\s+(?:one|our)\s+roof)\b/gi,
+    /\b(?:services?\s+under\s+one\s+roof)\b/gi,
+    /\b(?:solutions?\s+under\s+one\s+roof)\b/gi,
+    /\b(?:through\s+the\s+roof)\b/gi,
+    /\b(?:rais(?:e|ing)\s+the\s+roof)\b/gi,
+    /\b(?:flooring|carpet|vinyl|laminate|tile|subfloor)\s+underlayment\b/gi,
+    /\bshingles\s+(?:vaccine|vaccination|outbreak|virus|treatment|shot|symptoms?)\b/gi,
+  ];
+
+  function findRoofingMatches(text) {
+    if (!text || typeof text !== "string") return [];
+
+    // Mask non-roofing idioms with spaces of equal length to preserve offsets
+    let sanitized = text;
+    for (const pat of ROOFING_IDIOM_PATTERNS) {
+      sanitized = sanitized.replace(pat, (m) => " ".repeat(m.length));
+    }
+
+    const matches = [];
+    const matchedSpans = [];
+    const alreadyMatched = new Set();
+
+    // Iterate through precompiled regexes (sorted longest keyword first)
+    for (const { kw, info, regex } of ROOFING_KEYWORD_REGEXES) {
+      regex.lastIndex = 0;
+      let m;
+      while ((m = regex.exec(sanitized)) !== null) {
+        const start = m.index;
+        const end = start + m[0].length;
+
+        // Prevent shorter / lower-tier sub-matches inside an already matched span
+        // e.g. "roof installation" won't also trigger a separate match for "roof"
+        const alreadyCovered = matchedSpans.some(
+          (span) => start >= span.start && end <= span.end,
+        );
+        if (alreadyCovered) continue;
+
+        const key = info.category + "|" + kw;
+        if (!alreadyMatched.has(key)) {
+          alreadyMatched.add(key);
+          const snipStart = Math.max(0, start - 40);
+          const snipEnd = Math.min(text.length, end + 40);
+          const snippet = text.substring(snipStart, snipEnd).trim();
+          matches.push({ kw, ...info, snippet });
+        }
+        matchedSpans.push({ start, end, tier: info.tier });
+      }
+    }
+    return matches;
+  }
+
   function findNegativesInMap(text, negativeMap) {
     const lower = text.toLowerCase();
     const hits = [];
@@ -4074,13 +4428,13 @@
     const startTime = performance.now();
     const mode = (opts.mode || "hardscaping").toLowerCase();
 
-    const isHvac = mode === "hvac";
-    const matchFn = isHvac ? findHvacMatches : findHardscapeMatches;
-    const negMap = isHvac ? HVAC_NEGATIVE_MAP : NEGATIVE_MAP;
+    const isHvac   = mode === "hvac";
+    const isRoof   = mode === "roofing";
+    const matchFn  = isHvac ? findHvacMatches : isRoof ? findRoofingMatches : findHardscapeMatches;
+    const negMap   = isHvac ? HVAC_NEGATIVE_MAP : isRoof ? ROOFING_NEGATIVE_MAP : NEGATIVE_MAP;
+    const modeLabel = isHvac ? "HVAC" : isRoof ? "Roofing" : "Hardscape";
 
-    console.log(
-      `🔍 [Finder v5.0] Starting ${isHvac ? "HVAC" : "Hardscape"} scan...`,
-    );
+    console.log(`\ud83d\udd0d [Finder v5.0] Starting ${modeLabel} scan...`);
 
     const findings = [];
     const debugLog = [];
@@ -4094,10 +4448,7 @@
     const selectorItems = extractFromHighValueSelectors();
     const metaItems = extractFromMeta();
 
-    debugLog.push(`Mode: ${isHvac ? "HVAC" : "Hardscaping"}`);
-    debugLog.push(`TreeWalker text nodes: ${walkerCount}`);
-    debugLog.push(`High-value selector elements: ${selectorItems.length}`);
-    debugLog.push(`Meta/structured items: ${metaItems.length}`);
+    debugLog.push(`Mode: ${modeLabel}`);
 
     const allItems = [
       ...metaItems.map((i) => ({ ...i, source: "meta" })),
@@ -4157,8 +4508,8 @@
         if (!negativeHits.includes(neg)) negativeHits.push(neg);
       }
 
-      // Secondary service scan (hardscaping mode only — HVAC doesn't need these)
-      if (!isHvac) {
+      // Secondary service scan (hardscaping mode only — HVAC and Roofing don't need these)
+      if (!isHvac && !isRoof) {
         const secMatches = findSecondaryMatches(text);
         for (const sec of secMatches) secondaryFound.add(sec);
       }
@@ -4168,19 +4519,19 @@
     debugLog.push(`Total text extracted: ${totalTextLength} chars`);
     debugLog.push(`Positive keyword hits: ${totalKeywordHits}`);
     debugLog.push(`Negative keyword hits: ${negativeHits.length}`);
-    if (!isHvac)
+    if (!isHvac && !isRoof)
       debugLog.push(`Secondary service signals: ${secondaryFound.size}`);
     debugLog.push(`Total findings: ${findings.length}`);
     debugLog.push(`Scan time: ${elapsed}ms`);
 
     console.log(
-      `✅ [Finder v5.0] ${findings.length} ${isHvac ? "HVAC" : "hardscape"} matches in ${elapsed}ms`,
+      `✅ [Finder v5.0] ${findings.length} ${modeLabel} matches in ${elapsed}ms`,
     );
 
     // Fallback: full body scan if nothing found
     if (findings.length === 0) {
       console.warn(
-        `⚠️ No ${isHvac ? "HVAC" : "hardscape"} keywords found. Trying full body fallback...`,
+        `⚠️ No ${modeLabel} keywords found. Trying full body fallback...`,
       );
       const bodyText = document.body.innerText || "";
       const fallbackMatches = matchFn(bodyText);
@@ -4294,6 +4645,15 @@
     },
   };
 
+  const ROOFING_HIGHLIGHT_STYLES = {
+    roof_replacement:  { bg: "rgba(239,68,68,0.35)", border: "#dc2626", text: "#7f1d1d" },
+    roof_repair:       { bg: "rgba(239,68,68,0.35)", border: "#dc2626", text: "#7f1d1d" },
+    roof_installation: { bg: "rgba(239,68,68,0.35)", border: "#dc2626", text: "#7f1d1d" },
+    roofing_materials: { bg: "rgba(239,68,68,0.35)", border: "#dc2626", text: "#7f1d1d" },
+    commercial_roofing:{ bg: "rgba(239,68,68,0.35)", border: "#dc2626", text: "#7f1d1d" },
+    emergency_roofing: { bg: "rgba(239,68,68,0.35)", border: "#dc2626", text: "#7f1d1d" },
+  };
+
   const HIGHLIGHT_STYLE_ID = "__finder_hl_styles__";
   const HIGHLIGHT_MARK_ATTR = "data-finder-hl";
 
@@ -4302,7 +4662,9 @@
     if (existing) existing.remove();
 
     const styles =
-      mode === "hvac" ? HVAC_HIGHLIGHT_STYLES : HARDSCAPE_HIGHLIGHT_STYLES;
+      mode === "hvac" ? HVAC_HIGHLIGHT_STYLES
+      : mode === "roofing" ? ROOFING_HIGHLIGHT_STYLES
+      : HARDSCAPE_HIGHLIGHT_STYLES;
     const style = document.createElement("style");
     style.id = HIGHLIGHT_STYLE_ID;
     style.textContent =
@@ -4410,7 +4772,7 @@
           match: true,
           catId:
             termCatMap.get(m[0].toLowerCase()) ||
-            (mode === "hvac" ? "cooling" : "patios"),
+            (mode === "hvac" ? "cooling" : mode === "roofing" ? "roof_replacement" : "patios"),
         });
         last = m.index + m[0].length;
         count++;
@@ -5771,5 +6133,5 @@
     // Not handled here — let other listeners handle it
   });
 
-  console.log("🌡️🧱📍 HVAC, Hardscaping & Address Finder Engine v5.1 loaded.");
+  console.log("\ud83c\udf21\ufe0f\ud83e\uddf1\ud83c\udfe0\ud83d\udccd HVAC, Hardscaping, Roofing & Address Finder Engine v5.2 loaded.");
 })();

@@ -27,6 +27,8 @@
       --addr-primary-glow: rgba(34,211,238,0.15);
       --comp-primary:      #a855f7;
       --comp-primary-glow: rgba(168,85,247,0.18);
+      --roof-primary:      #ef4444;
+      --roof-primary-glow: rgba(239,68,68,0.18);
       --success:      #3fb950;
       --warn:         #d29922;
       --danger:       #f85149;
@@ -75,6 +77,7 @@
     .header-title .accent-hvac  { color: var(--hvac-primary); }
     .header-title .accent-addr  { color: var(--addr-primary); }
     .header-title .accent-comp  { color: var(--comp-primary); }
+    .header-title .accent-roof  { color: var(--roof-primary); }
     .ver-badge {
       font-size: 9px;
       font-weight: 600;
@@ -139,6 +142,12 @@
       color: #fff;
       box-shadow: 0 2px 8px rgba(168,85,247,0.35);
     }
+    .mode-btn.active-roof {
+      background: linear-gradient(135deg, #b91c1c, #ef4444);
+      border-color: #dc2626;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(239,68,68,0.35);
+    }
 
     /* ── Status chip ── */
     .status-chip {
@@ -173,6 +182,9 @@
     }
     .progress-fill.addr-fill {
       background: linear-gradient(90deg, #0891b2, #22d3ee, #67e8f9);
+    }
+    .progress-fill.roof-fill {
+      background: linear-gradient(90deg, #b91c1c, #ef4444, #f87171);
     }
 
     /* ── Icon Buttons ── */
@@ -221,6 +233,10 @@
       background: linear-gradient(135deg, #0891b2, #22d3ee);
       box-shadow: 0 2px 8px rgba(34,211,238,0.25);
     }
+    .btn-scan-primary.roof-mode {
+      background: linear-gradient(135deg, #b91c1c, #ef4444);
+      box-shadow: 0 2px 8px rgba(239,68,68,0.25);
+    }
     .btn-scan-primary:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
     .btn-scan-primary:active:not(:disabled) { transform: translateY(0); }
     .btn-scan-primary:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -265,6 +281,9 @@
     .primary-card.hvac-card::before {
       background: linear-gradient(90deg, #1d4ed8, #3b82f6, #60a5fa);
     }
+    .primary-card.roof-card::before {
+      background: linear-gradient(90deg, #b91c1c, #ef4444, #f87171);
+    }
     .primary-top {
       display: flex;
       justify-content: space-between;
@@ -279,6 +298,7 @@
       margin-bottom: 2px;
     }
     .primary-meta.hvac-meta { color: var(--hvac-primary); }
+    .primary-meta.roof-meta { color: var(--roof-primary); }
     .primary-name {
       font-size: 13px;
       font-weight: 800;
@@ -482,6 +502,68 @@
       line-height: 1.4;
     }
     .reason-item:last-child { border-bottom: none; }
+
+    /* ── Why Section: State / City badge ── */
+    .why-loc-badge {
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+      padding: 10px 10px;
+      margin: 8px 0 6px;
+      background: linear-gradient(135deg, rgba(245,158,11,0.10) 0%, rgba(245,158,11,0.04) 100%);
+      border: 1px solid rgba(245,158,11,0.30);
+      border-radius: 8px;
+      flex-wrap: wrap;
+    }
+    .why-loc-badge.hvac-badge {
+      background: linear-gradient(135deg, rgba(59,130,246,0.12) 0%, rgba(59,130,246,0.04) 100%);
+      border-color: rgba(59,130,246,0.35);
+    }
+    .why-loc-badge-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      flex: 1;
+      min-width: 90px;
+      background: rgba(0,0,0,0.18);
+      border-radius: 6px;
+      padding: 6px 9px;
+      border: 1px solid rgba(245,158,11,0.18);
+    }
+    .why-loc-badge.hvac-badge .why-loc-badge-item {
+      border-color: rgba(59,130,246,0.22);
+    }
+    .why-loc-badge-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #f59e0b;
+      line-height: 1;
+    }
+    .why-loc-badge.hvac-badge .why-loc-badge-label {
+      color: #60a5fa;
+    }
+    .why-loc-badge-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+      letter-spacing: 0.2px;
+    }
+    .why-loc-badge-val.loading {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-style: italic;
+      font-weight: 400;
+    }
+    .why-loc-sep {
+      display: none;
+    }
 
     /* ── Evidence items ── */
     .evidence-category { padding-top: 7px; }
@@ -1900,6 +1982,7 @@
     <div class="mode-toggle">
       <button class="mode-btn active-hvac" id="modeHvacBtn">🌡️ HVAC</button>
       <button class="mode-btn" id="modeHsBtn">🧱 Hardscaping</button>
+      <button class="mode-btn" id="modeRoofBtn">🏠 Roofing</button>
       <button class="mode-btn" id="modeAddrBtn">📍 Address</button>
       <button class="mode-btn" id="modeCompBtn">🎯 Competitors</button>
     </div>
@@ -2052,20 +2135,29 @@
         <!-- Results Card -->
         <div class="comp-results-card hidden" id="compResultsCard">
           <div class="comp-results-title">✅ Competitors Found</div>
+
+          <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 5px; display: flex; justify-content: space-between;">
+            <span>Row: <strong id="compResRow" style="color: var(--text);">—</strong></span>
+          </div>
+
+          <div class="comp-result-query-box" style="background: var(--surface2); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); padding: 5px 8px; margin-bottom: 5px;">
+            <div style="font-size: 8.5px; font-weight: 700; text-transform: uppercase; color: #38bdf8; margin-bottom: 2px;">Search Query:</div>
+            <div id="compResQuery" style="font-size: 10.5px; font-weight: 600; color: var(--text);">—</div>
+          </div>
           
           <div class="comp-result-row">
-            <span class="comp-result-label">Competitor 1 (Col H)</span>
+            <span class="comp-result-label">Competitor 1:</span>
             <span class="comp-result-val" id="compRes1">—</span>
           </div>
 
           <div class="comp-result-row">
-            <span class="comp-result-label">Competitor 2 (Col I)</span>
+            <span class="comp-result-label">Competitor 2:</span>
             <span class="comp-result-val" id="compRes2">—</span>
           </div>
 
           <div class="comp-actions-row">
-            <button class="btn-save-sheet" id="compSaveSheetBtn">💾 Save to Google Sheet</button>
-            <button class="btn-copy-tsv" id="compCopyTsvBtn" title="Copy tab-separated values to clipboard">📋 Copy</button>
+            <button class="btn-copy-tsv" id="compCopyTsvBtn" style="flex:1;" title="Copy tab-separated competitors to clipboard (Ctrl+V into Google Sheets)">📋 Copy Results</button>
+            <button class="btn-save-sheet" id="compSaveSheetBtn" style="flex:1;">💾 Save to Google Sheet</button>
           </div>
           <div class="comp-save-status hidden" id="compSaveStatus"></div>
         </div>

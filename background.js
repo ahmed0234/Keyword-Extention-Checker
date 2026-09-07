@@ -264,10 +264,10 @@ async function findCompetitorsOnGoogle(query, originalCompany) {
   let foundCandidates = [];
 
   try {
-    // 1. First attempt: Render Google search in a background tab to capture full rendered DOM & Local Pack
-    const tab = await chrome.tabs.create({ url: searchUrl, active: false });
+    // 1. Open Google search in a normal browser tab (kept open for user inspection)
+    const tab = await chrome.tabs.create({ url: searchUrl, active: true });
     
-    // Wait for tab to load
+    // 2. Wait for tab to complete loading with a timeout fallback
     await new Promise((resolve) => {
       let resolved = false;
       const listener = (tabId, info) => {
@@ -280,20 +280,37 @@ async function findCompetitorsOnGoogle(query, originalCompany) {
         }
       };
       chrome.tabs.onUpdated.addListener(listener);
-      // Timeout fallback (3.5s is plenty for Google Search HTML)
       setTimeout(() => {
         if (!resolved) {
           resolved = true;
           chrome.tabs.onUpdated.removeListener(listener);
           resolve();
         }
-      }, 3500);
+      }, 15000);
     });
 
-    // Brief delay to allow client-side DOM hydration
-    await new Promise((r) => setTimeout(r, 600));
+    // 3. Keep tab open and active for at least 15 seconds while scrolling normally through Google results
+    const scrollPage = async (pixels) => {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: (y) => {
+          try {
+            window.scrollBy({ top: y, behavior: "smooth" });
+          } catch (_) {}
+        },
+        args: [pixels]
+      }).catch(() => null);
+    };
 
-    // Extract businesses from Google DOM
+    await new Promise((r) => setTimeout(r, 3000));
+    await scrollPage(300);
+    await new Promise((r) => setTimeout(r, 4000));
+    await scrollPage(350);
+    await new Promise((r) => setTimeout(r, 4000));
+    await scrollPage(-150);
+    await new Promise((r) => setTimeout(r, 4000));
+
+    // 4. Extract actual business listings from Google SERP DOM
     const injectionResults = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: () => {
@@ -359,69 +376,16 @@ async function findCompetitorsOnGoogle(query, originalCompany) {
       return null;
     });
 
-    // Close background tab safely
-    try {
-      if (tab && tab.id) await chrome.tabs.remove(tab.id);
-    } catch (_) {}
+    // NOTE: Tab is intentionally KEPT OPEN so the user can inspect Google results directly and close manually.
 
     if (injectionResults && injectionResults[0] && Array.isArray(injectionResults[0].result)) {
       foundCandidates = injectionResults[0].result;
     }
   } catch (err) {
-    console.warn("[Background] Tab search error, using fetch fallback:", err);
+    console.warn("[Background] Google tab search error:", err);
   }
 
-  // 2. Fallback attempt via fetch if tab search returned empty
-  if (foundCandidates.length === 0) {
-    try {
-      const resp = await fetch(searchUrl, {
-        headers: {
-          "Accept-Language": "en-US,en;q=0.9",
-          "User-Agent": navigator.userAgent || "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-        }
-      });
-      const htmlText = await resp.text();
-
-      const addCandidateFromRegex = (name, url, type) => {
-        const clean = (name || "").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, '"').trim();
-        if (clean && clean.length >= 2 && clean.length <= 75) {
-          if (!/^\d+(\.\d+)?\s*(★|stars?|\(\d+\))/i.test(clean) && !/^(open|closed|directions|website|call)/i.test(clean)) {
-            foundCandidates.push({ name: clean, url: url || "", type });
-          }
-        }
-      };
-
-      // Match Google Mobile/Standard HTML classes
-      // Class BNeawe vvjwJb AP7Wnd is Google's main search result title class
-      const bneaweRegex = /<div class="BNeawe vvjwJb AP7Wnd">([\s\S]*?)<\/div>/gi;
-      let m;
-      while ((m = bneaweRegex.exec(htmlText)) !== null) {
-        addCandidateFromRegex(m[1], "", "fetch_bneawe");
-      }
-
-      // Match h3 tags in HTML
-      const h3Regex = /<h3[^>]*>([\s\S]*?)<\/h3>/gi;
-      while ((m = h3Regex.exec(htmlText)) !== null) {
-        addCandidateFromRegex(m[1], "", "fetch_h3");
-      }
-
-      // Match vvjwJb class
-      const vvRegex = /<div class="[^"]*vvjwJb[^"]*">([\s\S]*?)<\/div>/gi;
-      while ((m = vvRegex.exec(htmlText)) !== null) {
-        addCandidateFromRegex(m[1], "", "fetch_vv");
-      }
-
-      // Match OSrXXb (Local pack in fetch)
-      const osrRegex = /<(?:div|span) class="[^"]*OSrXXb[^"]*">([\s\S]*?)<\/(?:div|span)>/gi;
-      while ((m = osrRegex.exec(htmlText)) !== null) {
-        addCandidateFromRegex(m[1], "", "fetch_osr");
-      }
-    } catch (fetchErr) {
-      console.error("[Background] Fetch search also failed:", fetchErr);
-    }
-  }
-
-  // 3. Filter candidates strictly according to rules
+  // 5. Filter candidates strictly according to existing rules - EXACTLY TWO COMPETITORS
   const validCompetitors = [];
   const seenNormalized = new Set();
 
@@ -433,7 +397,7 @@ async function findCompetitorsOnGoogle(query, originalCompany) {
     const rawName = item.name;
     const url = item.url || "";
 
-    // Exclude directories and aggregators
+    // Exclude directories and aggregators (Yelp, YellowPages, Angi, etc.)
     if (isExcludedDirectory(rawName, url)) continue;
 
     // Clean business name
@@ -457,7 +421,8 @@ async function findCompetitorsOnGoogle(query, originalCompany) {
     seenNormalized.add(norm);
     validCompetitors.push(cleaned);
 
-    if (validCompetitors.length >= 3) break;
+    // EXACTLY TWO COMPETITORS
+    if (validCompetitors.length >= 2) break;
   }
 
   return {
@@ -466,7 +431,6 @@ async function findCompetitorsOnGoogle(query, originalCompany) {
     originalCompany,
     competitor1: validCompetitors[0] || "",
     competitor2: validCompetitors[1] || "",
-    competitor3: validCompetitors[2] || "",
     totalFound: validCompetitors.length,
     allCandidates: validCompetitors
   };

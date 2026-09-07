@@ -6,7 +6,7 @@
 
 // ── GLOBAL STATE ──────────────────────────────────────────────────────────────
 let currentScanData = null;
-let currentMode = "hvac"; // 'hvac' | 'hardscaping' | 'address' — default, overridden on boot
+let currentMode = "hvac"; // 'hvac' | 'hardscaping' | 'roofing' | 'address' — default, overridden on boot
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CATEGORY DEFINITIONS
@@ -70,6 +70,21 @@ const HVAC_CATEGORIES = [
   { id: "refrigeration", label: "Refrigeration", icon: "🧊", color: "#0ea5e9" },
 ];
 
+// ── Roofing Categories ──
+const ROOFING_CATEGORIES = [
+  { id: "roof_replacement", label: "Roof Replacement", icon: "🏠", color: "#ef4444" },
+  { id: "roof_repair", label: "Roof Repair", icon: "🔧", color: "#f97316" },
+  { id: "roof_installation", label: "Roof Installation", icon: "🛠️", color: "#dc2626" },
+  { id: "roofing_materials", label: "Roofing Materials", icon: "🧱", color: "#b91c1c" },
+  { id: "commercial_roofing", label: "Commercial Roofing", icon: "🏢", color: "#78350f" },
+  { id: "emergency_roofing", label: "Emergency / Storm", icon: "⚡", color: "#fbbf24" },
+];
+
+// ── Roofing Highlight Legend Swatches ──
+const ROOFING_LEGEND_SWATCHES = [
+  { label: "Roofing", bg: "rgba(239,68,68,0.35)", border: "#dc2626" },
+];
+
 // ── HVAC Highlight Legend Swatches ──
 const HVAC_LEGEND_SWATCHES = [
   { label: "Heating", bg: "rgba(239,68,68,0.35)", border: "#dc2626" },
@@ -95,11 +110,14 @@ const HS_CATEGORY_BY_ID = {};
 for (const cat of HS_CATEGORIES) HS_CATEGORY_BY_ID[cat.id] = cat;
 const HVAC_CATEGORY_BY_ID = {};
 for (const cat of HVAC_CATEGORIES) HVAC_CATEGORY_BY_ID[cat.id] = cat;
+const ROOFING_CATEGORY_BY_ID = {};
+for (const cat of ROOFING_CATEGORIES) ROOFING_CATEGORY_BY_ID[cat.id] = cat;
 
 // ── Scoring Constants ──
 const HS_THRESHOLD = 420;
 const HVAC_THRESHOLD = 420;
 const NEGATIVE_PENALTY = 10;
+const ROOFING_THRESHOLD = 420;
 
 // ── Deep Scan Page Lists ──
 const HS_DEEP_SCAN_PAGES = [
@@ -154,6 +172,26 @@ const HVAC_DEEP_SCAN_PAGES = [
   "/contact",
 ];
 
+const ROOFING_DEEP_SCAN_PAGES = [
+  "/",
+  "/services",
+  "/roofing",
+  "/roof-repair",
+  "/roof-replacement",
+  "/roof-installation",
+  "/residential-roofing",
+  "/commercial-roofing",
+  "/metal-roofing",
+  "/shingle-roofing",
+  "/flat-roofing",
+  "/storm-damage",
+  "/emergency-roofing",
+  "/gutters",
+  "/about",
+  "/our-services",
+  "/contact",
+];
+
 // ── Address Finder Deep Scan Pages ──
 const ADDR_DEEP_SCAN_PAGES = [
   "/",
@@ -195,6 +233,9 @@ document
 document
   .getElementById("modeHsBtn")
   .addEventListener("click", () => setMode("hardscaping"));
+document
+  .getElementById("modeRoofBtn")
+  .addEventListener("click", () => setMode("roofing"));
 document
   .getElementById("modeAddrBtn")
   .addEventListener("click", () => setMode("address"));
@@ -266,16 +307,19 @@ function setMode(mode, saveToStorage = true) {
   const isAddr = mode === "address";
   const isHs   = mode === "hardscaping";
   const isComp = mode === "competitor";
+  const isRoof = mode === "roofing";
 
   // 2. Safely update button active classes
   const hvacBtn = document.getElementById("modeHvacBtn");
   const hsBtn   = document.getElementById("modeHsBtn");
   const addrBtn = document.getElementById("modeAddrBtn");
   const compBtn = document.getElementById("modeCompBtn");
+  const roofBtn = document.getElementById("modeRoofBtn");
   if (hvacBtn) hvacBtn.className = "mode-btn" + (isHvac ? " active-hvac" : "");
   if (hsBtn)   hsBtn.className   = "mode-btn" + (isHs   ? " active-hs"   : "");
   if (addrBtn) addrBtn.className = "mode-btn" + (isAddr ? " active-addr"  : "");
   if (compBtn) compBtn.className = "mode-btn" + (isComp ? " active-comp"  : "");
+  if (roofBtn) roofBtn.className = "mode-btn" + (isRoof ? " active-roof"  : "");
 
   // 3. Safely update Header Title
   if (isHvac) {
@@ -284,6 +328,8 @@ function setMode(mode, saveToStorage = true) {
     updateHeaderTitle("📍", "Address", "accent-addr");
   } else if (isComp) {
     updateHeaderTitle("🎯", "Competitor", "accent-comp");
+  } else if (isRoof) {
+    updateHeaderTitle("🏠", "Roofing", "accent-roof");
   } else {
     updateHeaderTitle("🧱", "Hardscape", "accent-hs");
   }
@@ -334,6 +380,19 @@ function setMode(mode, saveToStorage = true) {
         resContainer.innerHTML = `<div class="status-msg">Click <strong>Quick Scan</strong> to analyze this site for HVAC services.</div>`;
       }
       renderLegendSwatches(HVAC_LEGEND_SWATCHES);
+    } else if (isRoof) {
+      if (scanBtn) {
+        scanBtn.className = "btn-scan-primary roof-mode";
+        scanBtn.textContent = "🔍 Quick Scan";
+      }
+      if (deepScanBtn) {
+        deepScanBtn.className = "btn-scan-secondary";
+        deepScanBtn.textContent = "🌐 Deep Scan";
+      }
+      if (resContainer) {
+        resContainer.innerHTML = `<div class="status-msg">Click <strong>Quick Scan</strong> to analyze this site for roofing services.</div>`;
+      }
+      renderLegendSwatches(ROOFING_LEGEND_SWATCHES);
     } else if (isHs) {
       if (scanBtn) {
         scanBtn.className = "btn-scan-primary";
@@ -370,6 +429,7 @@ function setMode(mode, saveToStorage = true) {
     if (isHvac)      fill.classList.add("hvac-fill");
     else if (isAddr) fill.classList.add("addr-fill");
     else if (isComp) fill.classList.add("comp-fill");
+    else if (isRoof) fill.classList.add("roof-fill");
   }
 
   // 7. Persist mode
@@ -680,7 +740,9 @@ function startDeepScan() {
   }
 
   const pages =
-    currentMode === "hvac" ? HVAC_DEEP_SCAN_PAGES : HS_DEEP_SCAN_PAGES;
+    currentMode === "hvac" ? HVAC_DEEP_SCAN_PAGES
+    : currentMode === "roofing" ? ROOFING_DEEP_SCAN_PAGES
+    : HS_DEEP_SCAN_PAGES;
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (!tabs || !tabs[0]) {
@@ -762,12 +824,12 @@ function startDeepScan() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function aggregateFindings(response, mode) {
-  return mode === "hvac"
-    ? aggregateHvacFindings(response)
-    : aggregateHardscapeFindings(response);
+  if (mode === "hvac") return aggregateHvacFindings(response);
+  if (mode === "roofing") return aggregateRoofingFindings(response);
+  return aggregateHardscapeFindings(response);
 }
 
-// ── Hardscaping Aggregation (v4.0 logic, preserved exactly) ──────────────────
+// ── Hardscaping Aggregation (v4.0 logic + v5.1 strict multi-signal validation) ──
 
 function aggregateHardscapeFindings(response) {
   const findings = response.findings || [];
@@ -788,6 +850,11 @@ function aggregateHardscapeFindings(response) {
 
   const allKeywordsMatched = new Set();
   const highValueMatched = [];
+
+  // ── v5.1: Track strong signals for multi-signal validation ──
+  let hasStrongSignal = false;       // At least one tier-1 or tier-2 match
+  let strongSignalCount = 0;          // Number of distinct tier-1/tier-2 terms matched
+  const strongSignalTerms = new Set(); // Distinct strong terms for quality check
 
   for (const f of findings) {
     const catId = f.category;
@@ -821,16 +888,58 @@ function aggregateHardscapeFindings(response) {
       if (!highValueMatched.includes(f.label || term)) {
         highValueMatched.push(f.label || term);
       }
+      // v5.1: track strong signals
+      if (!strongSignalTerms.has(term)) {
+        strongSignalTerms.add(term);
+        strongSignalCount++;
+      }
+      hasStrongSignal = true;
     }
   }
+
+  // ── v5.1: Count how many distinct categories have meaningful scores ──
+  // A category is "active" if its raw score reaches at least the weight of
+  // one tier-2 keyword (10 pts) to prevent noise from inflating category count.
+  const CATEGORY_ACTIVATION_THRESHOLD = 10;
+  const activeCategoryCount = HS_CATEGORIES.filter(
+    (cat) => scoreMap[cat.id] >= CATEGORY_ACTIVATION_THRESHOLD,
+  ).length;
 
   const totalPositiveScore = Object.values(scoreMap).reduce((a, b) => a + b, 0);
   const penaltyScore = negativeHits.length * NEGATIVE_PENALTY;
   const netScore = Math.max(0, totalPositiveScore - penaltyScore);
-  const rawConfidence = Math.min(
+  let rawConfidence = Math.min(
     100,
     Math.round((netScore / HS_THRESHOLD) * 100),
   );
+
+  // ── v5.1: Strict multi-signal gates ──────────────────────────────────────
+  // Gate 1: No tier-1 or tier-2 signal at all → cap confidence at 15 ("Weak").
+  // This prevents generic tier-3/tier-4 words ("outdoor living", "outdoor spaces")
+  // from pushing a score into the "Possible" or higher range on their own.
+  if (!hasStrongSignal && rawConfidence > 15) {
+    rawConfidence = 15;
+  }
+
+  // Gate 2: Only one strong signal and only one active category → cap at 30.
+  // A single-service mention is not sufficient to classify as a hardscape company.
+  if (strongSignalCount <= 1 && activeCategoryCount <= 1 && rawConfidence > 30) {
+    rawConfidence = 30;
+  }
+
+  // Gate 3: "Genuine" (75+) requires both multiple strong signals AND
+  // evidence from at least 2 distinct categories.
+  if (rawConfidence >= 75 && (strongSignalCount < 3 || activeCategoryCount < 2)) {
+    rawConfidence = 74;
+  }
+
+  // Gate 4: "Likely" (45+) requires at least one strong signal and
+  // signals spanning at least 1 active category with 2+ strong terms.
+  if (rawConfidence >= 45 && !hasStrongSignal) {
+    rawConfidence = 44;
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   const confidence = Math.max(0, rawConfidence);
 
   const catConfidence = {};
@@ -853,6 +962,9 @@ function aggregateHardscapeFindings(response) {
     negativeHits,
     detectedServices,
     catConfidence,
+    hasStrongSignal,
+    strongSignalCount,
+    activeCategoryCount,
   );
 
   return {
@@ -1010,6 +1122,292 @@ function aggregateHvacFindings(response) {
 // REASON BUILDERS
 // ══════════════════════════════════════════════════════════════════════════════
 
+// ── Roofing Aggregation ───────────────────────────────────────────────────────
+
+// ── Roofing Aggregation ───────────────────────────────────────────────────────
+
+function aggregateRoofingFindings(response) {
+  const findings = response.findings || [];
+  const negativeHits = response.negativeHits || [];
+
+  const scoreMap = {};
+  const evidenceMap = {};
+  const termFreqMap = {};
+  const matchedZones = {};
+
+  for (const cat of ROOFING_CATEGORIES) {
+    scoreMap[cat.id] = 0;
+    evidenceMap[cat.id] = [];
+    termFreqMap[cat.id] = {};
+    matchedZones[cat.id] = new Set();
+  }
+
+  const allKeywordsMatched = new Set();
+  const highValueMatched = [];
+  const tier1Terms = new Set();
+  const tier2Terms = new Set();
+  const strongSignalTerms = new Set();
+  const prominentZones = new Set([
+    "hero-heading",
+    "hero",
+    "h1",
+    "h2",
+    "nav",
+    "meta",
+    "service-section",
+    "cta",
+  ]);
+  let hasProminentZone = false;
+
+  for (const f of findings) {
+    const catId = f.category;
+    if (!scoreMap.hasOwnProperty(catId)) continue;
+
+    const w = typeof f.weight === "number" ? f.weight : 1;
+    scoreMap[catId] += w;
+
+    const snippet = (f.snippet || "").trim();
+    const already = evidenceMap[catId].some((e) => e.snippet === snippet);
+    if (!already) {
+      evidenceMap[catId].push({
+        snippet,
+        matchedTerm: f.matchedTerm || "?",
+        tier: f.tier || 1,
+        weight: w,
+        label: f.label || f.matchedTerm,
+        zone: f.zone || f.tag || "?",
+        tag: f.tag || "?",
+        url: f.url || "",
+        xpath: f.xpath || "",
+      });
+    }
+
+    const term = f.matchedTerm || "unknown";
+    allKeywordsMatched.add(term);
+    termFreqMap[catId][term] = (termFreqMap[catId][term] || 0) + 1;
+    if (f.zone) {
+      matchedZones[catId].add(f.zone);
+      if (prominentZones.has(f.zone)) {
+        hasProminentZone = true;
+      }
+    }
+
+    if (f.tier === 1) {
+      tier1Terms.add(term);
+      strongSignalTerms.add(term);
+      if (!highValueMatched.includes(f.label || term)) {
+        highValueMatched.push(f.label || term);
+      }
+    } else if (f.tier === 2) {
+      tier2Terms.add(term);
+      strongSignalTerms.add(term);
+      if (!highValueMatched.includes(f.label || term)) {
+        highValueMatched.push(f.label || term);
+      }
+    }
+  }
+
+  const strongSignalCount = strongSignalTerms.size;
+  const tier1Count = tier1Terms.size;
+  const hasStrongSignal = strongSignalCount > 0;
+
+  // An active category requires at least 15 points (the weight of a core service term)
+  const activeCategoryThreshold = 15;
+  const activeCategoryCount = ROOFING_CATEGORIES.filter(
+    (c) => (scoreMap[c.id] || 0) >= activeCategoryThreshold,
+  ).length;
+
+  const totalPositiveScore = Object.values(scoreMap).reduce((a, b) => a + b, 0);
+  const penaltyScore = negativeHits.length * NEGATIVE_PENALTY;
+  const netScore = Math.max(0, totalPositiveScore - penaltyScore);
+  let rawConfidence = Math.min(100, Math.round((netScore / ROOFING_THRESHOLD) * 100));
+
+  // ── Strict Multi-Signal Gates for Roofing Detection Mode ───────────────────
+
+  // Gate 1: No Tier 1 or Tier 2 strong signal at all → cap at 15 ("NO").
+  // Generic or ancillary terms alone (gutters, skylights, standalone "roof") cannot drive verdict.
+  if (!hasStrongSignal && rawConfidence > 15) {
+    rawConfidence = 15;
+  }
+
+  // Gate 2: Only one distinct strong signal term matched → cap at 28 ("UNCERTAIN").
+  // A company cannot be classified as a roofing company based on a single keyword.
+  if (strongSignalCount <= 1 && rawConfidence > 28) {
+    rawConfidence = 28;
+  }
+
+  // Gate 3: Lack of prominent zone support → cap at 45 ("UNCERTAIN").
+  // Genuine roofing contractors feature services in Hero, H1, H2, Nav, Title, or Service sections.
+  // Terms found only in secondary body text or footers cannot validate a primary roofing business.
+  if (!hasProminentZone && rawConfidence > 45) {
+    rawConfidence = 45;
+  }
+
+  // Gate 4: Multi-Signal Confirmation required for "YES" (verdict >= 60).
+  // A company must exhibit either:
+  //   a) 3+ distinct strong roofing signals (e.g. roof installation + roof repair + shingle roofing), OR
+  //   b) 2+ distinct strong signals with at least one Tier 1 core service, active evidence across 2+ categories, and prominent zone presence.
+  const qualifiesForYes =
+    strongSignalCount >= 3 ||
+    (strongSignalCount >= 2 && tier1Count >= 1 && activeCategoryCount >= 2 && hasProminentZone);
+
+  if (rawConfidence >= 60 && !qualifiesForYes) {
+    rawConfidence = 50;
+  }
+
+  // Gate 5: High Confidence (>= 80) requires multi-service depth.
+  // Must have 4+ distinct strong signals, 2+ active categories, at least 2 Tier 1 terms, and prominent zone support.
+  if (
+    rawConfidence >= 80 &&
+    (strongSignalCount < 4 || activeCategoryCount < 2 || tier1Count < 2 || !hasProminentZone)
+  ) {
+    rawConfidence = 75;
+  }
+
+  // Gate 6: Negative Penalty signals from non-roofing primary businesses.
+  // If multiple negative hits (e.g. pressure washing, solar installation, siding contractor) are detected,
+  // cap confidence to ensure non-roofers are suppressed.
+  if (negativeHits.length >= 2 && rawConfidence > 40) {
+    rawConfidence = 40;
+  }
+  if (negativeHits.length >= 4 && rawConfidence > 20) {
+    rawConfidence = 20;
+  }
+
+  const confidence = Math.max(0, rawConfidence);
+
+  // Roofing company verdict
+  let roofingCompany;
+  if (confidence >= 60) roofingCompany = "YES";
+  else if (confidence >= 25) roofingCompany = "UNCERTAIN";
+  else roofingCompany = "NO";
+
+  // Confidence label
+  let confidenceLabel;
+  if (confidence >= 95) confidenceLabel = "Very Strong Roofing Evidence";
+  else if (confidence >= 80) confidenceLabel = "Strong Roofing Evidence";
+  else if (confidence >= 60) confidenceLabel = "Moderate Roofing Evidence";
+  else if (confidence >= 40) confidenceLabel = "Weak / Uncertain";
+  else confidenceLabel = "Probably Not a Roofing Company";
+
+  const catConfidence = {};
+  for (const cat of ROOFING_CATEGORIES) {
+    const s = scoreMap[cat.id];
+    catConfidence[cat.id] =
+      s === 0
+        ? 0
+        : Math.min(100, Math.round((s / (ROOFING_THRESHOLD / ROOFING_CATEGORIES.length)) * 100));
+  }
+
+  const detectedServices = highValueMatched.slice(0, 24);
+  const reasons = buildRoofingReasons(
+    confidence,
+    scoreMap,
+    matchedZones,
+    negativeHits,
+    detectedServices,
+    catConfidence,
+    hasStrongSignal,
+    strongSignalCount,
+    tier1Count,
+    activeCategoryCount,
+    hasProminentZone,
+  );
+
+  return {
+    mode: "roofing",
+    confidence,
+    confidenceLabel,
+    roofingCompany,
+    netScore,
+    totalPositiveScore,
+    penaltyScore,
+    catConfidence,
+    scoreMap,
+    evidenceMap,
+    termFreqMap,
+    matchedZones: Object.fromEntries(
+      Object.entries(matchedZones).map(([k, v]) => [k, [...v]]),
+    ),
+    detectedServices,
+    allKeywordsMatched: [...allKeywordsMatched],
+    negativeHits,
+    secondaryServices: [],
+    reasons,
+  };
+}
+
+function buildRoofingReasons(
+  confidence,
+  scoreMap,
+  matchedZones,
+  negativeHits,
+  detectedServices,
+  catConfidence,
+  hasStrongSignal,
+  strongSignalCount,
+  tier1Count,
+  activeCategoryCount,
+  hasProminentZone,
+) {
+  const reasons = [];
+
+  if (confidence === 0) {
+    reasons.push("\u274c No roofing signals detected on this page.");
+    return reasons;
+  }
+
+  if (confidence >= 80) {
+    reasons.push("\u2705 Genuine roofing contractor \u2014 strong multi-service evidence confirmed across key zones");
+  } else if (confidence >= 60) {
+    reasons.push("\ud83d\udd36 Likely roofing company \u2014 solid dedicated service evidence confirmed");
+  } else if (confidence >= 25) {
+    reasons.push("\ud83d\udd38 Possible roofing involvement \u2014 moderate or isolated signals detected");
+  } else {
+    reasons.push("\u26a0\ufe0f Weak roofing presence \u2014 low-tier, ancillary, or incidental terminology only");
+  }
+
+  // Multi-signal gating explanations
+  if (!hasStrongSignal) {
+    reasons.push("\u26a0\ufe0f No dedicated roofing service terms found \u2014 only generic or ancillary mentions");
+  } else if (strongSignalCount <= 1) {
+    reasons.push("\u2139\ufe0f Only one distinct roofing term matched \u2014 multiple service signals required for confirmation");
+  } else if (!hasProminentZone) {
+    reasons.push("\u26a0\ufe0f Roofing terms appear only in body/secondary text \u2014 not featured in navigation, headings, or service sections");
+  } else if (confidence < 60 && strongSignalCount < 3) {
+    reasons.push("\u2139\ufe0f Limited service breadth \u2014 additional dedicated roofing services needed for full confirmation");
+  }
+
+  const allZones = new Set(Object.values(matchedZones).flat());
+  if (allZones.has("hero-heading") || allZones.has("h1"))
+    reasons.push("\ud83c\udfaf Roofing keywords found in hero heading / H1");
+  if (allZones.has("nav"))
+    reasons.push("\ud83d\udccd Roofing services listed in navigation menu");
+  if (allZones.has("service-section"))
+    reasons.push("\ud83d\udccb Dedicated roofing services section detected");
+  if (allZones.has("meta"))
+    reasons.push("\ud83d\udd0d Roofing keywords in page title or meta description");
+  if (allZones.has("cta"))
+    reasons.push("\ud83d\udce3 Roofing call-to-action buttons present");
+  if (allZones.has("structured-data"))
+    reasons.push("\ud83d\uddc2\ufe0f Roofing signals found in structured data (JSON-LD)");
+
+  const topCats = ROOFING_CATEGORIES.filter((c) => catConfidence[c.id] >= 25);
+  if (topCats.length > 0) {
+    reasons.push("\ud83c\udfc6 Services confirmed: " + topCats.map((c) => c.label).join(", "));
+  }
+
+  if (negativeHits.length > 0) {
+    reasons.push(`\u26d4 Penalty signals: ${negativeHits.slice(0, 3).join(", ")}${negativeHits.length > 3 ? ` +${negativeHits.length - 3} more` : ""}`);
+  }
+
+  return reasons;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// REASON BUILDERS
+// ══════════════════════════════════════════════════════════════════════════════
+
 function buildHardscapeReasons(
   confidence,
   scoreMap,
@@ -1017,6 +1415,9 @@ function buildHardscapeReasons(
   negativeHits,
   detectedServices,
   catConfidence,
+  hasStrongSignal = true,
+  strongSignalCount = 0,
+  activeCategoryCount = 0,
 ) {
   const reasons = [];
 
@@ -1038,6 +1439,17 @@ function buildHardscapeReasons(
   } else {
     reasons.push(
       "⚠️ Weak hardscape presence — mostly generic or low-value terms",
+    );
+  }
+
+  // v5.1: Explain when multi-signal gates suppressed the score
+  if (!hasStrongSignal) {
+    reasons.push(
+      "⚠️ No specific hardscape service terms found — only generic 'outdoor' phrases detected",
+    );
+  } else if (strongSignalCount <= 1 && activeCategoryCount <= 1) {
+    reasons.push(
+      "ℹ️ Only one distinct hardscape service category matched — more signals needed for higher confidence",
     );
   }
 
@@ -1163,6 +1575,7 @@ function buildHvacEvidenceSignals(matchedZones, scoreMap, detectedServices) {
 
 function renderDashboard(data) {
   if (data.mode === "hvac") return renderHvacDashboard(data);
+  if (data.mode === "roofing") return renderRoofingDashboard(data);
   return renderHardscapeDashboard(data);
 }
 
@@ -1240,7 +1653,7 @@ function renderHardscapeDashboard(data) {
   }
   html += `</div>`;
 
-  html += buildReasonsCollapsible(reasons, "💡 Why Classified");
+  html += buildReasonsCollapsible(reasons, "💡 Why Classified", "hardscape");
   html += buildEvidenceCollapsible(data, HS_CATEGORIES, "patios");
   html += buildKeywordsCollapsible(data, HS_CATEGORIES);
 
@@ -1363,7 +1776,7 @@ function renderHvacDashboard(data) {
       </div>`;
   }
 
-  html += buildReasonsCollapsible(reasons, "💡 Why Classified");
+  html += buildReasonsCollapsible(reasons, "💡 Why Classified", "hvac");
   html += buildEvidenceCollapsible(data, HVAC_CATEGORIES, "cooling", "hvac");
   html += buildKeywordsCollapsible(data, HVAC_CATEGORIES, "hvac");
 
@@ -1388,22 +1801,126 @@ function renderHvacDashboard(data) {
   wireEvidenceClicks(container);
 }
 
+// ── Roofing Dashboard ────────────────────────────────────────────────────────
+
+function renderRoofingDashboard(data) {
+  const container = document.getElementById("resultContainer");
+  const {
+    confidence,
+    confidenceLabel,
+    roofingCompany,
+    catConfidence,
+    evidenceMap,
+    termFreqMap,
+    detectedServices,
+    negativeHits,
+    reasons,
+  } = data;
+
+  const confClass = confidence >= 65 ? "high" : confidence >= 40 ? "medium" : "low";
+  const verdictClass = roofingCompany === "YES" ? "yes" : roofingCompany === "NO" ? "no" : "uncertain";
+  const verdictIcon = roofingCompany === "YES" ? "\u2705" : roofingCompany === "NO" ? "\u274c" : "\u26a0\ufe0f";
+
+  let html = "";
+
+  // ── Primary roofing card ──
+  html += `
+    <div class="primary-card roof-card">
+      <div class="primary-top">
+        <div>
+          <div class="primary-meta roof-meta">\ud83c\udfe0 Roofing Detection</div>
+          <div class="primary-name">${confidenceLabel}</div>
+          <div class="hvac-verdict ${verdictClass}">${verdictIcon} Roofing Company: <strong>${roofingCompany}</strong></div>
+        </div>
+        <div class="primary-conf ${confClass}">${confidence}%</div>
+      </div>
+      <div class="primary-reasons">${reasons.slice(0, 2).join(" \u00b7 ")}</div>
+    </div>`;
+
+  // ── Detected roofing services chips ──
+  if (detectedServices.length > 0) {
+    const chips = detectedServices
+      .map((s) => `<span class="service-chip" style="background:rgba(239,68,68,0.18);border-color:rgba(239,68,68,0.4);color:#fca5a5;">${s}</span>`)
+      .join("");
+    html += `
+      <div class="detected-services">
+        <div class="section-label" style="color:#ef4444;">\ud83c\udfe0 Roofing Services Detected</div>
+        <div class="chip-row">${chips}</div>
+      </div>`;
+  }
+
+  // ── Service category grid ──
+  html += `<div class="result-grid three-col">`;
+  for (const cat of ROOFING_CATEGORIES) {
+    const score = catConfidence[cat.id] || 0;
+    const isTop =
+      score === Math.max(...ROOFING_CATEGORIES.map((c) => catConfidence[c.id] || 0)) && score > 0;
+    html += `
+      <div class="service-card ${isTop ? "is-primary-hvac" : ""}">
+        <div class="service-icon">${cat.icon}</div>
+        <div class="service-name">${cat.label}</div>
+        <div class="service-score" style="color:${cat.color}">${score}%</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${score}%;background:${cat.color}"></div></div>
+        <div class="service-matches">${evidenceMap[cat.id]?.length || 0} hit${(evidenceMap[cat.id]?.length || 0) !== 1 ? "s" : ""}</div>
+      </div>`;
+  }
+  html += `</div>`;
+
+  html += buildReasonsCollapsible(reasons, "\ud83d\udca1 Why Classified", "roof");
+  html += buildEvidenceCollapsible(data, ROOFING_CATEGORIES, "roof_replacement", "roof");
+  html += buildKeywordsCollapsible(data, ROOFING_CATEGORIES, "roof");
+
+  // ── Negative signals ──
+  if (negativeHits.length > 0) {
+    const negChips = negativeHits
+      .map((n) => `<span class="neg-chip">${n}</span>`)
+      .join("");
+    html += `
+      <div class="negative-section">
+        <div class="section-label negative">\u26d4 Penalty Signals Detected (\u2212${negativeHits.length * 10} pts)</div>
+        <div class="chip-row">${negChips}</div>
+      </div>`;
+  }
+
+  html += buildPagesFooter(data);
+
+  container.innerHTML = html;
+  container
+    .querySelectorAll(".collapsible")
+    .forEach((el) => makeCollapsible(el));
+  wireEvidenceClicks(container);
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // SHARED HTML BUILDERS
 // ══════════════════════════════════════════════════════════════════════════════
 
-function buildReasonsCollapsible(reasons, title) {
+function buildReasonsCollapsible(reasons, title, modeClass) {
   if (!reasons || reasons.length === 0) return "";
   const reasonsHtml = reasons
     .map((r) => `<div class="reason-item">${r}</div>`)
     .join("");
+  const badgeClass = modeClass === "hvac" ? "why-loc-badge hvac-badge" : "why-loc-badge";
   return `
     <div class="collapsible open" id="whySection">
       <div class="collapsible-header">
         <span class="collapsible-title">${title} <span class="collapsible-count">${reasons.length}</span></span>
         <span class="collapsible-arrow">▼</span>
       </div>
-      <div class="collapsible-body">${reasonsHtml}</div>
+      <div class="collapsible-body">
+        <div class="${badgeClass}" id="whySectionLocBadge">
+          <div class="why-loc-badge-item">
+            <span class="why-loc-badge-label">🗺️ State</span>
+            <span class="why-loc-badge-val loading" id="whyLocState">detecting…</span>
+          </div>
+          <span class="why-loc-sep">|</span>
+          <div class="why-loc-badge-item">
+            <span class="why-loc-badge-label">📍 City</span>
+            <span class="why-loc-badge-val loading" id="whyLocCity">detecting…</span>
+          </div>
+        </div>
+        ${reasonsHtml}
+      </div>
     </div>`;
 }
 
@@ -1571,8 +2088,13 @@ function updateCopyButtons(mode) {
   if (mode === "hvac") {
     copyPrimaryBtn.className = "btn-action blue";
     copyPrimaryBtn.textContent = "📋 Copy HVAC Score";
+  } else if (mode === "roofing") {
+    copyPrimaryBtn.className = "btn-action";
+    copyPrimaryBtn.style.cssText = "background:rgba(239,68,68,0.18);border-color:rgba(239,68,68,0.45);color:#ef4444;";
+    copyPrimaryBtn.textContent = "📋 Copy Roofing Score";
   } else {
     copyPrimaryBtn.className = "btn-action amber";
+    copyPrimaryBtn.style.cssText = "";
     copyPrimaryBtn.textContent = "📋 Copy Score";
   }
 }
@@ -1584,7 +2106,14 @@ function copyPrimary() {
 
   let text;
   if (d.mode === "hvac") {
-    text = `HVAC Company: ${d.hvacCompany} — Confidence: ${conf}% — ${d.confidenceLabel}`;
+    text = `HVAC Company: ${d.hvacCompany} \u2014 Confidence: ${conf}% \u2014 ${d.confidenceLabel}`;
+  } else if (d.mode === "roofing") {
+    const label =
+      conf >= 75 ? "Genuine Roofing Contractor"
+      : conf >= 45 ? "Likely Roofing Company"
+      : conf >= 20 ? "Possible Roofing Work"
+      : "Not a Roofing Company";
+    text = `${label} \u2014 ${conf}%`;
   } else {
     const label =
       conf >= 75
@@ -1594,7 +2123,7 @@ function copyPrimary() {
           : conf >= 20
             ? "Possible Hardscape Work"
             : "Not a Hardscape Company";
-    text = `${label} — ${conf}%`;
+    text = `${label} \u2014 ${conf}%`;
   }
 
   navigator.clipboard.writeText(text).then(() => {
@@ -1614,7 +2143,9 @@ function copyAll() {
     .replace(/^https?:\/\//, "")
     .split("/")[0];
   const conf = d.confidence || 0;
-  const categories = d.mode === "hvac" ? HVAC_CATEGORIES : HS_CATEGORIES;
+  const categories = d.mode === "hvac" ? HVAC_CATEGORIES
+    : d.mode === "roofing" ? ROOFING_CATEGORIES
+    : HS_CATEGORIES;
 
   let text = `====================================\n`;
 
@@ -1653,8 +2184,44 @@ function copyAll() {
     if (d.evidenceSignals && d.evidenceSignals.length > 0) {
       text += `\nEVIDENCE SIGNALS:\n`;
       d.evidenceSignals.forEach((s) => {
-        text += `  📌 ${s}\n`;
+        text += `  \ud83d\udccc ${s}\n`;
       });
+    }
+  } else if (d.mode === "roofing") {
+    const label =
+      conf >= 75 ? "Genuine Roofing Contractor"
+      : conf >= 45 ? "Likely Roofing Company"
+      : conf >= 20 ? "Possible Roofing Work"
+      : "Not a Roofing Company";
+
+    text += `ROOFING COMPANY FINDER REPORT\n`;
+    text += `====================================\n\n`;
+    text += `Company Website : ${domain || "Unknown"}\n`;
+    text += `Full URL        : ${d.pages?.[0]?.url || "N/A"}\n`;
+    text += `Detection Mode  : Roofing\n`;
+    text += `Confidence Score: ${conf}% \u2014 ${label}\n`;
+    text += `Positive Score  : ${d.totalPositiveScore || 0} pts\n`;
+    text += `Penalty Score   : \u2212${d.penaltyScore || 0} pts\n`;
+    text += `Net Score       : ${d.netScore || 0} pts\n`;
+    if (currentLocationData) {
+      text += `Company City    : ${currentLocationData.primaryCity || "Not detected"}\n`;
+      text += `Company State   : ${currentLocationData.primaryState || "Not detected"}\n`;
+      text += `Location Conf.  : ${currentLocationData.confidence || "none"}\n`;
+    }
+    text += `\n`;
+
+    text += `ROOFING SERVICES DETECTED:\n`;
+    if (d.detectedServices && d.detectedServices.length > 0) {
+      d.detectedServices.forEach((s) => {
+        text += `  \u2022 ${s}\n`;
+      });
+    } else {
+      text += "  (none detected)\n";
+    }
+
+    text += `\nSERVICE CATEGORY BREAKDOWN:\n`;
+    for (const cat of ROOFING_CATEGORIES) {
+      text += `  ${cat.icon} ${cat.label}: ${d.catConfidence?.[cat.id] || 0}%\n`;
     }
   } else {
     const label =
@@ -1765,8 +2332,18 @@ function updateDebugPanel(data) {
   const body = document.getElementById("debugBody");
   if (!body) return;
 
-  const categories = data.mode === "hvac" ? HVAC_CATEGORIES : HS_CATEGORIES;
-  const threshold = data.mode === "hvac" ? HVAC_THRESHOLD : HS_THRESHOLD;
+  const categories =
+    data.mode === "hvac"
+      ? HVAC_CATEGORIES
+      : data.mode === "roofing"
+      ? ROOFING_CATEGORIES
+      : HS_CATEGORIES;
+  const threshold =
+    data.mode === "hvac"
+      ? HVAC_THRESHOLD
+      : data.mode === "roofing"
+      ? ROOFING_THRESHOLD
+      : HS_THRESHOLD;
 
   const catLines = categories
     .map(
@@ -1776,7 +2353,7 @@ function updateDebugPanel(data) {
     .join("<br>");
 
   body.innerHTML = `
-    <div class="debug-row"><strong>Mode:</strong> ${data.mode === "hvac" ? "🌡️ HVAC" : "🧱 Hardscaping"}</div>
+    <div class="debug-row"><strong>Mode:</strong> ${data.mode === "hvac" ? "🌡️ HVAC" : data.mode === "roofing" ? "🏠 Roofing" : "🧱 Hardscaping"}</div>
     <div class="debug-row"><strong>Nodes:</strong> ${data.totalNodes || 0}</div>
     <div class="debug-row"><strong>Text:</strong> ${(data.totalText || 0).toLocaleString()} chars</div>
     <div class="debug-row"><strong>Hits:</strong> ${data.totalHits || 0}</div>
@@ -1785,7 +2362,7 @@ function updateDebugPanel(data) {
     <div class="debug-row"><strong>Penalty score:</strong> −${data.penaltyScore || 0} pts (${data.negativeHits?.length || 0} signals)</div>
     <div class="debug-row"><strong>Net score:</strong> ${data.netScore || 0} pts → ${data.confidence || 0}%</div>
     <div class="debug-row"><strong>Threshold:</strong> ${threshold} pts = 100%</div>
-    ${data.mode === "hvac" ? `<div class="debug-row"><strong>HVAC Company:</strong> ${data.hvacCompany || "?"}</div>` : ""}
+    ${data.mode === "hvac" ? `<div class="debug-row"><strong>HVAC Company:</strong> ${data.hvacCompany || "?"}</div>` : data.mode === "roofing" ? `<div class="debug-row"><strong>Roofing Company:</strong> ${data.roofingCompany || "?"}</div>` : ""}
     <hr class="debug-divider">
     <div class="debug-row"><strong>Category scores:</strong><br>${catLines}</div>
     ${
@@ -1847,7 +2424,12 @@ function showError(msg) {
 async function autoHighlight(tabId, scanData, mode) {
   if (!scanData || !scanData.termFreqMap) return;
 
-  const categories = mode === "hvac" ? HVAC_CATEGORIES : HS_CATEGORIES;
+  const categories =
+    mode === "hvac"
+      ? HVAC_CATEGORIES
+      : mode === "roofing"
+      ? ROOFING_CATEGORIES
+      : HS_CATEGORIES;
   const terms = [];
   const seen = new Set();
 
@@ -1945,13 +2527,32 @@ async function extractAndRenderLocation(tabId) {
     currentLocationData = locationData || null;
     section.innerHTML = buildLocationCardHtml(locationData || { confidence: "none" });
     wireLocationCopyHandlers(section);
+    updateWhyLocBadge(locationData);
 
   } catch (e) {
     console.warn("[Popup] Location extraction failed:", e.message);
     currentLocationData = null;
     section.innerHTML = buildLocationCardHtml({ confidence: "none", error: e.message });
     wireLocationCopyHandlers(section);
+    updateWhyLocBadge(null);
   }
+}
+
+// ── Update State/City badge inside WHY CLASSIFIED box ────────────────────────
+
+function updateWhyLocBadge(locationData) {
+  const stateEl = document.getElementById("whyLocState");
+  const cityEl  = document.getElementById("whyLocCity");
+  if (!stateEl || !cityEl) return; // WHY CLASSIFIED box not rendered (no reasons)
+
+  const state = locationData && locationData.primaryState ? locationData.primaryState : null;
+  const city  = locationData && locationData.primaryCity  ? locationData.primaryCity  : null;
+
+  stateEl.textContent = state || "Not detected";
+  stateEl.classList.toggle("loading", !state);
+
+  cityEl.textContent = city || "Not detected";
+  cityEl.classList.toggle("loading", !city);
 }
 
 // ── Build the location card HTML ──────────────────────────────────────────────
@@ -2783,15 +3384,33 @@ function onRowNumberChanged() {
 // ── Single Row Competitor Search ──
 
 async function runCompetitorFinder() {
-  if (!currentCompetitorData || !currentCompetitorData.isValid) {
-    alert("Please select a row with a Main Service or Company Name.");
-    return;
+  // Sync row number from input field
+  const inputEl = document.getElementById("compRowNumInput");
+  if (inputEl) {
+    const row = parseInt(inputEl.value, 10);
+    if (!isNaN(row) && row >= 1) {
+      if (!currentCompetitorData || currentCompetitorData.row !== row) {
+        loadSheetRowsAndDisplay(row);
+      }
+    }
   }
 
-  const findBtn = document.getElementById("compFindBtn");
-  const resCard = document.getElementById("compResultsCard");
-  const res1El  = document.getElementById("compRes1");
-  const res2El  = document.getElementById("compRes2");
+  if (!currentCompetitorData || !currentCompetitorData.isValid) {
+    if (!currentSheetRows || currentSheetRows.length === 0) {
+      await readActiveSheetRow(true);
+    }
+    if (!currentCompetitorData || !currentCompetitorData.isValid) {
+      alert("Please select a row with a Main Service or Company Name.");
+      return;
+    }
+  }
+
+  const findBtn  = document.getElementById("compFindBtn");
+  const resCard  = document.getElementById("compResultsCard");
+  const resRowEl = document.getElementById("compResRow");
+  const resQueryEl = document.getElementById("compResQuery");
+  const res1El   = document.getElementById("compRes1");
+  const res2El   = document.getElementById("compRes2");
   const statusEl = document.getElementById("compSaveStatus");
 
   findBtn.disabled = true;
@@ -2817,6 +3436,8 @@ async function runCompetitorFinder() {
 
       // Update Results Display
       if (resCard) resCard.classList.remove("hidden");
+      if (resRowEl) resRowEl.textContent = currentCompetitorData.row;
+      if (resQueryEl) resQueryEl.textContent = currentCompetitorData.query;
 
       if (res1El) {
         if (c1) {
@@ -2840,19 +3461,9 @@ async function runCompetitorFinder() {
 
       setStatus(`Found ${response.totalFound} competitors`);
 
-      // Auto-save logic:
-      // If cells H & I were empty, or user explicitly enabled overwrite checkbox, auto-save directly!
-      const overwriteChecked = document.getElementById("compOverwriteCheck")?.checked;
-      const hasExisting = currentCompetitorData.existingComp1 || currentCompetitorData.existingComp2;
-
-      if (!hasExisting || overwriteChecked) {
-        await saveCompetitorsToSheet(false);
-      } else {
-        if (statusEl) {
-          statusEl.textContent = "⚠️ Existing values found. Click 'Save to Google Sheet' or check Overwrite to update.";
-          statusEl.style.color = "#d29922";
-          statusEl.classList.remove("hidden");
-        }
+      if (statusEl) {
+        statusEl.textContent = "";
+        statusEl.classList.add("hidden");
       }
     } else {
       showError("Competitor search failed: " + (response ? response.error : "Unknown error"));
@@ -2870,7 +3481,10 @@ async function runCompetitorFinder() {
 // ── Single Row Save to Sheet ──
 
 async function saveCompetitorsToSheet(userClicked = true) {
-  if (!currentCompetitorData || (!currentCompetitorData.foundComp1 && !currentCompetitorData.foundComp2)) return;
+  if (!currentCompetitorData || (!currentCompetitorData.foundComp1 && !currentCompetitorData.foundComp2)) {
+    alert("No competitors found to save yet. Run 'Find Competitors' first.");
+    return;
+  }
 
   const c1 = currentCompetitorData.foundComp1 || "";
   const c2 = currentCompetitorData.foundComp2 || "";
@@ -2925,10 +3539,7 @@ async function saveCompetitorsToSheet(userClicked = true) {
       }
     }
 
-    // 3. Always copy to clipboard as TSV
-    await navigator.clipboard.writeText(`${c1}\t${c2}`).catch(() => {});
-
-    // 4. Update local cache row
+    // 3. Update local cache row
     const rowIndex = row - 1;
     if (currentSheetRows && currentSheetRows[rowIndex]) {
       currentSheetRows[rowIndex][7] = c1;
@@ -2940,23 +3551,24 @@ async function saveCompetitorsToSheet(userClicked = true) {
         statusEl.textContent = `✅ Saved to Sheet: H${row}="${c1 || '—'}" | I${row}="${c2 || '—'}"`;
         statusEl.style.color = "#3fb950";
       } else {
-        statusEl.textContent = `⚠️ Copied to clipboard ("${c1}\t${c2}"). Sign in with Google to enable 1-click sheet save.`;
+        statusEl.textContent = `⚠️ Sign in with Google above to enable 1-click sheet saving.`;
         statusEl.style.color = "#d29922";
       }
       statusEl.classList.remove("hidden");
     }
 
     if (saveBtn) {
-      saveBtn.textContent = saved ? "✅ Saved to Sheet!" : "📋 Copied!";
+      saveBtn.textContent = saved ? "✅ Saved to Sheet!" : "💾 Save to Google Sheet";
       setTimeout(() => { if (saveBtn) saveBtn.textContent = "💾 Save to Google Sheet"; }, 2000);
     }
   } catch (err) {
     console.error("[Competitor] Save error:", err);
     if (statusEl) {
-      statusEl.textContent = `⚠️ Saved to clipboard: "${c1}\t${c2}". Paste in cell H${row}.`;
-      statusEl.style.color = "#d29922";
+      statusEl.textContent = `❌ Error saving: ${err.message}`;
+      statusEl.style.color = "#f85149";
       statusEl.classList.remove("hidden");
     }
+    if (saveBtn) saveBtn.textContent = "💾 Save to Google Sheet";
   }
 }
 
@@ -2968,6 +3580,19 @@ function copyCompetitorsTsv() {
 
   const copyBtn = document.getElementById("compCopyTsvBtn");
   navigator.clipboard.writeText(tsv).then(() => {
+    if (copyBtn) {
+      const orig = copyBtn.textContent;
+      copyBtn.textContent = "✅ Copied!";
+      setTimeout(() => { copyBtn.textContent = orig; }, 1500);
+    }
+  }).catch(() => {
+    // Fallback if clipboard API fails
+    const textarea = document.createElement("textarea");
+    textarea.value = tsv;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
     if (copyBtn) {
       const orig = copyBtn.textContent;
       copyBtn.textContent = "✅ Copied!";
