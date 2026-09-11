@@ -29,6 +29,8 @@
       --comp-primary-glow: rgba(168,85,247,0.18);
       --roof-primary:      #ef4444;
       --roof-primary-glow: rgba(239,68,68,0.18);
+      --moving-primary:      #8b5cf6;
+      --moving-primary-glow: rgba(139,92,246,0.18);
       --success:      #3fb950;
       --warn:         #d29922;
       --danger:       #f85149;
@@ -78,6 +80,7 @@
     .header-title .accent-addr  { color: var(--addr-primary); }
     .header-title .accent-comp  { color: var(--comp-primary); }
     .header-title .accent-roof  { color: var(--roof-primary); }
+    .header-title .accent-moving { color: var(--moving-primary); }
     .ver-badge {
       font-size: 9px;
       font-weight: 600;
@@ -148,6 +151,12 @@
       color: #fff;
       box-shadow: 0 2px 8px rgba(239,68,68,0.35);
     }
+    .mode-btn.active-moving {
+      background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+      border-color: #7c3aed;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(139,92,246,0.35);
+    }
 
     /* ── Status chip ── */
     .status-chip {
@@ -185,6 +194,9 @@
     }
     .progress-fill.roof-fill {
       background: linear-gradient(90deg, #b91c1c, #ef4444, #f87171);
+    }
+    .progress-fill.moving-fill {
+      background: linear-gradient(90deg, #5b21b6, #8b5cf6, #a78bfa);
     }
 
     /* ── Icon Buttons ── */
@@ -237,6 +249,10 @@
       background: linear-gradient(135deg, #b91c1c, #ef4444);
       box-shadow: 0 2px 8px rgba(239,68,68,0.25);
     }
+    .btn-scan-primary.moving-mode {
+      background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+      box-shadow: 0 2px 8px rgba(139,92,246,0.25);
+    }
     .btn-scan-primary:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
     .btn-scan-primary:active:not(:disabled) { transform: translateY(0); }
     .btn-scan-primary:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -284,6 +300,9 @@
     .primary-card.roof-card::before {
       background: linear-gradient(90deg, #b91c1c, #ef4444, #f87171);
     }
+    .primary-card.moving-card::before {
+      background: linear-gradient(90deg, #5b21b6, #8b5cf6, #a78bfa);
+    }
     .primary-top {
       display: flex;
       justify-content: space-between;
@@ -298,7 +317,8 @@
       margin-bottom: 2px;
     }
     .primary-meta.hvac-meta { color: var(--hvac-primary); }
-    .primary-meta.roof-meta { color: var(--roof-primary); }
+    .primary-meta.roof-meta   { color: var(--roof-primary); }
+    .primary-meta.moving-meta { color: var(--moving-primary); }
     .primary-name {
       font-size: 13px;
       font-weight: 800;
@@ -1984,6 +2004,7 @@
       <button class="mode-btn" id="modeHsBtn">🧱 Hardscaping</button>
       <button class="mode-btn" id="modeRoofBtn">🏠 Roofing</button>
       <button class="mode-btn" id="modeAddrBtn">📍 Address</button>
+      <button class="mode-btn" id="modeMovingBtn">🚛 Moving</button>
       <button class="mode-btn" id="modeCompBtn">🎯 Competitors</button>
     </div>
 

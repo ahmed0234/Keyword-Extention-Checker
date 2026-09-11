@@ -4000,6 +4000,373 @@
     "roofing supplier",
   ];
 
+  // ════════════════════════════════════════════════════════════════════════
+  // SECTION B3: MOVING COMPANY KEYWORD LEXICON
+  //
+  // Tier 1 (weight=15): Core moving company identity & dedicated service terms — highest signal
+  // Tier 2 (weight=10): Strong moving service terms — major signal
+  // Tier 3 (weight=5):  Supporting moving terminology — moderate signal
+  // Tier 4 (weight=2):  Contextual words — minimal signal (require many to matter)
+  // ════════════════════════════════════════════════════════════════════════
+
+  const MOVING_KEYWORDS = [
+    // ╔════════════════════════════════════════════════════════════════════
+    // TIER 1 — CORE MOVING COMPANY IDENTITY & DEDICATED PRIMARY SERVICES (weight=15)
+    // ╚════════════════════════════════════════════════════════════════════
+
+    // ── Company Identity (core identity phrases — unambiguous) ──
+    { kw: "moving company",            category: "moving_company", tier: 1, weight: 15, label: "Moving Company" },
+    { kw: "moving companies",          category: "moving_company", tier: 1, weight: 15, label: "Moving Company" },
+    { kw: "moving service",            category: "moving_company", tier: 1, weight: 15, label: "Moving Service" },
+    { kw: "moving services",           category: "moving_company", tier: 1, weight: 15, label: "Moving Services" },
+    { kw: "professional movers",       category: "moving_company", tier: 1, weight: 15, label: "Professional Movers" },
+    { kw: "professional mover",        category: "moving_company", tier: 1, weight: 15, label: "Professional Mover" },
+    { kw: "professional moving",       category: "moving_company", tier: 1, weight: 15, label: "Professional Moving" },
+    { kw: "professional moving company", category: "moving_company", tier: 1, weight: 15, label: "Professional Moving Company" },
+    { kw: "relocation company",        category: "moving_company", tier: 1, weight: 15, label: "Relocation Company" },
+    { kw: "relocation companies",      category: "moving_company", tier: 1, weight: 15, label: "Relocation Company" },
+    { kw: "relocation services",       category: "moving_company", tier: 1, weight: 15, label: "Relocation Services" },
+    { kw: "relocation service",        category: "moving_company", tier: 1, weight: 15, label: "Relocation Service" },
+    { kw: "relocation specialist",     category: "moving_company", tier: 1, weight: 15, label: "Relocation Specialist" },
+    { kw: "relocation specialists",    category: "moving_company", tier: 1, weight: 15, label: "Relocation Specialist" },
+    { kw: "relocation experts",        category: "moving_company", tier: 1, weight: 15, label: "Relocation Experts" },
+    { kw: "relocation expert",         category: "moving_company", tier: 1, weight: 15, label: "Relocation Experts" },
+    { kw: "relocation management",     category: "moving_company", tier: 1, weight: 15, label: "Relocation Management" },
+    { kw: "moving crew",               category: "moving_company", tier: 1, weight: 15, label: "Moving Crew" },
+    { kw: "moving team",               category: "moving_company", tier: 1, weight: 15, label: "Moving Team" },
+    { kw: "moving experts",            category: "moving_company", tier: 1, weight: 15, label: "Moving Experts" },
+    { kw: "moving expert",             category: "moving_company", tier: 1, weight: 15, label: "Moving Experts" },
+    { kw: "moving specialists",        category: "moving_company", tier: 1, weight: 15, label: "Moving Specialists" },
+    { kw: "moving specialist",         category: "moving_company", tier: 1, weight: 15, label: "Moving Specialist" },
+    { kw: "moving contractor",         category: "moving_company", tier: 1, weight: 15, label: "Moving Contractor" },
+    { kw: "licensed movers",           category: "moving_company", tier: 1, weight: 15, label: "Licensed Movers" },
+    { kw: "insured movers",            category: "moving_company", tier: 1, weight: 15, label: "Insured Movers" },
+    { kw: "bonded movers",             category: "moving_company", tier: 1, weight: 15, label: "Bonded Movers" },
+    { kw: "full service movers",       category: "moving_company", tier: 1, weight: 15, label: "Full Service Movers" },
+    { kw: "full-service movers",       category: "moving_company", tier: 1, weight: 15, label: "Full Service Movers" },
+    { kw: "full service moving",       category: "moving_company", tier: 1, weight: 15, label: "Full Service Moving" },
+    { kw: "full-service moving",       category: "moving_company", tier: 1, weight: 15, label: "Full Service Moving" },
+    // Packers and Movers (common Indian/international terminology)
+    { kw: "packers and movers",        category: "moving_company", tier: 1, weight: 15, label: "Packers and Movers" },
+    { kw: "packers & movers",          category: "moving_company", tier: 1, weight: 15, label: "Packers and Movers" },
+    { kw: "packer and mover",          category: "moving_company", tier: 1, weight: 15, label: "Packers and Movers" },
+    { kw: "household shifting",        category: "moving_company", tier: 1, weight: 15, label: "Household Shifting" },
+    { kw: "house shifting",            category: "moving_company", tier: 1, weight: 15, label: "House Shifting" },
+    { kw: "home shifting",             category: "moving_company", tier: 1, weight: 15, label: "Home Shifting" },
+    { kw: "domestic shifting",         category: "moving_company", tier: 1, weight: 15, label: "Domestic Shifting" },
+
+    // ── Residential Moving (dedicated service) ──
+    { kw: "residential moving company",  category: "residential", tier: 1, weight: 15, label: "Residential Moving Company" },
+    { kw: "residential moving services", category: "residential", tier: 1, weight: 15, label: "Residential Moving Services" },
+    { kw: "residential moving service",  category: "residential", tier: 1, weight: 15, label: "Residential Moving Services" },
+    { kw: "residential moving",          category: "residential", tier: 1, weight: 15, label: "Residential Moving" },
+    { kw: "residential movers",          category: "residential", tier: 1, weight: 15, label: "Residential Movers" },
+    { kw: "residential mover",           category: "residential", tier: 1, weight: 15, label: "Residential Movers" },
+    { kw: "home movers",                 category: "residential", tier: 1, weight: 15, label: "Home Movers" },
+    { kw: "home mover",                  category: "residential", tier: 1, weight: 15, label: "Home Movers" },
+    { kw: "house movers",                category: "residential", tier: 1, weight: 15, label: "House Movers" },
+    { kw: "house mover",                 category: "residential", tier: 1, weight: 15, label: "House Movers" },
+    { kw: "house moving",                category: "residential", tier: 1, weight: 15, label: "House Moving" },
+    { kw: "house moving services",       category: "residential", tier: 1, weight: 15, label: "House Moving Services" },
+    { kw: "home moving",                 category: "residential", tier: 1, weight: 15, label: "Home Moving" },
+    { kw: "home moving services",        category: "residential", tier: 1, weight: 15, label: "Home Moving Services" },
+    { kw: "household moving",            category: "residential", tier: 1, weight: 15, label: "Household Moving" },
+    { kw: "household movers",            category: "residential", tier: 1, weight: 15, label: "Household Movers" },
+    { kw: "apartment movers",            category: "residential", tier: 1, weight: 15, label: "Apartment Movers" },
+    { kw: "apartment moving",            category: "residential", tier: 1, weight: 15, label: "Apartment Moving" },
+    { kw: "condo movers",                category: "residential", tier: 1, weight: 15, label: "Condo Movers" },
+    { kw: "home relocation",             category: "residential", tier: 1, weight: 15, label: "Home Relocation" },
+    { kw: "household relocation",        category: "residential", tier: 1, weight: 15, label: "Household Relocation" },
+    { kw: "household goods transportation", category: "residential", tier: 1, weight: 15, label: "Household Goods Transportation" },
+    { kw: "household goods",             category: "residential", tier: 1, weight: 15, label: "Household Goods" },
+
+    // ── Local Movers (dedicated service) ──
+    { kw: "local moving company",        category: "residential", tier: 1, weight: 15, label: "Local Moving Company" },
+    { kw: "local movers",                category: "residential", tier: 1, weight: 15, label: "Local Movers" },
+    { kw: "local mover",                 category: "residential", tier: 1, weight: 15, label: "Local Movers" },
+    { kw: "local moving",                category: "residential", tier: 1, weight: 15, label: "Local Moving" },
+    { kw: "local moving services",       category: "residential", tier: 1, weight: 15, label: "Local Moving Services" },
+
+    // ── Commercial Moving (dedicated service) ──
+    { kw: "commercial moving company",   category: "commercial", tier: 1, weight: 15, label: "Commercial Moving Company" },
+    { kw: "commercial moving services",  category: "commercial", tier: 1, weight: 15, label: "Commercial Moving Services" },
+    { kw: "commercial moving service",   category: "commercial", tier: 1, weight: 15, label: "Commercial Moving Services" },
+    { kw: "commercial moving",           category: "commercial", tier: 1, weight: 15, label: "Commercial Moving" },
+    { kw: "commercial movers",           category: "commercial", tier: 1, weight: 15, label: "Commercial Movers" },
+    { kw: "commercial mover",            category: "commercial", tier: 1, weight: 15, label: "Commercial Movers" },
+    { kw: "office moving",               category: "commercial", tier: 1, weight: 15, label: "Office Moving" },
+    { kw: "office movers",               category: "commercial", tier: 1, weight: 15, label: "Office Movers" },
+    { kw: "office mover",                category: "commercial", tier: 1, weight: 15, label: "Office Movers" },
+    { kw: "office moving services",      category: "commercial", tier: 1, weight: 15, label: "Office Moving Services" },
+    { kw: "office relocation",           category: "commercial", tier: 1, weight: 15, label: "Office Relocation" },
+    { kw: "office relocation services",  category: "commercial", tier: 1, weight: 15, label: "Office Relocation Services" },
+    { kw: "business relocation",         category: "commercial", tier: 1, weight: 15, label: "Business Relocation" },
+    { kw: "corporate relocation",        category: "commercial", tier: 1, weight: 15, label: "Corporate Relocation" },
+    { kw: "corporate moving",            category: "commercial", tier: 1, weight: 15, label: "Corporate Moving" },
+    { kw: "corporate movers",            category: "commercial", tier: 1, weight: 15, label: "Corporate Movers" },
+    { kw: "warehouse moving",            category: "commercial", tier: 1, weight: 15, label: "Warehouse Moving" },
+    { kw: "warehouse relocation",        category: "commercial", tier: 1, weight: 15, label: "Warehouse Relocation" },
+    { kw: "industrial moving",           category: "commercial", tier: 1, weight: 15, label: "Industrial Moving" },
+
+    // ── Long Distance Moving (dedicated service) ──
+    { kw: "long distance moving company",  category: "long_distance", tier: 1, weight: 15, label: "Long Distance Moving Company" },
+    { kw: "long distance moving services", category: "long_distance", tier: 1, weight: 15, label: "Long Distance Moving Services" },
+    { kw: "long distance moving",          category: "long_distance", tier: 1, weight: 15, label: "Long Distance Moving" },
+    { kw: "long-distance moving",          category: "long_distance", tier: 1, weight: 15, label: "Long Distance Moving" },
+    { kw: "long distance movers",          category: "long_distance", tier: 1, weight: 15, label: "Long Distance Movers" },
+    { kw: "long-distance movers",          category: "long_distance", tier: 1, weight: 15, label: "Long Distance Movers" },
+    { kw: "long distance mover",           category: "long_distance", tier: 1, weight: 15, label: "Long Distance Movers" },
+    { kw: "interstate movers",             category: "long_distance", tier: 1, weight: 15, label: "Interstate Movers" },
+    { kw: "interstate mover",              category: "long_distance", tier: 1, weight: 15, label: "Interstate Movers" },
+    { kw: "interstate moving",             category: "long_distance", tier: 1, weight: 15, label: "Interstate Moving" },
+    { kw: "interstate moving services",    category: "long_distance", tier: 1, weight: 15, label: "Interstate Moving Services" },
+    { kw: "cross country moving",          category: "long_distance", tier: 1, weight: 15, label: "Cross Country Moving" },
+    { kw: "cross-country movers",          category: "long_distance", tier: 1, weight: 15, label: "Cross Country Movers" },
+    { kw: "cross country movers",          category: "long_distance", tier: 1, weight: 15, label: "Cross Country Movers" },
+    { kw: "state to state movers",         category: "long_distance", tier: 1, weight: 15, label: "State to State Movers" },
+    { kw: "state-to-state movers",         category: "long_distance", tier: 1, weight: 15, label: "State to State Movers" },
+    { kw: "nationwide moving",             category: "long_distance", tier: 1, weight: 15, label: "Nationwide Moving" },
+    { kw: "nationwide movers",             category: "long_distance", tier: 1, weight: 15, label: "Nationwide Movers" },
+    { kw: "international moving",          category: "long_distance", tier: 1, weight: 15, label: "International Moving" },
+    { kw: "international movers",          category: "long_distance", tier: 1, weight: 15, label: "International Movers" },
+    { kw: "international relocation",      category: "long_distance", tier: 1, weight: 15, label: "International Relocation" },
+    { kw: "international move",            category: "long_distance", tier: 1, weight: 15, label: "International Move" },
+    { kw: "overseas moving",               category: "long_distance", tier: 1, weight: 15, label: "Overseas Moving" },
+    { kw: "overseas relocation",           category: "long_distance", tier: 1, weight: 15, label: "Overseas Relocation" },
+
+    // ── Packing Services (dedicated primary service) ──
+    { kw: "packing and moving",            category: "packing", tier: 1, weight: 15, label: "Packing and Moving" },
+    { kw: "packing & moving",              category: "packing", tier: 1, weight: 15, label: "Packing & Moving" },
+    { kw: "packing and moving services",   category: "packing", tier: 1, weight: 15, label: "Packing and Moving Services" },
+    { kw: "packing and unpacking",         category: "packing", tier: 1, weight: 15, label: "Packing and Unpacking" },
+    { kw: "packing and unpacking services",category: "packing", tier: 1, weight: 15, label: "Packing and Unpacking" },
+    { kw: "professional packing",          category: "packing", tier: 1, weight: 15, label: "Professional Packing" },
+    { kw: "professional packing services", category: "packing", tier: 1, weight: 15, label: "Professional Packing" },
+    { kw: "full packing services",         category: "packing", tier: 1, weight: 15, label: "Full Packing Services" },
+    { kw: "furniture packing",             category: "packing", tier: 1, weight: 15, label: "Furniture Packing" },
+    { kw: "furniture disassembly",         category: "packing", tier: 1, weight: 15, label: "Furniture Disassembly" },
+    { kw: "furniture assembly",            category: "packing", tier: 1, weight: 15, label: "Furniture Assembly" },
+    { kw: "disassembly and reassembly",    category: "packing", tier: 1, weight: 15, label: "Disassembly and Reassembly" },
+
+    // ── Moving & Storage (dedicated service) ──
+    { kw: "moving and storage",            category: "moving_storage", tier: 1, weight: 15, label: "Moving and Storage" },
+    { kw: "moving & storage",              category: "moving_storage", tier: 1, weight: 15, label: "Moving & Storage" },
+    { kw: "moving storage",                category: "moving_storage", tier: 1, weight: 15, label: "Moving Storage" },
+    { kw: "moving and storage company",    category: "moving_storage", tier: 1, weight: 15, label: "Moving and Storage Company" },
+    { kw: "moving and storage services",   category: "moving_storage", tier: 1, weight: 15, label: "Moving and Storage Services" },
+
+    // ╔════════════════════════════════════════════════════════════════════
+    // TIER 2 — STRONG MOVING SERVICE TERMS (weight=10)
+    // ╚════════════════════════════════════════════════════════════════════
+
+    { kw: "movers",                        category: "moving_company", tier: 2, weight: 10, label: "Movers" },
+    { kw: "mover",                         category: "moving_company", tier: 2, weight: 10, label: "Mover" },
+    { kw: "moving quote",                  category: "moving_company", tier: 2, weight: 10, label: "Moving Quote" },
+    { kw: "moving estimate",               category: "moving_company", tier: 2, weight: 10, label: "Moving Estimate" },
+    { kw: "moving estimates",              category: "moving_company", tier: 2, weight: 10, label: "Moving Estimate" },
+    { kw: "free moving quote",             category: "moving_company", tier: 2, weight: 10, label: "Free Moving Quote" },
+    { kw: "free moving estimate",          category: "moving_company", tier: 2, weight: 10, label: "Free Moving Estimate" },
+    { kw: "moving cost",                   category: "moving_company", tier: 2, weight: 10, label: "Moving Cost" },
+    { kw: "moving rates",                  category: "moving_company", tier: 2, weight: 10, label: "Moving Rates" },
+    { kw: "moving price",                  category: "moving_company", tier: 2, weight: 10, label: "Moving Price" },
+    { kw: "book your move",                category: "moving_company", tier: 2, weight: 10, label: "Book Your Move" },
+    { kw: "schedule your move",            category: "moving_company", tier: 2, weight: 10, label: "Schedule Your Move" },
+    { kw: "start your move",               category: "moving_company", tier: 2, weight: 10, label: "Start Your Move" },
+    { kw: "get a moving quote",            category: "moving_company", tier: 2, weight: 10, label: "Get a Moving Quote" },
+    { kw: "request a moving estimate",     category: "moving_company", tier: 2, weight: 10, label: "Request a Moving Estimate" },
+    { kw: "hire movers",                   category: "moving_company", tier: 2, weight: 10, label: "Hire Movers" },
+    { kw: "book movers",                   category: "moving_company", tier: 2, weight: 10, label: "Book Movers" },
+    { kw: "hire a mover",                  category: "moving_company", tier: 2, weight: 10, label: "Hire a Mover" },
+    { kw: "moving logistics",              category: "moving_company", tier: 2, weight: 10, label: "Moving Logistics" },
+    { kw: "relocation logistics",          category: "moving_company", tier: 2, weight: 10, label: "Relocation Logistics" },
+    { kw: "domestic moving",               category: "residential",    tier: 2, weight: 10, label: "Domestic Moving" },
+    { kw: "domestic movers",               category: "residential",    tier: 2, weight: 10, label: "Domestic Movers" },
+    { kw: "family movers",                 category: "residential",    tier: 2, weight: 10, label: "Family Movers" },
+    { kw: "senior moving",                 category: "residential",    tier: 2, weight: 10, label: "Senior Moving" },
+    { kw: "senior movers",                 category: "residential",    tier: 2, weight: 10, label: "Senior Movers" },
+    { kw: "student moving",                category: "residential",    tier: 2, weight: 10, label: "Student Moving" },
+    { kw: "military moving",               category: "residential",    tier: 2, weight: 10, label: "Military Moving" },
+    { kw: "military relocation",           category: "residential",    tier: 2, weight: 10, label: "Military Relocation" },
+    { kw: "furniture movers",              category: "residential",    tier: 2, weight: 10, label: "Furniture Movers" },
+    { kw: "furniture moving",              category: "residential",    tier: 2, weight: 10, label: "Furniture Moving" },
+    { kw: "furniture moving services",     category: "residential",    tier: 2, weight: 10, label: "Furniture Moving Services" },
+    { kw: "piano movers",                  category: "residential",    tier: 2, weight: 10, label: "Piano Movers" },
+    { kw: "piano moving",                  category: "residential",    tier: 2, weight: 10, label: "Piano Moving" },
+    { kw: "antique moving",                category: "residential",    tier: 2, weight: 10, label: "Antique Moving" },
+    { kw: "specialty moving",              category: "residential",    tier: 2, weight: 10, label: "Specialty Moving" },
+    { kw: "fragile item moving",           category: "residential",    tier: 2, weight: 10, label: "Fragile Item Moving" },
+    { kw: "appliance moving",              category: "residential",    tier: 2, weight: 10, label: "Appliance Moving" },
+    { kw: "vehicle moving",                category: "residential",    tier: 2, weight: 10, label: "Vehicle Moving" },
+    { kw: "car moving",                    category: "residential",    tier: 2, weight: 10, label: "Car Moving" },
+    { kw: "car shipping",                  category: "residential",    tier: 2, weight: 10, label: "Car Shipping" },
+    { kw: "auto transport",                category: "residential",    tier: 2, weight: 10, label: "Auto Transport" },
+    { kw: "loading and unloading",         category: "residential",    tier: 2, weight: 10, label: "Loading and Unloading" },
+    { kw: "loading & unloading",           category: "residential",    tier: 2, weight: 10, label: "Loading & Unloading" },
+    { kw: "loading crew",                  category: "residential",    tier: 2, weight: 10, label: "Loading Crew" },
+    { kw: "unloading crew",                category: "residential",    tier: 2, weight: 10, label: "Unloading Crew" },
+    { kw: "moving truck",                  category: "residential",    tier: 2, weight: 10, label: "Moving Truck" },
+    { kw: "moving trucks",                 category: "residential",    tier: 2, weight: 10, label: "Moving Truck" },
+    { kw: "moving van",                    category: "residential",    tier: 2, weight: 10, label: "Moving Van" },
+    { kw: "moving vans",                   category: "residential",    tier: 2, weight: 10, label: "Moving Van" },
+    { kw: "packing service",               category: "packing",        tier: 2, weight: 10, label: "Packing Service" },
+    { kw: "packing services",              category: "packing",        tier: 2, weight: 10, label: "Packing Services" },
+    { kw: "unpacking services",            category: "packing",        tier: 2, weight: 10, label: "Unpacking Services" },
+    { kw: "unpacking service",             category: "packing",        tier: 2, weight: 10, label: "Unpacking Services" },
+    { kw: "moving boxes",                  category: "packing",        tier: 2, weight: 10, label: "Moving Boxes" },
+    { kw: "moving supplies",               category: "packing",        tier: 2, weight: 10, label: "Moving Supplies" },
+    { kw: "household packing",             category: "packing",        tier: 2, weight: 10, label: "Household Packing" },
+    { kw: "temporary storage",             category: "moving_storage", tier: 2, weight: 10, label: "Temporary Storage" },
+    { kw: "storage solutions",             category: "moving_storage", tier: 2, weight: 10, label: "Storage Solutions" },
+    { kw: "household storage",             category: "moving_storage", tier: 2, weight: 10, label: "Household Storage" },
+    { kw: "storage facility",              category: "moving_storage", tier: 2, weight: 10, label: "Storage Facility" },
+    { kw: "secure storage",                category: "moving_storage", tier: 2, weight: 10, label: "Secure Storage" },
+    { kw: "safe moving",                   category: "residential",    tier: 2, weight: 10, label: "Safe Moving" },
+
+    // ╔════════════════════════════════════════════════════════════════════
+    // TIER 3 — SUPPORTING MOVING TERMINOLOGY (weight=5)
+    // ╚════════════════════════════════════════════════════════════════════
+
+    { kw: "moving day",                    category: "moving_company", tier: 3, weight: 5, label: "Moving Day" },
+    { kw: "moving checklist",              category: "moving_company", tier: 3, weight: 5, label: "Moving Checklist" },
+    { kw: "move coordinator",              category: "moving_company", tier: 3, weight: 5, label: "Move Coordinator" },
+    { kw: "move management",               category: "moving_company", tier: 3, weight: 5, label: "Move Management" },
+    { kw: "moving professionals",          category: "moving_company", tier: 3, weight: 5, label: "Moving Professionals" },
+    { kw: "experienced movers",            category: "moving_company", tier: 3, weight: 5, label: "Experienced Movers" },
+    { kw: "trusted movers",                category: "moving_company", tier: 3, weight: 5, label: "Trusted Movers" },
+    { kw: "affordable movers",             category: "moving_company", tier: 3, weight: 5, label: "Affordable Movers" },
+    { kw: "affordable moving",             category: "moving_company", tier: 3, weight: 5, label: "Affordable Moving" },
+    { kw: "reliable movers",               category: "moving_company", tier: 3, weight: 5, label: "Reliable Movers" },
+    { kw: "reliable moving",               category: "moving_company", tier: 3, weight: 5, label: "Reliable Moving" },
+    { kw: "same day movers",               category: "moving_company", tier: 3, weight: 5, label: "Same Day Movers" },
+    { kw: "same day moving",               category: "moving_company", tier: 3, weight: 5, label: "Same Day Moving" },
+    { kw: "next day movers",               category: "moving_company", tier: 3, weight: 5, label: "Next Day Movers" },
+    { kw: "last minute movers",            category: "moving_company", tier: 3, weight: 5, label: "Last Minute Movers" },
+    { kw: "residential relocation",        category: "residential",    tier: 3, weight: 5, label: "Residential Relocation" },
+    { kw: "home to home",                  category: "residential",    tier: 3, weight: 5, label: "Home to Home" },
+    { kw: "door to door moving",           category: "residential",    tier: 3, weight: 5, label: "Door to Door Moving" },
+    { kw: "door-to-door moving",           category: "residential",    tier: 3, weight: 5, label: "Door to Door Moving" },
+    { kw: "heavy lifting",                 category: "residential",    tier: 3, weight: 5, label: "Heavy Lifting" },
+    { kw: "furniture wrapping",            category: "packing",        tier: 3, weight: 5, label: "Furniture Wrapping" },
+    { kw: "item protection",               category: "packing",        tier: 3, weight: 5, label: "Item Protection" },
+    { kw: "bubble wrap",                   category: "packing",        tier: 3, weight: 5, label: "Bubble Wrap" },
+    { kw: "packing materials",             category: "packing",        tier: 3, weight: 5, label: "Packing Materials" },
+    { kw: "moving protection",             category: "packing",        tier: 3, weight: 5, label: "Moving Protection" },
+    { kw: "climate controlled storage",    category: "moving_storage", tier: 3, weight: 5, label: "Climate Controlled Storage" },
+    { kw: "short term storage",            category: "moving_storage", tier: 3, weight: 5, label: "Short Term Storage" },
+    { kw: "long term storage",             category: "moving_storage", tier: 3, weight: 5, label: "Long Term Storage" },
+    { kw: "interstate move",               category: "long_distance",  tier: 3, weight: 5, label: "Interstate Move" },
+    { kw: "out of state move",             category: "long_distance",  tier: 3, weight: 5, label: "Out of State Move" },
+    { kw: "out-of-state move",             category: "long_distance",  tier: 3, weight: 5, label: "Out of State Move" },
+    { kw: "out of state moving",           category: "long_distance",  tier: 3, weight: 5, label: "Out of State Moving" },
+
+    // ╔════════════════════════════════════════════════════════════════════
+    // TIER 4 — CONTEXTUAL WORDS (weight=2, require many matches with strong tier signals)
+    // These words CANNOT trigger a moving classification on their own.
+    // ╚════════════════════════════════════════════════════════════════════
+    // NOTE: "moving" alone is NOT in tier 4 intentionally — the word appears on
+    // countless non-moving business websites and must never contribute score on its own.
+  ];
+
+  // ── MOVING NEGATIVE KEYWORDS (PENALTY = −10 pts each) ──────────────────
+  // Suppresses false positives: businesses that use moving/relocation language
+  // but are NOT actual moving companies.
+  const MOVING_NEGATIVE_KEYWORDS = [
+    // Real estate (heavy usage of "moving" but not a mover)
+    "real estate agent",
+    "real estate company",
+    "realtor",
+    "realtors",
+    "real estate broker",
+    "sell your home",
+    "buy a home",
+    "home listing",
+    "property listing",
+    "mortgage",
+    "mortgage broker",
+    "mortgage lender",
+    "home loan",
+    "real estate investment",
+    "real estate investor",
+    // Insurance
+    "insurance company",
+    "insurance agent",
+    "life insurance",
+    "renters insurance",
+    "homeowners insurance",
+    // Truck rental only (not a mover service)
+    "truck rental",
+    "van rental",
+    "vehicle rental",
+    "rent a truck",
+    "rent a van",
+    "truck rentals",
+    // Logistics & freight (not household movers)
+    "freight forwarding",
+    "freight forwarder",
+    "cargo transportation",
+    "cargo shipping",
+    "freight company",
+    "logistics company",
+    "logistics provider",
+    "logistics solutions",
+    "supply chain",
+    "trucking company",
+    "trucking services",
+    "courier service",
+    "courier company",
+    "parcel delivery",
+    "package delivery",
+    "shipping company",
+    "freight broker",
+    // Storage only (without moving context)
+    "self storage",
+    "self-storage",
+    "storage unit",
+    "storage units",
+    "mini storage",
+    "rv storage",
+    "boat storage",
+    "public storage",
+    // Construction trades
+    "roofing company",
+    "roofing contractor",
+    "hvac company",
+    "hvac contractor",
+    "construction company",
+    "remodeling company",
+    "landscaping company",
+    "hardscape contractor",
+    "excavation contractor",
+    "demolition company",
+    // Junk / Cleanout
+    "junk removal",
+    "junk hauling",
+    "trash removal",
+    "debris removal",
+    // Cleaning
+    "cleaning service",
+    "cleaning company",
+    "house cleaning",
+    // Motivational / Marketing / Technology (false use of "moving forward")
+    "moving your business forward",
+    "moving forward together",
+    "marketing agency",
+    "digital marketing",
+    "consulting firm",
+    "software company",
+    "tech company",
+    // Furniture retail / Interior design
+    "furniture store",
+    "furniture manufacturer",
+    "interior design",
+    "interior designer",
+    // Moving review / news / blog sites (not service providers)
+    "moving company reviews",
+    "moving company ratings",
+    "best moving companies",
+    "movers reviews",
+  ];
+
   // ══════════════════════════════════════════════════════════════════════════
   // SECTION C: BUILD KEYWORD MAPS
   // ══════════════════════════════════════════════════════════════════════════
@@ -4085,6 +4452,37 @@
   );
   for (const kw of sortedRoofingNeg) {
     ROOFING_NEGATIVE_MAP.set(kw.toLowerCase(), -10);
+  }
+
+  // ── Moving Maps & Precompiled Word-Boundary Regexes ──
+  const MOVING_KEYWORD_MAP = new Map();
+  const MOVING_KEYWORD_REGEXES = [];
+  const sortedMovingKws = [...MOVING_KEYWORDS].sort(
+    (a, b) => b.kw.length - a.kw.length,
+  );
+  for (const entry of sortedMovingKws) {
+    const lowerKw = entry.kw.toLowerCase();
+    const info = {
+      category: entry.category,
+      tier: entry.tier,
+      weight: entry.weight,
+      label: entry.label,
+    };
+    MOVING_KEYWORD_MAP.set(lowerKw, info);
+    const escaped = lowerKw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    MOVING_KEYWORD_REGEXES.push({
+      kw: lowerKw,
+      info,
+      regex: new RegExp(`\\b${escaped}\\b`, "gi"),
+    });
+  }
+
+  const MOVING_NEGATIVE_MAP = new Map();
+  const sortedMovingNeg = [...MOVING_NEGATIVE_KEYWORDS].sort(
+    (a, b) => b.length - a.length,
+  );
+  for (const kw of sortedMovingNeg) {
+    MOVING_NEGATIVE_MAP.set(kw.toLowerCase(), -10);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -4334,6 +4732,65 @@
     /\bshingles\s+(?:vaccine|vaccination|outbreak|virus|treatment|shot|symptoms?)\b/gi,
   ];
 
+  // ── Moving Non-Mover Idioms & False Positive Suppression ──
+  // These idiom patterns match common non-moving uses of the word "moving"
+  // They are masked before keyword matching to prevent false positives.
+  const MOVING_IDIOM_PATTERNS = [
+    // Business motivation / marketing language
+    /\bmoving\s+(?:your\s+)?(?:business|brand|company|organization)\s+(?:forward|ahead|to\s+the\s+next\s+level)\b/gi,
+    /\bmoving\s+(?:forward|ahead|onwards?)\b/gi,
+    /\b(?:keep|keeps|kept)\s+(?:things?|us|you|it)?\s*moving\b/gi,
+    /\bmoving\s+(?:into|toward|towards)\s+(?:the\s+)?(?:future|digital|next)/gi,
+    // Real-estate agent language
+    /\bmoving\s+(?:you\s+)?(?:into|to)\s+(?:your\s+)?(?:dream|new|perfect)\s+(?:home|house)/gi,
+    /\bhelp(?:ing)?\s+(?:you\s+|families?\s+|people\s+)?(?:find|discover|buy|purchase)\s+(?:a\s+|your\s+)?(?:home|house|property)/gi,
+    // Motivational / generic
+    /\bmoving\s+(?:experience|journey|story|inspiration)/gi,
+    /\bemotionally\s+moving\b/gi,
+    /\bmoving\s+(?:speech|tribute|moment|performance|film|movie|art|music)/gi,
+  ];
+
+  function findMovingMatches(text) {
+    if (!text || typeof text !== "string") return [];
+
+    // Mask non-mover idioms before matching to prevent false positives
+    let sanitized = text;
+    for (const pat of MOVING_IDIOM_PATTERNS) {
+      sanitized = sanitized.replace(pat, (m) => " ".repeat(m.length));
+    }
+
+    const matches = [];
+    const matchedSpans = [];
+    const alreadyMatched = new Set();
+
+    // Iterate through precompiled regexes (sorted longest-keyword-first)
+    for (const { kw, info, regex } of MOVING_KEYWORD_REGEXES) {
+      regex.lastIndex = 0;
+      let m;
+      while ((m = regex.exec(sanitized)) !== null) {
+        const start = m.index;
+        const end   = start + m[0].length;
+
+        // Prevent shorter sub-matches inside an already-matched span
+        const alreadyCovered = matchedSpans.some(
+          (span) => start >= span.start && end <= span.end,
+        );
+        if (alreadyCovered) continue;
+
+        const key = info.category + "|" + kw;
+        if (!alreadyMatched.has(key)) {
+          alreadyMatched.add(key);
+          const snipStart = Math.max(0, start - 40);
+          const snipEnd   = Math.min(text.length, end + 40);
+          const snippet   = text.substring(snipStart, snipEnd).trim();
+          matches.push({ kw, ...info, snippet });
+        }
+        matchedSpans.push({ start, end, tier: info.tier });
+      }
+    }
+    return matches;
+  }
+
   function findRoofingMatches(text) {
     if (!text || typeof text !== "string") return [];
 
@@ -4430,9 +4887,10 @@
 
     const isHvac   = mode === "hvac";
     const isRoof   = mode === "roofing";
-    const matchFn  = isHvac ? findHvacMatches : isRoof ? findRoofingMatches : findHardscapeMatches;
-    const negMap   = isHvac ? HVAC_NEGATIVE_MAP : isRoof ? ROOFING_NEGATIVE_MAP : NEGATIVE_MAP;
-    const modeLabel = isHvac ? "HVAC" : isRoof ? "Roofing" : "Hardscape";
+    const isMoving = mode === "moving";
+    const matchFn  = isHvac ? findHvacMatches : isRoof ? findRoofingMatches : isMoving ? findMovingMatches : findHardscapeMatches;
+    const negMap   = isHvac ? HVAC_NEGATIVE_MAP : isRoof ? ROOFING_NEGATIVE_MAP : isMoving ? MOVING_NEGATIVE_MAP : NEGATIVE_MAP;
+    const modeLabel = isHvac ? "HVAC" : isRoof ? "Roofing" : isMoving ? "Moving" : "Hardscape";
 
     console.log(`\ud83d\udd0d [Finder v5.0] Starting ${modeLabel} scan...`);
 
@@ -4508,8 +4966,8 @@
         if (!negativeHits.includes(neg)) negativeHits.push(neg);
       }
 
-      // Secondary service scan (hardscaping mode only — HVAC and Roofing don't need these)
-      if (!isHvac && !isRoof) {
+      // Secondary service scan (hardscaping mode only — HVAC, Roofing and Moving don't need these)
+      if (!isHvac && !isRoof && !isMoving) {
         const secMatches = findSecondaryMatches(text);
         for (const sec of secMatches) secondaryFound.add(sec);
       }
@@ -4519,7 +4977,7 @@
     debugLog.push(`Total text extracted: ${totalTextLength} chars`);
     debugLog.push(`Positive keyword hits: ${totalKeywordHits}`);
     debugLog.push(`Negative keyword hits: ${negativeHits.length}`);
-    if (!isHvac && !isRoof)
+    if (!isHvac && !isRoof && !isMoving)
       debugLog.push(`Secondary service signals: ${secondaryFound.size}`);
     debugLog.push(`Total findings: ${findings.length}`);
     debugLog.push(`Scan time: ${elapsed}ms`);
@@ -4654,6 +5112,15 @@
     emergency_roofing: { bg: "rgba(239,68,68,0.35)", border: "#dc2626", text: "#7f1d1d" },
   };
 
+  const MOVING_HIGHLIGHT_STYLES = {
+    moving_company:  { bg: "rgba(139,92,246,0.35)",  border: "#7c3aed", text: "#3b0764" },
+    residential:     { bg: "rgba(124,58,237,0.35)",  border: "#6d28d9", text: "#3b0764" },
+    commercial:      { bg: "rgba(109,40,217,0.35)",  border: "#5b21b6", text: "#2d1b69" },
+    long_distance:   { bg: "rgba(167,139,250,0.35)", border: "#8b5cf6", text: "#4c1d95" },
+    packing:         { bg: "rgba(196,181,253,0.35)", border: "#a78bfa", text: "#4c1d95" },
+    moving_storage:  { bg: "rgba(221,214,254,0.35)", border: "#c4b5fd", text: "#4c1d95" },
+  };
+
   const HIGHLIGHT_STYLE_ID = "__finder_hl_styles__";
   const HIGHLIGHT_MARK_ATTR = "data-finder-hl";
 
@@ -4662,8 +5129,9 @@
     if (existing) existing.remove();
 
     const styles =
-      mode === "hvac" ? HVAC_HIGHLIGHT_STYLES
+      mode === "hvac"    ? HVAC_HIGHLIGHT_STYLES
       : mode === "roofing" ? ROOFING_HIGHLIGHT_STYLES
+      : mode === "moving"  ? MOVING_HIGHLIGHT_STYLES
       : HARDSCAPE_HIGHLIGHT_STYLES;
     const style = document.createElement("style");
     style.id = HIGHLIGHT_STYLE_ID;
@@ -4772,7 +5240,7 @@
           match: true,
           catId:
             termCatMap.get(m[0].toLowerCase()) ||
-            (mode === "hvac" ? "cooling" : mode === "roofing" ? "roof_replacement" : "patios"),
+            (mode === "hvac" ? "cooling" : mode === "roofing" ? "roof_replacement" : mode === "moving" ? "moving_company" : "patios"),
         });
         last = m.index + m[0].length;
         count++;

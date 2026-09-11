@@ -6,7 +6,7 @@
 
 // ── GLOBAL STATE ──────────────────────────────────────────────────────────────
 let currentScanData = null;
-let currentMode = "hvac"; // 'hvac' | 'hardscaping' | 'roofing' | 'address' — default, overridden on boot
+let currentMode = "hvac"; // 'hvac' | 'hardscaping' | 'roofing' | 'address' | 'moving' — default, overridden on boot
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CATEGORY DEFINITIONS
@@ -85,6 +85,21 @@ const ROOFING_LEGEND_SWATCHES = [
   { label: "Roofing", bg: "rgba(239,68,68,0.35)", border: "#dc2626" },
 ];
 
+// ── Moving Categories ──
+const MOVING_CATEGORIES = [
+  { id: "moving_company",    label: "Moving Company",      icon: "🚛", color: "#8b5cf6" },
+  { id: "residential",      label: "Residential Moving",  icon: "🏠", color: "#7c3aed" },
+  { id: "commercial",       label: "Commercial Moving",   icon: "🏢", color: "#6d28d9" },
+  { id: "long_distance",    label: "Long Distance",       icon: "🗺️", color: "#a78bfa" },
+  { id: "packing",          label: "Packing Services",    icon: "📦", color: "#c4b5fd" },
+  { id: "moving_storage",   label: "Moving & Storage",    icon: "🏗️", color: "#ddd6fe" },
+];
+
+// ── Moving Highlight Legend Swatches ──
+const MOVING_LEGEND_SWATCHES = [
+  { label: "Moving", bg: "rgba(139,92,246,0.35)", border: "#7c3aed" },
+];
+
 // ── HVAC Highlight Legend Swatches ──
 const HVAC_LEGEND_SWATCHES = [
   { label: "Heating", bg: "rgba(239,68,68,0.35)", border: "#dc2626" },
@@ -112,12 +127,15 @@ const HVAC_CATEGORY_BY_ID = {};
 for (const cat of HVAC_CATEGORIES) HVAC_CATEGORY_BY_ID[cat.id] = cat;
 const ROOFING_CATEGORY_BY_ID = {};
 for (const cat of ROOFING_CATEGORIES) ROOFING_CATEGORY_BY_ID[cat.id] = cat;
+const MOVING_CATEGORY_BY_ID = {};
+for (const cat of MOVING_CATEGORIES) MOVING_CATEGORY_BY_ID[cat.id] = cat;
 
 // ── Scoring Constants ──
-const HS_THRESHOLD = 420;
-const HVAC_THRESHOLD = 420;
-const NEGATIVE_PENALTY = 10;
+const HS_THRESHOLD      = 420;
+const HVAC_THRESHOLD    = 420;
+const NEGATIVE_PENALTY  = 10;
 const ROOFING_THRESHOLD = 420;
+const MOVING_THRESHOLD  = 380;
 
 // ── Deep Scan Page Lists ──
 const HS_DEEP_SCAN_PAGES = [
@@ -192,6 +210,27 @@ const ROOFING_DEEP_SCAN_PAGES = [
   "/contact",
 ];
 
+const MOVING_DEEP_SCAN_PAGES = [
+  "/",
+  "/services",
+  "/moving",
+  "/moving-services",
+  "/residential-moving",
+  "/commercial-moving",
+  "/office-moving",
+  "/long-distance-moving",
+  "/local-moving",
+  "/packing-services",
+  "/packing-and-moving",
+  "/moving-and-storage",
+  "/storage",
+  "/specialty-moving",
+  "/about",
+  "/about-us",
+  "/our-services",
+  "/contact",
+];
+
 // ── Address Finder Deep Scan Pages ──
 const ADDR_DEEP_SCAN_PAGES = [
   "/",
@@ -242,6 +281,9 @@ document
 document
   .getElementById("modeCompBtn")
   .addEventListener("click", () => setMode("competitor"));
+document
+  .getElementById("modeMovingBtn")
+  .addEventListener("click", () => setMode("moving"));
 
 // Wire Competitor Finder buttons (Single, Bulk & Google Auth)
 document.getElementById("compSubSingleBtn")?.addEventListener("click", () => setCompSubMode("single"));
@@ -303,23 +345,26 @@ function setMode(mode, saveToStorage = true) {
   currentScanData = null;
   showProgress(false);
 
-  const isHvac = mode === "hvac";
-  const isAddr = mode === "address";
-  const isHs   = mode === "hardscaping";
-  const isComp = mode === "competitor";
-  const isRoof = mode === "roofing";
+  const isHvac   = mode === "hvac";
+  const isAddr   = mode === "address";
+  const isHs     = mode === "hardscaping";
+  const isComp   = mode === "competitor";
+  const isRoof   = mode === "roofing";
+  const isMoving = mode === "moving";
 
   // 2. Safely update button active classes
-  const hvacBtn = document.getElementById("modeHvacBtn");
-  const hsBtn   = document.getElementById("modeHsBtn");
-  const addrBtn = document.getElementById("modeAddrBtn");
-  const compBtn = document.getElementById("modeCompBtn");
-  const roofBtn = document.getElementById("modeRoofBtn");
-  if (hvacBtn) hvacBtn.className = "mode-btn" + (isHvac ? " active-hvac" : "");
-  if (hsBtn)   hsBtn.className   = "mode-btn" + (isHs   ? " active-hs"   : "");
-  if (addrBtn) addrBtn.className = "mode-btn" + (isAddr ? " active-addr"  : "");
-  if (compBtn) compBtn.className = "mode-btn" + (isComp ? " active-comp"  : "");
-  if (roofBtn) roofBtn.className = "mode-btn" + (isRoof ? " active-roof"  : "");
+  const hvacBtn   = document.getElementById("modeHvacBtn");
+  const hsBtn     = document.getElementById("modeHsBtn");
+  const addrBtn   = document.getElementById("modeAddrBtn");
+  const compBtn   = document.getElementById("modeCompBtn");
+  const roofBtn   = document.getElementById("modeRoofBtn");
+  const movingBtn = document.getElementById("modeMovingBtn");
+  if (hvacBtn)   hvacBtn.className   = "mode-btn" + (isHvac   ? " active-hvac"   : "");
+  if (hsBtn)     hsBtn.className     = "mode-btn" + (isHs     ? " active-hs"     : "");
+  if (addrBtn)   addrBtn.className   = "mode-btn" + (isAddr   ? " active-addr"   : "");
+  if (compBtn)   compBtn.className   = "mode-btn" + (isComp   ? " active-comp"   : "");
+  if (roofBtn)   roofBtn.className   = "mode-btn" + (isRoof   ? " active-roof"   : "");
+  if (movingBtn) movingBtn.className = "mode-btn" + (isMoving ? " active-moving" : "");
 
   // 3. Safely update Header Title
   if (isHvac) {
@@ -330,6 +375,8 @@ function setMode(mode, saveToStorage = true) {
     updateHeaderTitle("🎯", "Competitor", "accent-comp");
   } else if (isRoof) {
     updateHeaderTitle("🏠", "Roofing", "accent-roof");
+  } else if (isMoving) {
+    updateHeaderTitle("🚛", "Moving", "accent-moving");
   } else {
     updateHeaderTitle("🧱", "Hardscape", "accent-hs");
   }
@@ -393,6 +440,19 @@ function setMode(mode, saveToStorage = true) {
         resContainer.innerHTML = `<div class="status-msg">Click <strong>Quick Scan</strong> to analyze this site for roofing services.</div>`;
       }
       renderLegendSwatches(ROOFING_LEGEND_SWATCHES);
+    } else if (isMoving) {
+      if (scanBtn) {
+        scanBtn.className = "btn-scan-primary moving-mode";
+        scanBtn.textContent = "🔍 Quick Scan";
+      }
+      if (deepScanBtn) {
+        deepScanBtn.className = "btn-scan-secondary";
+        deepScanBtn.textContent = "🌐 Deep Scan";
+      }
+      if (resContainer) {
+        resContainer.innerHTML = `<div class="status-msg">Click <strong>Quick Scan</strong> to analyze this site for moving company services.</div>`;
+      }
+      renderLegendSwatches(MOVING_LEGEND_SWATCHES);
     } else if (isHs) {
       if (scanBtn) {
         scanBtn.className = "btn-scan-primary";
@@ -426,10 +486,11 @@ function setMode(mode, saveToStorage = true) {
   const fill = document.getElementById("progressFill");
   if (fill) {
     fill.className = "progress-fill";
-    if (isHvac)      fill.classList.add("hvac-fill");
-    else if (isAddr) fill.classList.add("addr-fill");
-    else if (isComp) fill.classList.add("comp-fill");
-    else if (isRoof) fill.classList.add("roof-fill");
+    if (isHvac)        fill.classList.add("hvac-fill");
+    else if (isAddr)   fill.classList.add("addr-fill");
+    else if (isComp)   fill.classList.add("comp-fill");
+    else if (isRoof)   fill.classList.add("roof-fill");
+    else if (isMoving) fill.classList.add("moving-fill");
   }
 
   // 7. Persist mode
@@ -740,8 +801,9 @@ function startDeepScan() {
   }
 
   const pages =
-    currentMode === "hvac" ? HVAC_DEEP_SCAN_PAGES
-    : currentMode === "roofing" ? ROOFING_DEEP_SCAN_PAGES
+    currentMode === "hvac"     ? HVAC_DEEP_SCAN_PAGES
+    : currentMode === "roofing"  ? ROOFING_DEEP_SCAN_PAGES
+    : currentMode === "moving"   ? MOVING_DEEP_SCAN_PAGES
     : HS_DEEP_SCAN_PAGES;
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -824,8 +886,9 @@ function startDeepScan() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function aggregateFindings(response, mode) {
-  if (mode === "hvac") return aggregateHvacFindings(response);
+  if (mode === "hvac")    return aggregateHvacFindings(response);
   if (mode === "roofing") return aggregateRoofingFindings(response);
+  if (mode === "moving")  return aggregateMovingFindings(response);
   return aggregateHardscapeFindings(response);
 }
 
@@ -1574,8 +1637,9 @@ function buildHvacEvidenceSignals(matchedZones, scoreMap, detectedServices) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function renderDashboard(data) {
-  if (data.mode === "hvac") return renderHvacDashboard(data);
+  if (data.mode === "hvac")    return renderHvacDashboard(data);
   if (data.mode === "roofing") return renderRoofingDashboard(data);
+  if (data.mode === "moving")  return renderMovingDashboard(data);
   return renderHardscapeDashboard(data);
 }
 
@@ -1878,6 +1942,338 @@ function renderRoofingDashboard(data) {
     html += `
       <div class="negative-section">
         <div class="section-label negative">\u26d4 Penalty Signals Detected (\u2212${negativeHits.length * 10} pts)</div>
+        <div class="chip-row">${negChips}</div>
+      </div>`;
+  }
+
+  html += buildPagesFooter(data);
+
+  container.innerHTML = html;
+  container
+    .querySelectorAll(".collapsible")
+    .forEach((el) => makeCollapsible(el));
+  wireEvidenceClicks(container);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MOVING AGGREGATION ENGINE
+// ══════════════════════════════════════════════════════════════════════════════
+
+function aggregateMovingFindings(response) {
+  const findings = response.findings || [];
+  const negativeHits = response.negativeHits || [];
+
+  const scoreMap = {};
+  const evidenceMap = {};
+  const termFreqMap = {};
+  const matchedZones = {};
+
+  for (const cat of MOVING_CATEGORIES) {
+    scoreMap[cat.id] = 0;
+    evidenceMap[cat.id] = [];
+    termFreqMap[cat.id] = {};
+    matchedZones[cat.id] = new Set();
+  }
+
+  const allKeywordsMatched = new Set();
+  const highValueMatched = [];
+  const tier1Terms = new Set();
+  const tier2Terms = new Set();
+  const strongSignalTerms = new Set();
+  const prominentZones = new Set([
+    "hero-heading", "hero", "h1", "h2", "nav", "meta", "service-section", "cta",
+  ]);
+  let hasProminentZone = false;
+
+  for (const f of findings) {
+    const catId = f.category;
+    if (!scoreMap.hasOwnProperty(catId)) continue;
+
+    const w = typeof f.weight === "number" ? f.weight : 1;
+    scoreMap[catId] += w;
+
+    const snippet = (f.snippet || "").trim();
+    const already = evidenceMap[catId].some((e) => e.snippet === snippet);
+    if (!already) {
+      evidenceMap[catId].push({
+        snippet,
+        matchedTerm: f.matchedTerm || "?",
+        tier: f.tier || 1,
+        weight: w,
+        label: f.label || f.matchedTerm,
+        zone: f.zone || f.tag || "?",
+        tag: f.tag || "?",
+        url: f.url || "",
+        xpath: f.xpath || "",
+      });
+    }
+
+    const term = f.matchedTerm || "unknown";
+    allKeywordsMatched.add(term);
+    termFreqMap[catId][term] = (termFreqMap[catId][term] || 0) + 1;
+    if (f.zone) {
+      matchedZones[catId].add(f.zone);
+      if (prominentZones.has(f.zone)) hasProminentZone = true;
+    }
+
+    if (f.tier === 1) {
+      tier1Terms.add(term);
+      strongSignalTerms.add(term);
+      if (!highValueMatched.includes(f.label || term)) highValueMatched.push(f.label || term);
+    } else if (f.tier === 2) {
+      tier2Terms.add(term);
+      strongSignalTerms.add(term);
+      if (!highValueMatched.includes(f.label || term)) highValueMatched.push(f.label || term);
+    }
+  }
+
+  const strongSignalCount  = strongSignalTerms.size;
+  const tier1Count         = tier1Terms.size;
+  const hasStrongSignal    = strongSignalCount > 0;
+
+  // Active category requires ≥15 pts (one core service keyword hit)
+  const ACTIVE_CAT_THRESHOLD = 15;
+  const activeCategoryCount  = MOVING_CATEGORIES.filter(
+    (c) => (scoreMap[c.id] || 0) >= ACTIVE_CAT_THRESHOLD,
+  ).length;
+
+  const totalPositiveScore = Object.values(scoreMap).reduce((a, b) => a + b, 0);
+  const penaltyScore       = negativeHits.length * NEGATIVE_PENALTY;
+  const netScore           = Math.max(0, totalPositiveScore - penaltyScore);
+  let rawConfidence        = Math.min(100, Math.round((netScore / MOVING_THRESHOLD) * 100));
+
+  // ── Moving-specific strict gates ──────────────────────────────────────────
+
+  // Gate 1: No Tier 1 or Tier 2 signal → cap at 15 ("NO").
+  // Generic words like "move", "moving", "relocation" alone can't validate a mover.
+  if (!hasStrongSignal && rawConfidence > 15) {
+    rawConfidence = 15;
+  }
+
+  // Gate 2: Only one distinct strong signal → cap at 28 ("UNCERTAIN").
+  // A single keyword like "moving company" is not sufficient — context is required.
+  if (strongSignalCount <= 1 && rawConfidence > 28) {
+    rawConfidence = 28;
+  }
+
+  // Gate 3: Prominent zone required to exceed UNCERTAIN.
+  // Genuine movers feature services in H1/H2/Nav/Hero/CTA — not just body text.
+  if (!hasProminentZone && rawConfidence > 40) {
+    rawConfidence = 40;
+  }
+
+  // Gate 4: Qualify for YES (≥60) requires depth.
+  // Must have 3+ distinct strong signals, OR 2+ signals with tier1, 2+ active categories, prominent zone.
+  const qualifiesForYes =
+    strongSignalCount >= 3 ||
+    (strongSignalCount >= 2 && tier1Count >= 1 && activeCategoryCount >= 2 && hasProminentZone);
+  if (rawConfidence >= 60 && !qualifiesForYes) {
+    rawConfidence = 50;
+  }
+
+  // Gate 5: High confidence (≥80) requires 4+ strong signals, 2+ active categories, 2+ tier1, prominent zone.
+  if (
+    rawConfidence >= 80 &&
+    (strongSignalCount < 4 || activeCategoryCount < 2 || tier1Count < 2 || !hasProminentZone)
+  ) {
+    rawConfidence = 75;
+  }
+
+  // Gate 6: Hard negative penalty gates — suppress companies that are NOT movers.
+  // 2+ negative hits → strong evidence this is a different business type.
+  if (negativeHits.length >= 2 && rawConfidence > 35) rawConfidence = 35;
+  if (negativeHits.length >= 4 && rawConfidence > 15) rawConfidence = 15;
+
+  const confidence = Math.max(0, rawConfidence);
+
+  // Moving company verdict
+  let movingCompany;
+  if (confidence >= 60)      movingCompany = "YES";
+  else if (confidence >= 25) movingCompany = "UNCERTAIN";
+  else                       movingCompany = "NO";
+
+  // Confidence label
+  let confidenceLabel;
+  if (confidence >= 95)      confidenceLabel = "Very Strong Moving Company Evidence";
+  else if (confidence >= 80) confidenceLabel = "Strong Moving Company Evidence";
+  else if (confidence >= 60) confidenceLabel = "Moderate Moving Company Evidence";
+  else if (confidence >= 40) confidenceLabel = "Weak / Uncertain";
+  else                       confidenceLabel = "Probably Not a Moving Company";
+
+  const catConfidence = {};
+  for (const cat of MOVING_CATEGORIES) {
+    const s = scoreMap[cat.id];
+    catConfidence[cat.id] =
+      s === 0 ? 0
+              : Math.min(100, Math.round((s / (MOVING_THRESHOLD / MOVING_CATEGORIES.length)) * 100));
+  }
+
+  const detectedServices = highValueMatched.slice(0, 24);
+  const reasons = buildMovingReasons(
+    confidence, scoreMap, matchedZones, negativeHits, detectedServices,
+    catConfidence, hasStrongSignal, strongSignalCount, tier1Count,
+    activeCategoryCount, hasProminentZone,
+  );
+
+  return {
+    mode: "moving",
+    confidence,
+    confidenceLabel,
+    movingCompany,
+    netScore,
+    totalPositiveScore,
+    penaltyScore,
+    catConfidence,
+    scoreMap,
+    evidenceMap,
+    termFreqMap,
+    matchedZones: Object.fromEntries(
+      Object.entries(matchedZones).map(([k, v]) => [k, [...v]]),
+    ),
+    detectedServices,
+    allKeywordsMatched: [...allKeywordsMatched],
+    negativeHits,
+    secondaryServices: [],
+    reasons,
+  };
+}
+
+function buildMovingReasons(
+  confidence, scoreMap, matchedZones, negativeHits, detectedServices,
+  catConfidence, hasStrongSignal, strongSignalCount, tier1Count,
+  activeCategoryCount, hasProminentZone,
+) {
+  const reasons = [];
+
+  if (confidence === 0) {
+    reasons.push("❌ No moving company signals detected on this page.");
+    return reasons;
+  }
+
+  if (confidence >= 80) {
+    reasons.push("✅ Genuine moving company — strong multi-service evidence confirmed across key zones");
+  } else if (confidence >= 60) {
+    reasons.push("🔶 Likely moving company — solid dedicated service evidence confirmed");
+  } else if (confidence >= 25) {
+    reasons.push("🔸 Possible moving involvement — moderate or isolated signals detected");
+  } else {
+    reasons.push("⚠️ Weak moving presence — low-tier, ancillary, or incidental terminology only");
+  }
+
+  // Explain when strict gates suppressed the score
+  if (!hasStrongSignal) {
+    reasons.push("⚠️ No dedicated moving service terms found — only generic words like \"move\" or \"relocation\" detected");
+  } else if (strongSignalCount <= 1) {
+    reasons.push("ℹ️ Only one distinct moving term matched — multiple service signals required for confirmation");
+  } else if (!hasProminentZone) {
+    reasons.push("⚠️ Moving terms appear only in body/secondary text — not featured in navigation, headings, or service sections");
+  } else if (confidence < 60 && strongSignalCount < 3) {
+    reasons.push("ℹ️ Limited service breadth — additional dedicated moving services needed for full confirmation");
+  }
+
+  const allZones = new Set(Object.values(matchedZones).flat());
+  if (allZones.has("hero-heading") || allZones.has("h1"))
+    reasons.push("🎯 Moving keywords found in hero heading / H1");
+  if (allZones.has("nav"))
+    reasons.push("📍 Moving services listed in navigation menu");
+  if (allZones.has("service-section"))
+    reasons.push("📋 Dedicated moving services section detected");
+  if (allZones.has("meta"))
+    reasons.push("🔍 Moving keywords in page title or meta description");
+  if (allZones.has("cta"))
+    reasons.push("📣 Moving call-to-action buttons present");
+  if (allZones.has("structured-data"))
+    reasons.push("🗂️ Moving signals found in structured data (JSON-LD)");
+
+  const topCats = MOVING_CATEGORIES.filter((c) => catConfidence[c.id] >= 25);
+  if (topCats.length > 0) {
+    reasons.push("🏆 Services confirmed: " + topCats.map((c) => c.label).join(", "));
+  }
+
+  if (negativeHits.length > 0) {
+    reasons.push(`⛔ Penalty signals: ${negativeHits.slice(0, 3).join(", ")}${negativeHits.length > 3 ? ` +${negativeHits.length - 3} more` : ""}`);
+  }
+
+  return reasons;
+}
+
+// ── Moving Dashboard ─────────────────────────────────────────────────────────
+
+function renderMovingDashboard(data) {
+  const container = document.getElementById("resultContainer");
+  const {
+    confidence,
+    confidenceLabel,
+    movingCompany,
+    catConfidence,
+    evidenceMap,
+    termFreqMap,
+    detectedServices,
+    negativeHits,
+    reasons,
+  } = data;
+
+  const confClass    = confidence >= 65 ? "high" : confidence >= 40 ? "medium" : "low";
+  const verdictClass = movingCompany === "YES" ? "yes" : movingCompany === "NO" ? "no" : "uncertain";
+  const verdictIcon  = movingCompany === "YES" ? "✅" : movingCompany === "NO" ? "❌" : "⚠️";
+
+  let html = "";
+
+  // ── Primary moving card ──
+  html += `
+    <div class="primary-card moving-card">
+      <div class="primary-top">
+        <div>
+          <div class="primary-meta moving-meta">🚛 Moving Detection</div>
+          <div class="primary-name">${confidenceLabel}</div>
+          <div class="hvac-verdict ${verdictClass}">${verdictIcon} Moving Company: <strong>${movingCompany}</strong></div>
+        </div>
+        <div class="primary-conf ${confClass}">${confidence}%</div>
+      </div>
+      <div class="primary-reasons">${reasons.slice(0, 2).join(" · ")}</div>
+    </div>`;
+
+  // ── Detected moving services chips ──
+  if (detectedServices.length > 0) {
+    const chips = detectedServices
+      .map((s) => `<span class="service-chip" style="background:rgba(139,92,246,0.18);border-color:rgba(139,92,246,0.4);color:#c4b5fd;">${s}</span>`)
+      .join("");
+    html += `
+      <div class="detected-services">
+        <div class="section-label" style="color:#8b5cf6;">🚛 Moving Services Detected</div>
+        <div class="chip-row">${chips}</div>
+      </div>`;
+  }
+
+  // ── Service category grid ──
+  html += `<div class="result-grid three-col">`;
+  for (const cat of MOVING_CATEGORIES) {
+    const score = catConfidence[cat.id] || 0;
+    const isTop =
+      score === Math.max(...MOVING_CATEGORIES.map((c) => catConfidence[c.id] || 0)) && score > 0;
+    html += `
+      <div class="service-card" style="${isTop ? "border-color:#8b5cf6;box-shadow:0 0 0 1px rgba(139,92,246,0.18);" : ""}">
+        <div class="service-icon">${cat.icon}</div>
+        <div class="service-name">${cat.label}</div>
+        <div class="service-score" style="color:${cat.color}">${score}%</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${score}%;background:${cat.color}"></div></div>
+        <div class="service-matches">${evidenceMap[cat.id]?.length || 0} hit${(evidenceMap[cat.id]?.length || 0) !== 1 ? "s" : ""}</div>
+      </div>`;
+  }
+  html += `</div>`;
+
+  html += buildReasonsCollapsible(reasons, "💡 Why Classified", "moving");
+  html += buildEvidenceCollapsible(data, MOVING_CATEGORIES, "moving_company", "moving");
+  html += buildKeywordsCollapsible(data, MOVING_CATEGORIES, "moving");
+
+  // ── Negative signals ──
+  if (negativeHits.length > 0) {
+    const negChips = negativeHits
+      .map((n) => `<span class="neg-chip">${n}</span>`)
+      .join("");
+    html += `
+      <div class="negative-section">
+        <div class="section-label negative">⛔ Penalty Signals Detected (−${negativeHits.length * 10} pts)</div>
         <div class="chip-row">${negChips}</div>
       </div>`;
   }
@@ -2425,11 +2821,10 @@ async function autoHighlight(tabId, scanData, mode) {
   if (!scanData || !scanData.termFreqMap) return;
 
   const categories =
-    mode === "hvac"
-      ? HVAC_CATEGORIES
-      : mode === "roofing"
-      ? ROOFING_CATEGORIES
-      : HS_CATEGORIES;
+    mode === "hvac"    ? HVAC_CATEGORIES
+    : mode === "roofing" ? ROOFING_CATEGORIES
+    : mode === "moving"  ? MOVING_CATEGORIES
+    : HS_CATEGORIES;
   const terms = [];
   const seen = new Set();
 
