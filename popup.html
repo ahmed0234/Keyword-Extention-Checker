@@ -31,6 +31,10 @@
       --roof-primary-glow: rgba(239,68,68,0.18);
       --moving-primary:      #8b5cf6;
       --moving-primary-glow: rgba(139,92,246,0.18);
+      --pest-primary:        #10b981;
+      --pest-primary-glow:   rgba(16,185,129,0.18);
+      --pest-mint:           #6ee7b7;
+      --pest-forest:         #065f46;
       --success:      #3fb950;
       --warn:         #d29922;
       --danger:       #f85149;
@@ -81,6 +85,7 @@
     .header-title .accent-comp  { color: var(--comp-primary); }
     .header-title .accent-roof  { color: var(--roof-primary); }
     .header-title .accent-moving { color: var(--moving-primary); }
+    .header-title .accent-pest   { color: var(--pest-primary); }
     .ver-badge {
       font-size: 9px;
       font-weight: 600;
@@ -96,21 +101,28 @@
       align-items: center;
     }
 
-    /* ── Mode Toggle ── */
+    /* ── Mode Toggle (Two-Column Responsive Grid) ── */
     .mode-toggle {
-      display: flex;
-      gap: 3px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 2.5px;
+      padding: 4px;
+      width: 100%;
+      box-sizing: border-box;
     }
     .mode-btn {
-      flex: 1;
-      padding: 4.5px 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 6px 8px;
+      min-height: 30px;
       border: 1px solid transparent;
       border-radius: var(--radius-sm);
-      font-size: 9.5px;
+      font-size: 10px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.18s ease;
@@ -119,6 +131,13 @@
       text-align: center;
       letter-spacing: 0.1px;
       white-space: nowrap;
+      box-sizing: border-box;
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #modeRoofBtn {
+      grid-column: 1 / -1;
     }
     .mode-btn:hover { color: var(--text); background: var(--surface3); }
     .mode-btn.active-hvac {
@@ -132,6 +151,18 @@
       border-color: #d97706;
       color: #fff;
       box-shadow: 0 2px 8px rgba(245,158,11,0.3);
+    }
+    .mode-btn.active-moving {
+      background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+      border-color: #7c3aed;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(139,92,246,0.35);
+    }
+    .mode-btn.active-pest {
+      background: linear-gradient(135deg, #059669, #10b981);
+      border-color: #059669;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(16,185,129,0.35);
     }
     .mode-btn.active-addr {
       background: linear-gradient(135deg, #0891b2, #22d3ee);
@@ -150,12 +181,6 @@
       border-color: #dc2626;
       color: #fff;
       box-shadow: 0 2px 8px rgba(239,68,68,0.35);
-    }
-    .mode-btn.active-moving {
-      background: linear-gradient(135deg, #6d28d9, #8b5cf6);
-      border-color: #7c3aed;
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(139,92,246,0.35);
     }
 
     /* ── Status chip ── */
@@ -197,6 +222,9 @@
     }
     .progress-fill.moving-fill {
       background: linear-gradient(90deg, #5b21b6, #8b5cf6, #a78bfa);
+    }
+    .progress-fill.pest-fill {
+      background: linear-gradient(90deg, #065f46, #059669, #10b981, #6ee7b7);
     }
 
     /* ── Icon Buttons ── */
@@ -253,6 +281,10 @@
       background: linear-gradient(135deg, #6d28d9, #8b5cf6);
       box-shadow: 0 2px 8px rgba(139,92,246,0.25);
     }
+    .btn-scan-primary.pest-mode {
+      background: linear-gradient(135deg, #059669, #10b981);
+      box-shadow: 0 2px 8px rgba(16,185,129,0.25);
+    }
     .btn-scan-primary:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
     .btn-scan-primary:active:not(:disabled) { transform: translateY(0); }
     .btn-scan-primary:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -276,6 +308,7 @@
     }
     .btn-scan-secondary:hover:not(:disabled) { border-color: var(--primary); background: var(--surface3); }
     .btn-scan-secondary.hvac-mode:hover:not(:disabled) { border-color: var(--hvac-primary); }
+    .btn-scan-secondary.pest-mode:hover:not(:disabled) { border-color: var(--pest-primary); }
     .btn-scan-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ── Primary Result Card ── */
@@ -303,6 +336,9 @@
     .primary-card.moving-card::before {
       background: linear-gradient(90deg, #5b21b6, #8b5cf6, #a78bfa);
     }
+    .primary-card.pest-card::before {
+      background: linear-gradient(90deg, #065f46, #059669, #10b981, #6ee7b7);
+    }
     .primary-top {
       display: flex;
       justify-content: space-between;
@@ -319,6 +355,7 @@
     .primary-meta.hvac-meta { color: var(--hvac-primary); }
     .primary-meta.roof-meta   { color: var(--roof-primary); }
     .primary-meta.moving-meta { color: var(--moving-primary); }
+    .primary-meta.pest-meta   { color: var(--pest-primary); }
     .primary-name {
       font-size: 13px;
       font-weight: 800;
@@ -2002,10 +2039,11 @@
     <div class="mode-toggle">
       <button class="mode-btn active-hvac" id="modeHvacBtn">🌡️ HVAC</button>
       <button class="mode-btn" id="modeHsBtn">🧱 Hardscaping</button>
-      <button class="mode-btn" id="modeRoofBtn">🏠 Roofing</button>
-      <button class="mode-btn" id="modeAddrBtn">📍 Address</button>
       <button class="mode-btn" id="modeMovingBtn">🚛 Moving</button>
-      <button class="mode-btn" id="modeCompBtn">🎯 Competitors</button>
+      <button class="mode-btn" id="modePestBtn">🐞 Pest Control</button>
+      <button class="mode-btn" id="modeAddrBtn">📍 Address Finder</button>
+      <button class="mode-btn" id="modeCompBtn">🎯 Competitor Finder</button>
+      <button class="mode-btn" id="modeRoofBtn">🏠 Roofing</button>
     </div>
 
     <!-- Progress bar -->

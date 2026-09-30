@@ -4267,6 +4267,275 @@
     // countless non-moving business websites and must never contribute score on its own.
   ];
 
+  // ════════════════════════════════════════════════════════════════════════
+  // SECTION B4: PEST CONTROL SERVICE DETECTION KEYWORD LEXICON
+  //
+  // Purpose: Identify websites of pest control SERVICE businesses (exterminators,
+  //          pest management contractors) — NOT product manufacturers, chemical
+  //          suppliers, pesticide retailers, or online stores.
+  //
+  // Tier 1 (weight=15): Core pest control service identity — unambiguous contractor signals
+  // Tier 2 (weight=10): Strong service-specific pest treatment terms — major signals
+  // Tier 3 (weight=5):  Supporting terminology confirming service operations
+  // Tier 4 (weight=2):  Contextual pest-related words (require many + strong tiers)
+  // ════════════════════════════════════════════════════════════════════════
+
+  const PEST_KEYWORDS = [
+    // ╔════════════════════════════════════════════════════════════════════
+    // TIER 1 — CORE PEST CONTROL SERVICE IDENTITY (weight=15)
+    // ╚════════════════════════════════════════════════════════════════════
+    { kw: "pest control company",         category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Company" },
+    { kw: "pest control companies",       category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Company" },
+    { kw: "pest control service",         category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Service" },
+    { kw: "pest control services",        category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Services" },
+    { kw: "pest control contractor",      category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Contractor" },
+    { kw: "pest control contractors",     category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Contractor" },
+    { kw: "pest control technician",      category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Technician" },
+    { kw: "pest control technicians",     category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Technician" },
+    { kw: "pest control specialist",      category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Specialist" },
+    { kw: "pest control specialists",     category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Specialist" },
+    { kw: "pest control professional",    category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Professional" },
+    { kw: "pest control professionals",   category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Professional" },
+    { kw: "pest control expert",          category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Expert" },
+    { kw: "pest control experts",         category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Expert" },
+    { kw: "exterminating company",        category: "pest_general",    tier: 1, weight: 15, label: "Exterminating Company" },
+    { kw: "exterminating companies",      category: "pest_general",    tier: 1, weight: 15, label: "Exterminating Company" },
+    { kw: "exterminating service",        category: "pest_general",    tier: 1, weight: 15, label: "Exterminating Service" },
+    { kw: "exterminating services",       category: "pest_general",    tier: 1, weight: 15, label: "Exterminating Services" },
+    { kw: "exterminating contractor",     category: "pest_general",    tier: 1, weight: 15, label: "Exterminating Contractor" },
+    { kw: "pest exterminator",            category: "pest_general",    tier: 1, weight: 15, label: "Pest Exterminator" },
+    { kw: "pest exterminators",           category: "pest_general",    tier: 1, weight: 15, label: "Pest Exterminator" },
+    { kw: "licensed exterminator",        category: "pest_general",    tier: 1, weight: 15, label: "Licensed Exterminator" },
+    { kw: "local exterminator",           category: "pest_general",    tier: 1, weight: 15, label: "Local Exterminator" },
+    { kw: "local exterminators",          category: "pest_general",    tier: 1, weight: 15, label: "Local Exterminator" },
+    { kw: "certified exterminator",       category: "pest_general",    tier: 1, weight: 15, label: "Certified Exterminator" },
+    { kw: "pest management company",      category: "pest_general",    tier: 1, weight: 15, label: "Pest Management Company" },
+    { kw: "pest management services",     category: "pest_general",    tier: 1, weight: 15, label: "Pest Management Services" },
+    { kw: "pest management service",      category: "pest_general",    tier: 1, weight: 15, label: "Pest Management Service" },
+    { kw: "pest management specialist",   category: "pest_general",    tier: 1, weight: 15, label: "Pest Management Specialist" },
+    { kw: "pest management professional", category: "pest_general",    tier: 1, weight: 15, label: "Pest Management Professional" },
+    { kw: "pest management contractor",   category: "pest_general",    tier: 1, weight: 15, label: "Pest Management Contractor" },
+    { kw: "integrated pest management",   category: "pest_general",    tier: 1, weight: 15, label: "Integrated Pest Management" },
+    { kw: "ipm services",                 category: "pest_general",    tier: 1, weight: 15, label: "IPM Services" },
+    { kw: "ipm contractor",               category: "pest_general",    tier: 1, weight: 15, label: "IPM Contractor" },
+    { kw: "residential pest control",     category: "pest_general",    tier: 1, weight: 15, label: "Residential Pest Control" },
+    { kw: "commercial pest control",      category: "pest_general",    tier: 1, weight: 15, label: "Commercial Pest Control" },
+    { kw: "industrial pest control",      category: "pest_general",    tier: 1, weight: 15, label: "Industrial Pest Control" },
+    { kw: "residential pest management",  category: "pest_general",    tier: 1, weight: 15, label: "Residential Pest Management" },
+    { kw: "commercial pest management",   category: "pest_general",    tier: 1, weight: 15, label: "Commercial Pest Management" },
+    { kw: "termite company",              category: "termite",         tier: 1, weight: 15, label: "Termite Company" },
+    { kw: "termite contractor",           category: "termite",         tier: 1, weight: 15, label: "Termite Contractor" },
+    { kw: "termite control service",      category: "termite",         tier: 1, weight: 15, label: "Termite Control Service" },
+    { kw: "termite control services",     category: "termite",         tier: 1, weight: 15, label: "Termite Control Services" },
+    { kw: "termite inspection service",   category: "termite",         tier: 1, weight: 15, label: "Termite Inspection Service" },
+    { kw: "termite treatment service",    category: "termite",         tier: 1, weight: 15, label: "Termite Treatment Service" },
+    { kw: "termite extermination",        category: "termite",         tier: 1, weight: 15, label: "Termite Extermination" },
+    { kw: "termite fumigation",           category: "termite",         tier: 1, weight: 15, label: "Termite Fumigation" },
+    { kw: "termite tenting",              category: "termite",         tier: 1, weight: 15, label: "Termite Tenting" },
+    { kw: "structural fumigation",        category: "termite",         tier: 1, weight: 15, label: "Structural Fumigation" },
+    { kw: "wood-destroying insect",       category: "termite",         tier: 1, weight: 15, label: "WDI Treatment" },
+    { kw: "wood destroying insect",       category: "termite",         tier: 1, weight: 15, label: "WDI Treatment" },
+    { kw: "wdi inspection",               category: "termite",         tier: 1, weight: 15, label: "WDI Inspection" },
+    { kw: "termite baiting system",       category: "termite",         tier: 1, weight: 15, label: "Termite Baiting System" },
+    { kw: "termite bait station",         category: "termite",         tier: 1, weight: 15, label: "Termite Bait Station" },
+    { kw: "subterranean termite",         category: "termite",         tier: 1, weight: 15, label: "Subterranean Termite Treatment" },
+    { kw: "bed bug extermination",        category: "bed_bugs",        tier: 1, weight: 15, label: "Bed Bug Extermination" },
+    { kw: "bed bug exterminator",         category: "bed_bugs",        tier: 1, weight: 15, label: "Bed Bug Exterminator" },
+    { kw: "bed bug treatment",            category: "bed_bugs",        tier: 1, weight: 15, label: "Bed Bug Treatment" },
+    { kw: "bed bug treatments",           category: "bed_bugs",        tier: 1, weight: 15, label: "Bed Bug Treatment" },
+    { kw: "bed bug removal",              category: "bed_bugs",        tier: 1, weight: 15, label: "Bed Bug Removal" },
+    { kw: "bed bug heat treatment",       category: "bed_bugs",        tier: 1, weight: 15, label: "Bed Bug Heat Treatment" },
+    { kw: "bed bug control service",      category: "bed_bugs",        tier: 1, weight: 15, label: "Bed Bug Control Service" },
+    { kw: "rodent control service",       category: "rodent_wildlife", tier: 1, weight: 15, label: "Rodent Control Service" },
+    { kw: "rodent control services",      category: "rodent_wildlife", tier: 1, weight: 15, label: "Rodent Control Services" },
+    { kw: "rat extermination",            category: "rodent_wildlife", tier: 1, weight: 15, label: "Rat Extermination" },
+    { kw: "mouse extermination",          category: "rodent_wildlife", tier: 1, weight: 15, label: "Mouse Extermination" },
+    { kw: "mice extermination",           category: "rodent_wildlife", tier: 1, weight: 15, label: "Mice Extermination" },
+    { kw: "wildlife exclusion",           category: "rodent_wildlife", tier: 1, weight: 15, label: "Wildlife Exclusion" },
+    { kw: "pest exclusion",               category: "rodent_wildlife", tier: 1, weight: 15, label: "Pest Exclusion" },
+    { kw: "rodent exclusion",             category: "rodent_wildlife", tier: 1, weight: 15, label: "Rodent Exclusion" },
+    { kw: "wildlife removal service",     category: "rodent_wildlife", tier: 1, weight: 15, label: "Wildlife Removal" },
+    { kw: "wildlife control service",     category: "rodent_wildlife", tier: 1, weight: 15, label: "Wildlife Control" },
+    { kw: "mosquito control service",     category: "mosquito_outdoor", tier: 1, weight: 15, label: "Mosquito Control Service" },
+    { kw: "mosquito control services",    category: "mosquito_outdoor", tier: 1, weight: 15, label: "Mosquito Control Services" },
+    { kw: "mosquito treatment service",   category: "mosquito_outdoor", tier: 1, weight: 15, label: "Mosquito Treatment Service" },
+    { kw: "tick control service",         category: "mosquito_outdoor", tier: 1, weight: 15, label: "Tick Control Service" },
+    { kw: "tick treatment service",       category: "mosquito_outdoor", tier: 1, weight: 15, label: "Tick Treatment Service" },
+    { kw: "flea extermination",           category: "mosquito_outdoor", tier: 1, weight: 15, label: "Flea Extermination" },
+    { kw: "flea exterminator",            category: "mosquito_outdoor", tier: 1, weight: 15, label: "Flea Exterminator" },
+    { kw: "wasp removal service",         category: "mosquito_outdoor", tier: 1, weight: 15, label: "Wasp Removal Service" },
+    { kw: "hornet removal service",       category: "mosquito_outdoor", tier: 1, weight: 15, label: "Hornet Removal" },
+    { kw: "bee removal service",          category: "mosquito_outdoor", tier: 1, weight: 15, label: "Bee Removal Service" },
+    { kw: "stinging insect control",      category: "mosquito_outdoor", tier: 1, weight: 15, label: "Stinging Insect Control" },
+    { kw: "ant extermination",            category: "ants_cockroach",  tier: 1, weight: 15, label: "Ant Extermination" },
+    { kw: "ant exterminator",             category: "ants_cockroach",  tier: 1, weight: 15, label: "Ant Exterminator" },
+    { kw: "carpenter ant treatment",      category: "ants_cockroach",  tier: 1, weight: 15, label: "Carpenter Ant Treatment" },
+    { kw: "fire ant control",             category: "ants_cockroach",  tier: 1, weight: 15, label: "Fire Ant Control" },
+    { kw: "cockroach extermination",      category: "ants_cockroach",  tier: 1, weight: 15, label: "Cockroach Extermination" },
+    { kw: "cockroach exterminator",       category: "ants_cockroach",  tier: 1, weight: 15, label: "Cockroach Exterminator" },
+    { kw: "roach extermination",          category: "ants_cockroach",  tier: 1, weight: 15, label: "Roach Extermination" },
+    { kw: "roach exterminator",           category: "ants_cockroach",  tier: 1, weight: 15, label: "Roach Exterminator" },
+    { kw: "roach control service",        category: "ants_cockroach",  tier: 1, weight: 15, label: "Roach Control" },
+    { kw: "free pest inspection",         category: "pest_general",    tier: 1, weight: 15, label: "Free Pest Inspection" },
+    { kw: "schedule pest treatment",      category: "pest_general",    tier: 1, weight: 15, label: "Schedule Pest Treatment" },
+    { kw: "schedule a pest inspection",   category: "pest_general",    tier: 1, weight: 15, label: "Schedule Pest Inspection" },
+    { kw: "request pest inspection",      category: "pest_general",    tier: 1, weight: 15, label: "Request Pest Inspection" },
+    { kw: "emergency exterminator",       category: "pest_general",    tier: 1, weight: 15, label: "Emergency Exterminator" },
+    { kw: "same-day pest control",        category: "pest_general",    tier: 1, weight: 15, label: "Same-Day Pest Control" },
+    { kw: "same day pest control",        category: "pest_general",    tier: 1, weight: 15, label: "Same-Day Pest Control" },
+    { kw: "pest control estimate",        category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Estimate" },
+    { kw: "pest control quote",           category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Quote" },
+    { kw: "pest control inspection",      category: "pest_general",    tier: 1, weight: 15, label: "Pest Control Inspection" },
+    { kw: "pest inspection and treatment",category: "pest_general",    tier: 1, weight: 15, label: "Pest Inspection & Treatment" },
+
+    // ╔════════════════════════════════════════════════════════════════════
+    // TIER 2 — STRONG PEST CONTROL SERVICE TERMS (weight=10)
+    // ╚════════════════════════════════════════════════════════════════════
+    { kw: "pest control",                 category: "pest_general",    tier: 2, weight: 10, label: "Pest Control" },
+    { kw: "pest management",              category: "pest_general",    tier: 2, weight: 10, label: "Pest Management" },
+    { kw: "pest removal",                 category: "pest_general",    tier: 2, weight: 10, label: "Pest Removal" },
+    { kw: "pest prevention",              category: "pest_general",    tier: 2, weight: 10, label: "Pest Prevention" },
+    { kw: "pest eradication",             category: "pest_general",    tier: 2, weight: 10, label: "Pest Eradication" },
+    { kw: "pest extermination",           category: "pest_general",    tier: 2, weight: 10, label: "Pest Extermination" },
+    { kw: "exterminator",                 category: "pest_general",    tier: 2, weight: 10, label: "Exterminator" },
+    { kw: "exterminators",                category: "pest_general",    tier: 2, weight: 10, label: "Exterminator" },
+    { kw: "exterminating",                category: "pest_general",    tier: 2, weight: 10, label: "Exterminating" },
+    { kw: "termite control",              category: "termite",         tier: 2, weight: 10, label: "Termite Control" },
+    { kw: "termite treatment",            category: "termite",         tier: 2, weight: 10, label: "Termite Treatment" },
+    { kw: "termite inspection",           category: "termite",         tier: 2, weight: 10, label: "Termite Inspection" },
+    { kw: "termite damage prevention",    category: "termite",         tier: 2, weight: 10, label: "Termite Damage Prevention" },
+    { kw: "termite baiting",              category: "termite",         tier: 2, weight: 10, label: "Termite Baiting" },
+    { kw: "drywood termite",              category: "termite",         tier: 2, weight: 10, label: "Drywood Termite Treatment" },
+    { kw: "formosan termite",             category: "termite",         tier: 2, weight: 10, label: "Formosan Termite Treatment" },
+    { kw: "termite damage repair",        category: "termite",         tier: 2, weight: 10, label: "Termite Damage Repair" },
+    { kw: "bed bug",                      category: "bed_bugs",        tier: 2, weight: 10, label: "Bed Bug" },
+    { kw: "bed bugs",                     category: "bed_bugs",        tier: 2, weight: 10, label: "Bed Bugs" },
+    { kw: "bedbug",                       category: "bed_bugs",        tier: 2, weight: 10, label: "Bed Bug" },
+    { kw: "bedbugs",                      category: "bed_bugs",        tier: 2, weight: 10, label: "Bed Bugs" },
+    { kw: "rodent control",               category: "rodent_wildlife", tier: 2, weight: 10, label: "Rodent Control" },
+    { kw: "rat control",                  category: "rodent_wildlife", tier: 2, weight: 10, label: "Rat Control" },
+    { kw: "mice control",                 category: "rodent_wildlife", tier: 2, weight: 10, label: "Mice Control" },
+    { kw: "mouse control",                category: "rodent_wildlife", tier: 2, weight: 10, label: "Mouse Control" },
+    { kw: "mice removal",                 category: "rodent_wildlife", tier: 2, weight: 10, label: "Mice Removal" },
+    { kw: "rat removal",                  category: "rodent_wildlife", tier: 2, weight: 10, label: "Rat Removal" },
+    { kw: "wildlife control",             category: "rodent_wildlife", tier: 2, weight: 10, label: "Wildlife Control" },
+    { kw: "wildlife removal",             category: "rodent_wildlife", tier: 2, weight: 10, label: "Wildlife Removal" },
+    { kw: "squirrel removal",             category: "rodent_wildlife", tier: 2, weight: 10, label: "Squirrel Removal" },
+    { kw: "raccoon removal",              category: "rodent_wildlife", tier: 2, weight: 10, label: "Raccoon Removal" },
+    { kw: "mosquito control",             category: "mosquito_outdoor", tier: 2, weight: 10, label: "Mosquito Control" },
+    { kw: "mosquito treatment",           category: "mosquito_outdoor", tier: 2, weight: 10, label: "Mosquito Treatment" },
+    { kw: "tick control",                 category: "mosquito_outdoor", tier: 2, weight: 10, label: "Tick Control" },
+    { kw: "tick treatment",               category: "mosquito_outdoor", tier: 2, weight: 10, label: "Tick Treatment" },
+    { kw: "flea control",                 category: "mosquito_outdoor", tier: 2, weight: 10, label: "Flea Control" },
+    { kw: "flea treatment",               category: "mosquito_outdoor", tier: 2, weight: 10, label: "Flea Treatment" },
+    { kw: "wasp removal",                 category: "mosquito_outdoor", tier: 2, weight: 10, label: "Wasp Removal" },
+    { kw: "hornet removal",               category: "mosquito_outdoor", tier: 2, weight: 10, label: "Hornet Removal" },
+    { kw: "bee removal",                  category: "mosquito_outdoor", tier: 2, weight: 10, label: "Bee Removal" },
+    { kw: "spider control",               category: "mosquito_outdoor", tier: 2, weight: 10, label: "Spider Control" },
+    { kw: "spider removal",               category: "mosquito_outdoor", tier: 2, weight: 10, label: "Spider Removal" },
+    { kw: "stink bug control",            category: "mosquito_outdoor", tier: 2, weight: 10, label: "Stink Bug Control" },
+    { kw: "earwig control",               category: "mosquito_outdoor", tier: 2, weight: 10, label: "Earwig Control" },
+    { kw: "silverfish control",           category: "mosquito_outdoor", tier: 2, weight: 10, label: "Silverfish Control" },
+    { kw: "ant control",                  category: "ants_cockroach",  tier: 2, weight: 10, label: "Ant Control" },
+    { kw: "ant treatment",                category: "ants_cockroach",  tier: 2, weight: 10, label: "Ant Treatment" },
+    { kw: "roach control",                category: "ants_cockroach",  tier: 2, weight: 10, label: "Roach Control" },
+    { kw: "cockroach control",            category: "ants_cockroach",  tier: 2, weight: 10, label: "Cockroach Control" },
+    { kw: "cockroach treatment",          category: "ants_cockroach",  tier: 2, weight: 10, label: "Cockroach Treatment" },
+    { kw: "german cockroach",             category: "ants_cockroach",  tier: 2, weight: 10, label: "German Cockroach Treatment" },
+    { kw: "carpenter ant control",        category: "ants_cockroach",  tier: 2, weight: 10, label: "Carpenter Ant Control" },
+    { kw: "recurring pest control",       category: "pest_general",    tier: 2, weight: 10, label: "Recurring Pest Control" },
+    { kw: "monthly pest control",         category: "pest_general",    tier: 2, weight: 10, label: "Monthly Pest Control" },
+    { kw: "quarterly pest control",       category: "pest_general",    tier: 2, weight: 10, label: "Quarterly Pest Control" },
+    { kw: "annual pest control",          category: "pest_general",    tier: 2, weight: 10, label: "Annual Pest Control" },
+    { kw: "pest control plan",            category: "pest_general",    tier: 2, weight: 10, label: "Pest Control Plan" },
+    { kw: "pest control plans",           category: "pest_general",    tier: 2, weight: 10, label: "Pest Control Plans" },
+    { kw: "pest protection plan",         category: "pest_general",    tier: 2, weight: 10, label: "Pest Protection Plan" },
+    { kw: "home protection plan",         category: "pest_general",    tier: 2, weight: 10, label: "Home Protection Plan" },
+    { kw: "restaurant pest control",      category: "pest_general",    tier: 2, weight: 10, label: "Restaurant Pest Control" },
+    { kw: "warehouse pest control",       category: "pest_general",    tier: 2, weight: 10, label: "Warehouse Pest Control" },
+    { kw: "hotel pest control",           category: "pest_general",    tier: 2, weight: 10, label: "Hotel Pest Control" },
+    { kw: "food processing pest control", category: "pest_general",    tier: 2, weight: 10, label: "Food Processing Pest Control" },
+
+    // ╔════════════════════════════════════════════════════════════════════
+    // TIER 3 — SUPPORTING PEST CONTROL TERMINOLOGY (weight=5)
+    // ╚════════════════════════════════════════════════════════════════════
+    { kw: "pest inspection",              category: "pest_general",    tier: 3, weight: 5,  label: "Pest Inspection" },
+    { kw: "pest treatment",               category: "pest_general",    tier: 3, weight: 5,  label: "Pest Treatment" },
+    { kw: "pest infestation",             category: "pest_general",    tier: 3, weight: 5,  label: "Pest Infestation" },
+    { kw: "pest-free",                    category: "pest_general",    tier: 3, weight: 5,  label: "Pest-Free" },
+    { kw: "pest free home",               category: "pest_general",    tier: 3, weight: 5,  label: "Pest-Free Home" },
+    { kw: "pest free guarantee",          category: "pest_general",    tier: 3, weight: 5,  label: "Pest-Free Guarantee" },
+    { kw: "licensed pest",                category: "pest_general",    tier: 3, weight: 5,  label: "Licensed Pest Control" },
+    { kw: "certified pest",               category: "pest_general",    tier: 3, weight: 5,  label: "Certified Pest Control" },
+    { kw: "pest control warranty",        category: "pest_general",    tier: 3, weight: 5,  label: "Pest Control Warranty" },
+    { kw: "termite",                      category: "termite",         tier: 3, weight: 5,  label: "Termite" },
+    { kw: "termites",                     category: "termite",         tier: 3, weight: 5,  label: "Termites" },
+    { kw: "cockroach",                    category: "ants_cockroach",  tier: 3, weight: 5,  label: "Cockroach" },
+    { kw: "cockroaches",                  category: "ants_cockroach",  tier: 3, weight: 5,  label: "Cockroaches" },
+    { kw: "rodent",                       category: "rodent_wildlife", tier: 3, weight: 5,  label: "Rodent" },
+    { kw: "rodents",                      category: "rodent_wildlife", tier: 3, weight: 5,  label: "Rodents" },
+    { kw: "mosquito",                     category: "mosquito_outdoor", tier: 3, weight: 5, label: "Mosquito" },
+    { kw: "mosquitoes",                   category: "mosquito_outdoor", tier: 3, weight: 5, label: "Mosquitoes" },
+    { kw: "ants infestation",             category: "ants_cockroach",  tier: 3, weight: 5,  label: "Ant Infestation" },
+    { kw: "wasp nest",                    category: "mosquito_outdoor", tier: 3, weight: 5, label: "Wasp Nest Removal" },
+    { kw: "hornet nest",                  category: "mosquito_outdoor", tier: 3, weight: 5, label: "Hornet Nest Removal" },
+    { kw: "beehive removal",              category: "mosquito_outdoor", tier: 3, weight: 5, label: "Beehive Removal" },
+    { kw: "our technician",               category: "pest_general",    tier: 3, weight: 5,  label: "Technician Visits" },
+    { kw: "our technicians",              category: "pest_general",    tier: 3, weight: 5,  label: "Technician Visits" },
+    { kw: "our exterminators",            category: "pest_general",    tier: 3, weight: 5,  label: "Exterminators" },
+
+    // ╔════════════════════════════════════════════════════════════════════
+    // TIER 4 — CONTEXTUAL WORDS (weight=2)
+    // ╚════════════════════════════════════════════════════════════════════
+    { kw: "insects",                      category: "pest_general",    tier: 4, weight: 2,  label: "Insects" },
+    { kw: "insect control",               category: "pest_general",    tier: 4, weight: 2,  label: "Insect Control" },
+    { kw: "infestation",                  category: "pest_general",    tier: 4, weight: 2,  label: "Infestation" },
+    { kw: "fumigation",                   category: "termite",         tier: 4, weight: 2,  label: "Fumigation" },
+    { kw: "ants",                         category: "ants_cockroach",  tier: 4, weight: 2,  label: "Ants" },
+    { kw: "rats",                         category: "rodent_wildlife", tier: 4, weight: 2,  label: "Rats" },
+    { kw: "mice",                         category: "rodent_wildlife", tier: 4, weight: 2,  label: "Mice" },
+    { kw: "ticks",                        category: "mosquito_outdoor", tier: 4, weight: 2, label: "Ticks" },
+    { kw: "fleas",                        category: "mosquito_outdoor", tier: 4, weight: 2, label: "Fleas" },
+    { kw: "wasps",                        category: "mosquito_outdoor", tier: 4, weight: 2, label: "Wasps" },
+    { kw: "hornets",                      category: "mosquito_outdoor", tier: 4, weight: 2, label: "Hornets" },
+    { kw: "bees",                         category: "mosquito_outdoor", tier: 4, weight: 2, label: "Bees" },
+    { kw: "spiders",                      category: "mosquito_outdoor", tier: 4, weight: 2, label: "Spiders" },
+  ];
+
+  // ── PEST CONTROL NEGATIVE KEYWORDS (PENALTY = −10 pts each) ─────────────
+  // Suppresses product manufacturers, chemical companies, agricultural suppliers,
+  // online pesticide stores, SaaS platforms, and directories that don't offer services.
+  const PEST_NEGATIVE_KEYWORDS = [
+    "pesticide manufacturer", "pesticide manufacturing", "insecticide manufacturer",
+    "insecticide manufacturing", "chemical manufacturer", "chemical manufacturing",
+    "pesticide formulation", "insecticide formulation", "active ingredient",
+    "active ingredients", "epa registration", "epa registered pesticide",
+    "safety data sheet", "material safety data sheet", "msds",
+    "buy pesticide", "buy pesticides", "buy insecticide", "buy insecticides",
+    "purchase pesticide", "order pesticides", "shop pest control products",
+    "pest control products for sale", "pesticide online", "add to cart", "add to bag",
+    "out of stock", "free shipping on orders", "quantity discount", "bulk order",
+    "wholesale pesticide", "pesticide wholesale", "pesticide distributor",
+    "pesticide distributors", "insecticide distributor", "pesticide supplier",
+    "pesticide suppliers", "pesticide store", "insecticide store",
+    "agricultural pesticide", "agricultural insecticide", "crop protection",
+    "farm pest control", "farm chemicals", "agrochemical", "agrochemicals",
+    "agro chemical", "herbicide", "fungicide", "fertilizer", "seed treatment",
+    "row crop", "grain storage",
+    "pest control software", "pest control crm", "pest control management software",
+    "route management software", "pest control directory",
+    "find a pest control", "compare pest control", "pest control reviews",
+    "pest control ratings", "best pest control companies",
+    "pesticide applicator training", "pesticide licensing course",
+    "pest control certification program",
+    "university extension", "cooperative extension",
+    "entomology department", "entomology research",
+    "vector control district",
+    "roofing company", "hvac company", "plumbing company",
+    "landscaping company", "lawn care company", "real estate agent",
+    "moving company", "cleaning service",
+  ];
+
   // ── MOVING NEGATIVE KEYWORDS (PENALTY = −10 pts each) ──────────────────
   // Suppresses false positives: businesses that use moving/relocation language
   // but are NOT actual moving companies.
@@ -4483,6 +4752,33 @@
   );
   for (const kw of sortedMovingNeg) {
     MOVING_NEGATIVE_MAP.set(kw.toLowerCase(), -10);
+  }
+
+  // -- Pest Control Maps & Precompiled Word-Boundary Regexes --
+  const PEST_KEYWORD_MAP = new Map();
+  const PEST_KEYWORD_REGEXES = [];
+  const sortedPestKws = [...PEST_KEYWORDS].sort((a, b) => b.kw.length - a.kw.length);
+  for (const entry of sortedPestKws) {
+    const lowerKw = entry.kw.toLowerCase();
+    const info = {
+      category: entry.category,
+      tier: entry.tier,
+      weight: entry.weight,
+      label: entry.label,
+    };
+    PEST_KEYWORD_MAP.set(lowerKw, info);
+    const escaped = lowerKw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    PEST_KEYWORD_REGEXES.push({
+      kw: lowerKw,
+      info,
+      regex: new RegExp(`\\b${escaped}\\b`, "gi"),
+    });
+  }
+
+  const PEST_NEGATIVE_MAP = new Map();
+  const sortedPestNeg = [...PEST_NEGATIVE_KEYWORDS].sort((a, b) => b.length - a.length);
+  for (const kw of sortedPestNeg) {
+    PEST_NEGATIVE_MAP.set(kw.toLowerCase(), -10);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -4833,6 +5129,41 @@
     return matches;
   }
 
+  function findPestMatches(text) {
+    if (!text || typeof text !== "string") return [];
+
+    const matches = [];
+    const matchedSpans = [];
+    const alreadyMatched = new Set();
+
+    // Iterate through precompiled regexes (sorted longest-keyword-first)
+    for (const { kw, info, regex } of PEST_KEYWORD_REGEXES) {
+      regex.lastIndex = 0;
+      let m;
+      while ((m = regex.exec(text)) !== null) {
+        const start = m.index;
+        const end   = start + m[0].length;
+
+        // Prevent shorter sub-matches inside an already-matched span
+        const alreadyCovered = matchedSpans.some(
+          (span) => start >= span.start && end <= span.end,
+        );
+        if (alreadyCovered) continue;
+
+        const key = info.category + "|" + kw;
+        if (!alreadyMatched.has(key)) {
+          alreadyMatched.add(key);
+          const snipStart = Math.max(0, start - 40);
+          const snipEnd   = Math.min(text.length, end + 40);
+          const snippet   = text.substring(snipStart, snipEnd).trim();
+          matches.push({ kw, ...info, snippet });
+        }
+        matchedSpans.push({ start, end, tier: info.tier });
+      }
+    }
+    return matches;
+  }
+
   function findNegativesInMap(text, negativeMap) {
     const lower = text.toLowerCase();
     const hits = [];
@@ -4888,9 +5219,10 @@
     const isHvac   = mode === "hvac";
     const isRoof   = mode === "roofing";
     const isMoving = mode === "moving";
-    const matchFn  = isHvac ? findHvacMatches : isRoof ? findRoofingMatches : isMoving ? findMovingMatches : findHardscapeMatches;
-    const negMap   = isHvac ? HVAC_NEGATIVE_MAP : isRoof ? ROOFING_NEGATIVE_MAP : isMoving ? MOVING_NEGATIVE_MAP : NEGATIVE_MAP;
-    const modeLabel = isHvac ? "HVAC" : isRoof ? "Roofing" : isMoving ? "Moving" : "Hardscape";
+    const isPest   = mode === "pest";
+    const matchFn  = isHvac ? findHvacMatches : isRoof ? findRoofingMatches : isMoving ? findMovingMatches : isPest ? findPestMatches : findHardscapeMatches;
+    const negMap   = isHvac ? HVAC_NEGATIVE_MAP : isRoof ? ROOFING_NEGATIVE_MAP : isMoving ? MOVING_NEGATIVE_MAP : isPest ? PEST_NEGATIVE_MAP : NEGATIVE_MAP;
+    const modeLabel = isHvac ? "HVAC" : isRoof ? "Roofing" : isMoving ? "Moving" : isPest ? "Pest Control" : "Hardscape";
 
     console.log(`\ud83d\udd0d [Finder v5.0] Starting ${modeLabel} scan...`);
 
@@ -4967,7 +5299,7 @@
       }
 
       // Secondary service scan (hardscaping mode only — HVAC, Roofing and Moving don't need these)
-      if (!isHvac && !isRoof && !isMoving) {
+      if (!isHvac && !isRoof && !isMoving && !isPest) {
         const secMatches = findSecondaryMatches(text);
         for (const sec of secMatches) secondaryFound.add(sec);
       }
@@ -4977,7 +5309,7 @@
     debugLog.push(`Total text extracted: ${totalTextLength} chars`);
     debugLog.push(`Positive keyword hits: ${totalKeywordHits}`);
     debugLog.push(`Negative keyword hits: ${negativeHits.length}`);
-    if (!isHvac && !isRoof && !isMoving)
+    if (!isHvac && !isRoof && !isMoving && !isPest)
       debugLog.push(`Secondary service signals: ${secondaryFound.size}`);
     debugLog.push(`Total findings: ${findings.length}`);
     debugLog.push(`Scan time: ${elapsed}ms`);
@@ -5121,6 +5453,15 @@
     moving_storage:  { bg: "rgba(221,214,254,0.35)", border: "#c4b5fd", text: "#4c1d95" },
   };
 
+  const PEST_HIGHLIGHT_STYLES = {
+    pest_general:    { bg: "rgba(16,185,129,0.35)",  border: "#059669", text: "#064e3b" },
+    termite:         { bg: "rgba(5,150,105,0.35)",   border: "#047857", text: "#022c22" },
+    bed_bugs:        { bg: "rgba(52,211,153,0.35)",  border: "#10b981", text: "#064e3b" },
+    rodent_wildlife: { bg: "rgba(6,95,70,0.35)",     border: "#065f46", text: "#d1fae5" },
+    mosquito_outdoor:{ bg: "rgba(110,231,183,0.35)", border: "#34d399", text: "#064e3b" },
+    ants_cockroach:  { bg: "rgba(167,243,208,0.35)", border: "#6ee7b7", text: "#022c22" },
+  };
+
   const HIGHLIGHT_STYLE_ID = "__finder_hl_styles__";
   const HIGHLIGHT_MARK_ATTR = "data-finder-hl";
 
@@ -5132,6 +5473,7 @@
       mode === "hvac"    ? HVAC_HIGHLIGHT_STYLES
       : mode === "roofing" ? ROOFING_HIGHLIGHT_STYLES
       : mode === "moving"  ? MOVING_HIGHLIGHT_STYLES
+      : mode === "pest"    ? PEST_HIGHLIGHT_STYLES
       : HARDSCAPE_HIGHLIGHT_STYLES;
     const style = document.createElement("style");
     style.id = HIGHLIGHT_STYLE_ID;
@@ -5240,7 +5582,7 @@
           match: true,
           catId:
             termCatMap.get(m[0].toLowerCase()) ||
-            (mode === "hvac" ? "cooling" : mode === "roofing" ? "roof_replacement" : mode === "moving" ? "moving_company" : "patios"),
+            (mode === "hvac" ? "cooling" : mode === "roofing" ? "roof_replacement" : mode === "moving" ? "moving_company" : mode === "pest" ? "pest_general" : "patios"),
         });
         last = m.index + m[0].length;
         count++;
@@ -6601,5 +6943,5 @@
     // Not handled here — let other listeners handle it
   });
 
-  console.log("\ud83c\udf21\ufe0f\ud83e\uddf1\ud83c\udfe0\ud83d\udccd HVAC, Hardscaping, Roofing & Address Finder Engine v5.2 loaded.");
+  console.log("\ud83c\udf21\ufe0f\ud83e\uddf1\ud83c\udfe0\ud83d\udccd HVAC, Hardscaping, Roofing, Moving & Pest Control Finder Engine v5.3 loaded.");
 })();

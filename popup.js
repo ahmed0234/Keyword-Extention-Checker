@@ -96,6 +96,19 @@ const MOVING_CATEGORIES = [
 ];
 
 // ── Moving Highlight Legend Swatches ──
+const PEST_CATEGORIES = [
+  { id: "pest_general",    label: "General Pest Control", icon: "🐞", color: "#10b981" },
+  { id: "termite",         label: "Termite Control",      icon: "🪲", color: "#059669" },
+  { id: "bed_bugs",        label: "Bed Bug Control",      icon: "🛏️", color: "#34d399" },
+  { id: "rodent_wildlife", label: "Rodent & Wildlife",    icon: "🐀", color: "#065f46" },
+  { id: "mosquito_outdoor",label: "Mosquito & Outdoor",   icon: "🦟", color: "#6ee7b7" },
+  { id: "ants_cockroach",  label: "Ants & Cockroaches",   icon: "🐜", color: "#a7f3d0" },
+];
+
+const PEST_LEGEND_SWATCHES = [
+  { label: "Pest Control", bg: "rgba(16,185,129,0.35)", border: "#059669" },
+];
+
 const MOVING_LEGEND_SWATCHES = [
   { label: "Moving", bg: "rgba(139,92,246,0.35)", border: "#7c3aed" },
 ];
@@ -129,6 +142,8 @@ const ROOFING_CATEGORY_BY_ID = {};
 for (const cat of ROOFING_CATEGORIES) ROOFING_CATEGORY_BY_ID[cat.id] = cat;
 const MOVING_CATEGORY_BY_ID = {};
 for (const cat of MOVING_CATEGORIES) MOVING_CATEGORY_BY_ID[cat.id] = cat;
+const PEST_CATEGORY_BY_ID = {};
+for (const cat of PEST_CATEGORIES) PEST_CATEGORY_BY_ID[cat.id] = cat;
 
 // ── Scoring Constants ──
 const HS_THRESHOLD      = 420;
@@ -136,6 +151,7 @@ const HVAC_THRESHOLD    = 420;
 const NEGATIVE_PENALTY  = 10;
 const ROOFING_THRESHOLD = 420;
 const MOVING_THRESHOLD  = 380;
+const PEST_THRESHOLD    = 380;
 
 // ── Deep Scan Page Lists ──
 const HS_DEEP_SCAN_PAGES = [
@@ -231,6 +247,31 @@ const MOVING_DEEP_SCAN_PAGES = [
   "/contact",
 ];
 
+const PEST_DEEP_SCAN_PAGES = [
+  "/",
+  "/services",
+  "/pest-control",
+  "/pest-control-services",
+  "/termite",
+  "/termite-control",
+  "/termite-treatment",
+  "/termite-inspection",
+  "/bed-bugs",
+  "/bed-bug-treatment",
+  "/rodent-control",
+  "/wildlife-removal",
+  "/mosquito-control",
+  "/tick-control",
+  "/ant-control",
+  "/cockroach-control",
+  "/residential",
+  "/commercial",
+  "/about",
+  "/about-us",
+  "/our-services",
+  "/contact",
+];
+
 // ── Address Finder Deep Scan Pages ──
 const ADDR_DEEP_SCAN_PAGES = [
   "/",
@@ -284,6 +325,9 @@ document
 document
   .getElementById("modeMovingBtn")
   .addEventListener("click", () => setMode("moving"));
+document
+  .getElementById("modePestBtn")
+  .addEventListener("click", () => setMode("pest"));
 
 // Wire Competitor Finder buttons (Single, Bulk & Google Auth)
 document.getElementById("compSubSingleBtn")?.addEventListener("click", () => setCompSubMode("single"));
@@ -351,6 +395,7 @@ function setMode(mode, saveToStorage = true) {
   const isComp   = mode === "competitor";
   const isRoof   = mode === "roofing";
   const isMoving = mode === "moving";
+  const isPest   = mode === "pest";
 
   // 2. Safely update button active classes
   const hvacBtn   = document.getElementById("modeHvacBtn");
@@ -359,12 +404,14 @@ function setMode(mode, saveToStorage = true) {
   const compBtn   = document.getElementById("modeCompBtn");
   const roofBtn   = document.getElementById("modeRoofBtn");
   const movingBtn = document.getElementById("modeMovingBtn");
+  const pestBtn   = document.getElementById("modePestBtn");
   if (hvacBtn)   hvacBtn.className   = "mode-btn" + (isHvac   ? " active-hvac"   : "");
   if (hsBtn)     hsBtn.className     = "mode-btn" + (isHs     ? " active-hs"     : "");
   if (addrBtn)   addrBtn.className   = "mode-btn" + (isAddr   ? " active-addr"   : "");
   if (compBtn)   compBtn.className   = "mode-btn" + (isComp   ? " active-comp"   : "");
   if (roofBtn)   roofBtn.className   = "mode-btn" + (isRoof   ? " active-roof"   : "");
   if (movingBtn) movingBtn.className = "mode-btn" + (isMoving ? " active-moving" : "");
+  if (pestBtn)   pestBtn.className   = "mode-btn" + (isPest   ? " active-pest"   : "");
 
   // 3. Safely update Header Title
   if (isHvac) {
@@ -377,6 +424,8 @@ function setMode(mode, saveToStorage = true) {
     updateHeaderTitle("🏠", "Roofing", "accent-roof");
   } else if (isMoving) {
     updateHeaderTitle("🚛", "Moving", "accent-moving");
+  } else if (isPest) {
+    updateHeaderTitle("🐞", "Pest Control", "accent-pest");
   } else {
     updateHeaderTitle("🧱", "Hardscape", "accent-hs");
   }
@@ -453,6 +502,19 @@ function setMode(mode, saveToStorage = true) {
         resContainer.innerHTML = `<div class="status-msg">Click <strong>Quick Scan</strong> to analyze this site for moving company services.</div>`;
       }
       renderLegendSwatches(MOVING_LEGEND_SWATCHES);
+    } else if (isPest) {
+      if (scanBtn) {
+        scanBtn.className = "btn-scan-primary pest-mode";
+        scanBtn.textContent = "🔍 Quick Scan";
+      }
+      if (deepScanBtn) {
+        deepScanBtn.className = "btn-scan-secondary";
+        deepScanBtn.textContent = "🌐 Deep Scan";
+      }
+      if (resContainer) {
+        resContainer.innerHTML = `<div class="status-msg">Click <strong>Quick Scan</strong> to analyze this site for pest control services.</div>`;
+      }
+      renderLegendSwatches(PEST_LEGEND_SWATCHES);
     } else if (isHs) {
       if (scanBtn) {
         scanBtn.className = "btn-scan-primary";
@@ -491,6 +553,7 @@ function setMode(mode, saveToStorage = true) {
     else if (isComp)   fill.classList.add("comp-fill");
     else if (isRoof)   fill.classList.add("roof-fill");
     else if (isMoving) fill.classList.add("moving-fill");
+    else if (isPest)   fill.classList.add("pest-fill");
   }
 
   // 7. Persist mode
@@ -804,6 +867,7 @@ function startDeepScan() {
     currentMode === "hvac"     ? HVAC_DEEP_SCAN_PAGES
     : currentMode === "roofing"  ? ROOFING_DEEP_SCAN_PAGES
     : currentMode === "moving"   ? MOVING_DEEP_SCAN_PAGES
+    : currentMode === "pest"     ? PEST_DEEP_SCAN_PAGES
     : HS_DEEP_SCAN_PAGES;
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -889,6 +953,7 @@ function aggregateFindings(response, mode) {
   if (mode === "hvac")    return aggregateHvacFindings(response);
   if (mode === "roofing") return aggregateRoofingFindings(response);
   if (mode === "moving")  return aggregateMovingFindings(response);
+  if (mode === "pest")    return aggregatePestFindings(response);
   return aggregateHardscapeFindings(response);
 }
 
@@ -1640,6 +1705,7 @@ function renderDashboard(data) {
   if (data.mode === "hvac")    return renderHvacDashboard(data);
   if (data.mode === "roofing") return renderRoofingDashboard(data);
   if (data.mode === "moving")  return renderMovingDashboard(data);
+  if (data.mode === "pest")    return renderPestDashboard(data);
   return renderHardscapeDashboard(data);
 }
 
@@ -2287,6 +2353,323 @@ function renderMovingDashboard(data) {
   wireEvidenceClicks(container);
 }
 
+// ════════════════════════════════════════════════════════════════════════════════
+// PEST CONTROL AGGREGATION, REASON BUILDER & DASHBOARD
+// ════════════════════════════════════════════════════════════════════════════════
+
+function aggregatePestFindings(response) {
+  const findings     = response.findings     || [];
+  const negativeHits = response.negativeHits || [];
+
+  const scoreMap     = {};
+  const evidenceMap  = {};
+  const termFreqMap  = {};
+  const matchedZones = {};
+
+  for (const cat of PEST_CATEGORIES) {
+    scoreMap[cat.id]     = 0;
+    evidenceMap[cat.id]  = [];
+    termFreqMap[cat.id]  = {};
+    matchedZones[cat.id] = new Set();
+  }
+
+  const allKeywordsMatched = new Set();
+  const highValueMatched   = [];
+  const tier1Terms         = new Set();
+  const tier2Terms         = new Set();
+  const strongSignalTerms  = new Set();
+  const prominentZones     = new Set([
+    "hero-heading", "hero", "h1", "h2", "nav", "meta", "service-section", "cta",
+  ]);
+  let hasProminentZone = false;
+
+  for (const f of findings) {
+    const catId = f.category;
+    if (!scoreMap.hasOwnProperty(catId)) continue;
+
+    const w = typeof f.weight === "number" ? f.weight : 1;
+    scoreMap[catId] += w;
+
+    const snippet = (f.snippet || "").trim();
+    const already = evidenceMap[catId].some((e) => e.snippet === snippet);
+    if (!already) {
+      evidenceMap[catId].push({
+        snippet,
+        matchedTerm: f.matchedTerm || "?",
+        tier: f.tier || 1,
+        weight: w,
+        label: f.label || f.matchedTerm,
+        zone: f.zone || f.tag || "?",
+        tag: f.tag || "?",
+        url: f.url || "",
+        xpath: f.xpath || "",
+      });
+    }
+
+    const term = f.matchedTerm || "unknown";
+    allKeywordsMatched.add(term);
+    termFreqMap[catId][term] = (termFreqMap[catId][term] || 0) + 1;
+    if (f.zone) {
+      matchedZones[catId].add(f.zone);
+      if (prominentZones.has(f.zone)) hasProminentZone = true;
+    }
+
+    if (f.tier === 1) {
+      tier1Terms.add(term);
+      strongSignalTerms.add(term);
+      if (!highValueMatched.includes(f.label || term)) highValueMatched.push(f.label || term);
+    } else if (f.tier === 2) {
+      tier2Terms.add(term);
+      strongSignalTerms.add(term);
+      if (!highValueMatched.includes(f.label || term)) highValueMatched.push(f.label || term);
+    }
+  }
+
+  const strongSignalCount = strongSignalTerms.size;
+  const tier1Count        = tier1Terms.size;
+  const hasStrongSignal   = strongSignalCount > 0;
+
+  const ACTIVE_CAT_THRESHOLD = 15;
+  const activeCategoryCount  = PEST_CATEGORIES.filter(
+    (c) => (scoreMap[c.id] || 0) >= ACTIVE_CAT_THRESHOLD,
+  ).length;
+
+  const totalPositiveScore = Object.values(scoreMap).reduce((a, b) => a + b, 0);
+  const penaltyScore       = negativeHits.length * NEGATIVE_PENALTY;
+  const netScore           = Math.max(0, totalPositiveScore - penaltyScore);
+  let rawConfidence        = Math.min(100, Math.round((netScore / PEST_THRESHOLD) * 100));
+
+  // Gate 1: No Tier 1/2 signal at all.
+  if (!hasStrongSignal && rawConfidence > 15) {
+    rawConfidence = 15;
+  }
+
+  // Gate 2: Only one distinct strong signal.
+  if (strongSignalCount <= 1 && rawConfidence > 28) {
+    rawConfidence = 28;
+  }
+
+  // Gate 3: No prominent zone coverage.
+  if (!hasProminentZone && rawConfidence > 40) {
+    rawConfidence = 40;
+  }
+
+  // Gate 4: YES (≥60) requires sufficient multi-signal depth.
+  const qualifiesForYes =
+    strongSignalCount >= 3 ||
+    (strongSignalCount >= 2 && tier1Count >= 1 && activeCategoryCount >= 2 && hasProminentZone);
+  if (rawConfidence >= 60 && !qualifiesForYes) {
+    rawConfidence = 50;
+  }
+
+  // Gate 5: High confidence (≥80) requires broad evidence.
+  if (
+    rawConfidence >= 80 &&
+    (strongSignalCount < 4 || activeCategoryCount < 2 || tier1Count < 2 || !hasProminentZone)
+  ) {
+    rawConfidence = 75;
+  }
+
+  // Gate 6: Heavy negative penalty suppresses product/manufacturer sites.
+  if (negativeHits.length >= 2 && rawConfidence > 35) rawConfidence = 35;
+  if (negativeHits.length >= 4 && rawConfidence > 15) rawConfidence = 15;
+
+  const confidence = Math.max(0, rawConfidence);
+
+  let pestCompany;
+  if (confidence >= 60)      pestCompany = "YES";
+  else if (confidence >= 25) pestCompany = "UNCERTAIN";
+  else                       pestCompany = "NO";
+
+  let confidenceLabel;
+  if (confidence >= 95)      confidenceLabel = "Very Strong Pest Control Evidence";
+  else if (confidence >= 80) confidenceLabel = "Strong Pest Control Evidence";
+  else if (confidence >= 60) confidenceLabel = "Moderate Pest Control Evidence";
+  else if (confidence >= 40) confidenceLabel = "Weak / Uncertain";
+  else                       confidenceLabel = "Probably Not a Pest Control Company";
+
+  const catConfidence = {};
+  for (const cat of PEST_CATEGORIES) {
+    const s = scoreMap[cat.id];
+    catConfidence[cat.id] =
+      s === 0 ? 0
+              : Math.min(100, Math.round((s / (PEST_THRESHOLD / PEST_CATEGORIES.length)) * 100));
+  }
+
+  const detectedServices = highValueMatched.slice(0, 24);
+  const reasons = buildPestReasons(
+    confidence, scoreMap, matchedZones, negativeHits, detectedServices,
+    catConfidence, hasStrongSignal, strongSignalCount, tier1Count,
+    activeCategoryCount, hasProminentZone,
+  );
+
+  return {
+    mode: "pest",
+    confidence,
+    confidenceLabel,
+    pestCompany,
+    netScore,
+    totalPositiveScore,
+    penaltyScore,
+    catConfidence,
+    scoreMap,
+    evidenceMap,
+    termFreqMap,
+    matchedZones: Object.fromEntries(
+      Object.entries(matchedZones).map(([k, v]) => [k, [...v]]),
+    ),
+    detectedServices,
+    allKeywordsMatched: [...allKeywordsMatched],
+    negativeHits,
+    secondaryServices: [],
+    reasons,
+  };
+}
+
+function buildPestReasons(
+  confidence, scoreMap, matchedZones, negativeHits, detectedServices,
+  catConfidence, hasStrongSignal, strongSignalCount, tier1Count,
+  activeCategoryCount, hasProminentZone,
+) {
+  const reasons = [];
+
+  if (confidence === 0) {
+    reasons.push("❌ No pest control signals detected on this page.");
+    return reasons;
+  }
+
+  if (confidence >= 80) {
+    reasons.push("✅ Genuine pest control company — strong multi-service evidence confirmed");
+  } else if (confidence >= 60) {
+    reasons.push("🔶 Likely pest control company — solid dedicated service evidence confirmed");
+  } else if (confidence >= 25) {
+    reasons.push("🔸 Possible pest control involvement — moderate or isolated signals detected");
+  } else {
+    reasons.push("⚠️ Weak pest control presence — low-tier, ancillary, or incidental terminology only");
+  }
+
+  if (!hasStrongSignal) {
+    reasons.push("⚠️ No dedicated service terms found — only generic words like 'pest' or 'insects' detected");
+  } else if (strongSignalCount <= 1) {
+    reasons.push("ℹ️ Only one distinct pest control term matched — multiple service signals required");
+  } else if (!hasProminentZone) {
+    reasons.push("⚠️ Pest terms appear only in body/secondary text — not in navigation, headings, or CTAs");
+  } else if (confidence < 60 && strongSignalCount < 3) {
+    reasons.push("ℹ️ Limited service breadth — additional dedicated pest services needed for full confirmation");
+  }
+
+  const allZones = new Set(Object.values(matchedZones).flat());
+  if (allZones.has("hero-heading") || allZones.has("h1"))
+    reasons.push("🎯 Pest control keywords found in hero heading / H1");
+  if (allZones.has("nav"))
+    reasons.push("📍 Pest control services listed in navigation menu");
+  if (allZones.has("service-section"))
+    reasons.push("📋 Dedicated pest control services section detected");
+  if (allZones.has("meta"))
+    reasons.push("🔍 Pest control keywords in page title or meta description");
+  if (allZones.has("cta"))
+    reasons.push("📣 Pest control call-to-action buttons present");
+  if (allZones.has("structured-data"))
+    reasons.push("🗂️ Pest control signals found in structured data (JSON-LD)");
+
+  const topCats = PEST_CATEGORIES.filter((c) => catConfidence[c.id] >= 25);
+  if (topCats.length > 0) {
+    reasons.push("🏆 Services confirmed: " + topCats.map((c) => c.label).join(", "));
+  }
+
+  if (negativeHits.length > 0) {
+    reasons.push(`⛔ Penalty signals (manufacturer/retailer/product?): ${negativeHits.slice(0, 3).join(", ")}${negativeHits.length > 3 ? ` +${negativeHits.length - 3} more` : ""}`);
+  }
+
+  return reasons;
+}
+
+// ── Pest Control Dashboard ────────────────────────────────────────────────────────────────────────────
+
+function renderPestDashboard(data) {
+  const container = document.getElementById("resultContainer");
+  const {
+    confidence,
+    confidenceLabel,
+    pestCompany,
+    catConfidence,
+    evidenceMap,
+    termFreqMap,
+    detectedServices,
+    negativeHits,
+    reasons,
+  } = data;
+
+  const confClass    = confidence >= 65 ? "high" : confidence >= 40 ? "medium" : "low";
+  const verdictClass = pestCompany === "YES" ? "yes" : pestCompany === "NO" ? "no" : "uncertain";
+  const verdictIcon  = pestCompany === "YES" ? "✅" : pestCompany === "NO" ? "❌" : "⚠️";
+
+  let html = "";
+
+  html += `
+    <div class="primary-card pest-card">
+      <div class="primary-top">
+        <div>
+          <div class="primary-meta pest-meta">🐞 Pest Control Detection</div>
+          <div class="primary-name">${confidenceLabel}</div>
+          <div class="hvac-verdict ${verdictClass}">${verdictIcon} Pest Control Company: <strong>${pestCompany}</strong></div>
+        </div>
+        <div class="primary-conf ${confClass}">${confidence}%</div>
+      </div>
+      <div class="primary-reasons">${reasons.slice(0, 2).join(" · ")}</div>
+    </div>`;
+
+  if (detectedServices.length > 0) {
+    const chips = detectedServices
+      .map((s) => `<span class="service-chip" style="background:rgba(16,185,129,0.18);border-color:rgba(16,185,129,0.4);color:#6ee7b7;">${s}</span>`)
+      .join("");
+    html += `
+      <div class="detected-services">
+        <div class="section-label" style="color:#10b981;">🐞 Pest Control Services Detected</div>
+        <div class="chip-row">${chips}</div>
+      </div>`;
+  }
+
+  html += `<div class="result-grid three-col">`;
+  for (const cat of PEST_CATEGORIES) {
+    const score = catConfidence[cat.id] || 0;
+    const isTop =
+      score === Math.max(...PEST_CATEGORIES.map((c) => catConfidence[c.id] || 0)) && score > 0;
+    html += `
+      <div class="service-card" style="${isTop ? "border-color:#10b981;box-shadow:0 0 0 1px rgba(16,185,129,0.18);" : ""}">
+        <div class="service-icon">${cat.icon}</div>
+        <div class="service-name">${cat.label}</div>
+        <div class="service-score" style="color:${cat.color}">${score}%</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${score}%;background:${cat.color}"></div></div>
+        <div class="service-matches">${evidenceMap[cat.id]?.length || 0} hit${(evidenceMap[cat.id]?.length || 0) !== 1 ? "s" : ""}</div>
+      </div>`;
+  }
+  html += `</div>`;
+
+  html += buildReasonsCollapsible(reasons, "💡 Why Classified", "pest");
+  html += buildEvidenceCollapsible(data, PEST_CATEGORIES, "pest_general", "pest");
+  html += buildKeywordsCollapsible(data, PEST_CATEGORIES, "pest");
+
+  if (negativeHits.length > 0) {
+    const negChips = negativeHits
+      .map((n) => `<span class="neg-chip">${n}</span>`)
+      .join("");
+    html += `
+      <div class="negative-section">
+        <div class="section-label negative">⛔ Product/Manufacturer Signals Detected (−${negativeHits.length * 10} pts)</div>
+        <div class="chip-row">${negChips}</div>
+      </div>`;
+  }
+
+  html += buildPagesFooter(data);
+
+  container.innerHTML = html;
+  container
+    .querySelectorAll(".collapsible")
+    .forEach((el) => makeCollapsible(el));
+  wireEvidenceClicks(container);
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // SHARED HTML BUILDERS
 // ══════════════════════════════════════════════════════════════════════════════
@@ -2481,13 +2864,23 @@ function wireEvidenceClicks(container) {
 
 function updateCopyButtons(mode) {
   const copyPrimaryBtn = document.getElementById("copyPrimaryBtn");
+  if (!copyPrimaryBtn) return;
   if (mode === "hvac") {
     copyPrimaryBtn.className = "btn-action blue";
+    copyPrimaryBtn.style.cssText = "";
     copyPrimaryBtn.textContent = "📋 Copy HVAC Score";
   } else if (mode === "roofing") {
     copyPrimaryBtn.className = "btn-action";
     copyPrimaryBtn.style.cssText = "background:rgba(239,68,68,0.18);border-color:rgba(239,68,68,0.45);color:#ef4444;";
     copyPrimaryBtn.textContent = "📋 Copy Roofing Score";
+  } else if (mode === "moving") {
+    copyPrimaryBtn.className = "btn-action";
+    copyPrimaryBtn.style.cssText = "background:rgba(124,58,237,0.18);border-color:rgba(124,58,237,0.45);color:#a78bfa;";
+    copyPrimaryBtn.textContent = "📋 Copy Moving Score";
+  } else if (mode === "pest") {
+    copyPrimaryBtn.className = "btn-action";
+    copyPrimaryBtn.style.cssText = "background:rgba(16,185,129,0.18);border-color:rgba(16,185,129,0.45);color:#34d399;";
+    copyPrimaryBtn.textContent = "📋 Copy Pest Control Score";
   } else {
     copyPrimaryBtn.className = "btn-action amber";
     copyPrimaryBtn.style.cssText = "";
@@ -2510,6 +2903,10 @@ function copyPrimary() {
       : conf >= 20 ? "Possible Roofing Work"
       : "Not a Roofing Company";
     text = `${label} \u2014 ${conf}%`;
+  } else if (d.mode === "moving") {
+    text = `Moving Company: ${d.movingCompany} \u2014 Confidence: ${conf}% \u2014 ${d.confidenceLabel}`;
+  } else if (d.mode === "pest") {
+    text = `Pest Control Company: ${d.pestCompany} \u2014 Confidence: ${conf}% \u2014 ${d.confidenceLabel}`;
   } else {
     const label =
       conf >= 75
@@ -2541,6 +2938,8 @@ function copyAll() {
   const conf = d.confidence || 0;
   const categories = d.mode === "hvac" ? HVAC_CATEGORIES
     : d.mode === "roofing" ? ROOFING_CATEGORIES
+    : d.mode === "moving" ? MOVING_CATEGORIES
+    : d.mode === "pest" ? PEST_CATEGORIES
     : HS_CATEGORIES;
 
   let text = `====================================\n`;
@@ -2617,6 +3016,68 @@ function copyAll() {
 
     text += `\nSERVICE CATEGORY BREAKDOWN:\n`;
     for (const cat of ROOFING_CATEGORIES) {
+      text += `  ${cat.icon} ${cat.label}: ${d.catConfidence?.[cat.id] || 0}%\n`;
+    }
+  } else if (d.mode === "pest") {
+    text += `PEST CONTROL COMPANY FINDER REPORT\n`;
+    text += `====================================\n\n`;
+    text += `Company Website  : ${domain || "Unknown"}\n`;
+    text += `Full URL         : ${d.pages?.[0]?.url || "N/A"}\n`;
+    text += `Detection Mode   : Pest Control\n`;
+    text += `Pest Control Co. : ${d.pestCompany}\n`;
+    text += `Confidence Score : ${conf}% — ${d.confidenceLabel}\n`;
+    text += `Positive Score   : ${d.totalPositiveScore || 0} pts\n`;
+    text += `Penalty Score    : −${d.penaltyScore || 0} pts\n`;
+    text += `Net Score        : ${d.netScore || 0} pts\n`;
+    if (currentLocationData) {
+      text += `Company City     : ${currentLocationData.primaryCity || "Not detected"}\n`;
+      text += `Company State    : ${currentLocationData.primaryState || "Not detected"}\n`;
+      text += `Location Conf.   : ${currentLocationData.confidence || "none"}\n`;
+    }
+    text += `\n`;
+
+    text += `PEST CONTROL SERVICES DETECTED:\n`;
+    if (d.detectedServices && d.detectedServices.length > 0) {
+      d.detectedServices.forEach((s) => {
+        text += `  • ${s}\n`;
+      });
+    } else {
+      text += "  (none detected)\n";
+    }
+
+    text += `\nSERVICE CATEGORY BREAKDOWN:\n`;
+    for (const cat of PEST_CATEGORIES) {
+      text += `  ${cat.icon} ${cat.label}: ${d.catConfidence?.[cat.id] || 0}%\n`;
+    }
+  } else if (d.mode === "moving") {
+    text += `MOVING COMPANY FINDER REPORT\n`;
+    text += `====================================\n\n`;
+    text += `Company Website  : ${domain || "Unknown"}\n`;
+    text += `Full URL         : ${d.pages?.[0]?.url || "N/A"}\n`;
+    text += `Detection Mode   : Moving\n`;
+    text += `Moving Company   : ${d.movingCompany}\n`;
+    text += `Confidence Score : ${conf}% — ${d.confidenceLabel}\n`;
+    text += `Positive Score   : ${d.totalPositiveScore || 0} pts\n`;
+    text += `Penalty Score    : −${d.penaltyScore || 0} pts\n`;
+    text += `Net Score        : ${d.netScore || 0} pts\n`;
+    if (currentLocationData) {
+      text += `Company City     : ${currentLocationData.primaryCity || "Not detected"}\n`;
+      text += `Company State    : ${currentLocationData.primaryState || "Not detected"}\n`;
+      text += `Location Conf.   : ${currentLocationData.confidence || "none"}\n`;
+    }
+    text += `\n`;
+
+    text += `MOVING SERVICES DETECTED:\n`;
+    if (d.detectedServices && d.detectedServices.length > 0) {
+      d.detectedServices.forEach((s) => {
+        text += `  • ${s}\n`;
+      });
+    } else {
+      text += "  (none detected)\n";
+    }
+
+    text += `\nSERVICE CATEGORY BREAKDOWN:\n`;
+    for (const cat of MOVING_CATEGORIES) {
       text += `  ${cat.icon} ${cat.label}: ${d.catConfidence?.[cat.id] || 0}%\n`;
     }
   } else {
@@ -2824,6 +3285,7 @@ async function autoHighlight(tabId, scanData, mode) {
     mode === "hvac"    ? HVAC_CATEGORIES
     : mode === "roofing" ? ROOFING_CATEGORIES
     : mode === "moving"  ? MOVING_CATEGORIES
+    : mode === "pest"    ? PEST_CATEGORIES
     : HS_CATEGORIES;
   const terms = [];
   const seen = new Set();
