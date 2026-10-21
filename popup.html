@@ -35,6 +35,11 @@
       --pest-primary-glow:   rgba(16,185,129,0.18);
       --pest-mint:           #6ee7b7;
       --pest-forest:         #065f46;
+      --christmas-primary:        #eab308;
+      --christmas-primary-glow:   rgba(234,179,8,0.22);
+      --christmas-gold:           #facc15;
+      --christmas-amber:          #ca8a04;
+      --christmas-darkgold:       #854d0e;
       --success:      #3fb950;
       --warn:         #d29922;
       --danger:       #f85149;
@@ -86,6 +91,7 @@
     .header-title .accent-roof  { color: var(--roof-primary); }
     .header-title .accent-moving { color: var(--moving-primary); }
     .header-title .accent-pest   { color: var(--pest-primary); }
+    .header-title .accent-christmas { color: var(--christmas-gold); }
     .ver-badge {
       font-size: 9px;
       font-weight: 600;
@@ -136,9 +142,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    #modeRoofBtn {
-      grid-column: 1 / -1;
-    }
     .mode-btn:hover { color: var(--text); background: var(--surface3); }
     .mode-btn.active-hvac {
       background: linear-gradient(135deg, #1d4ed8, #3b82f6);
@@ -163,6 +166,12 @@
       border-color: #059669;
       color: #fff;
       box-shadow: 0 2px 8px rgba(16,185,129,0.35);
+    }
+    .mode-btn.active-christmas {
+      background: linear-gradient(135deg, #b45309, #d97706, #eab308);
+      border-color: #f59e0b;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(234,179,8,0.35);
     }
     .mode-btn.active-addr {
       background: linear-gradient(135deg, #0891b2, #22d3ee);
@@ -226,6 +235,9 @@
     .progress-fill.pest-fill {
       background: linear-gradient(90deg, #065f46, #059669, #10b981, #6ee7b7);
     }
+    .progress-fill.christmas-fill {
+      background: linear-gradient(90deg, #854d0e, #ca8a04, #eab308, #fef08a);
+    }
 
     /* ── Icon Buttons ── */
     .btn-icon {
@@ -285,6 +297,10 @@
       background: linear-gradient(135deg, #059669, #10b981);
       box-shadow: 0 2px 8px rgba(16,185,129,0.25);
     }
+    .btn-scan-primary.christmas-mode {
+      background: linear-gradient(135deg, #b45309, #d97706, #eab308);
+      box-shadow: 0 2px 8px rgba(234,179,8,0.25);
+    }
     .btn-scan-primary:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
     .btn-scan-primary:active:not(:disabled) { transform: translateY(0); }
     .btn-scan-primary:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -309,6 +325,7 @@
     .btn-scan-secondary:hover:not(:disabled) { border-color: var(--primary); background: var(--surface3); }
     .btn-scan-secondary.hvac-mode:hover:not(:disabled) { border-color: var(--hvac-primary); }
     .btn-scan-secondary.pest-mode:hover:not(:disabled) { border-color: var(--pest-primary); }
+    .btn-scan-secondary.christmas-mode:hover:not(:disabled) { border-color: var(--christmas-primary); }
     .btn-scan-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ── Primary Result Card ── */
@@ -339,6 +356,9 @@
     .primary-card.pest-card::before {
       background: linear-gradient(90deg, #065f46, #059669, #10b981, #6ee7b7);
     }
+    .primary-card.christmas-card::before {
+      background: linear-gradient(90deg, #854d0e, #ca8a04, #eab308, #fde047);
+    }
     .primary-top {
       display: flex;
       justify-content: space-between;
@@ -356,6 +376,7 @@
     .primary-meta.roof-meta   { color: var(--roof-primary); }
     .primary-meta.moving-meta { color: var(--moving-primary); }
     .primary-meta.pest-meta   { color: var(--pest-primary); }
+    .primary-meta.christmas-meta { color: var(--christmas-gold); }
     .primary-name {
       font-size: 13px;
       font-weight: 800;
@@ -2044,6 +2065,7 @@
       <button class="mode-btn" id="modeAddrBtn">📍 Address Finder</button>
       <button class="mode-btn" id="modeCompBtn">🎯 Competitor Finder</button>
       <button class="mode-btn" id="modeRoofBtn">🏠 Roofing</button>
+      <button class="mode-btn" id="modeChristmasBtn">🎄 Christmas Lighting</button>
     </div>
 
     <!-- Progress bar -->

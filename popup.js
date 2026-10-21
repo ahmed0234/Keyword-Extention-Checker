@@ -6,7 +6,7 @@
 
 // ── GLOBAL STATE ──────────────────────────────────────────────────────────────
 let currentScanData = null;
-let currentMode = "hvac"; // 'hvac' | 'hardscaping' | 'roofing' | 'address' | 'moving' — default, overridden on boot
+let currentMode = "hvac"; // 'hvac' | 'hardscaping' | 'roofing' | 'address' | 'moving' | 'pest' | 'christmas' — default, overridden on boot
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CATEGORY DEFINITIONS
@@ -109,6 +109,20 @@ const PEST_LEGEND_SWATCHES = [
   { label: "Pest Control", bg: "rgba(16,185,129,0.35)", border: "#059669" },
 ];
 
+// ── Christmas & Holiday Lighting Categories ──
+const CHRISTMAS_CATEGORIES = [
+  { id: "christmas_install",     label: "Christmas Light Installation", icon: "🎄", color: "#f59e0b" },
+  { id: "holiday_lighting",      label: "Holiday Lighting Services",   icon: "✨", color: "#eab308" },
+  { id: "seasonal_full_service", label: "Takedown, Removal & Storage", icon: "📦", color: "#ca8a04" },
+  { id: "outdoor_exterior",      label: "Outdoor & Exterior Lighting", icon: "💡", color: "#facc15" },
+  { id: "commercial_holiday",    label: "Commercial Holiday Lighting", icon: "🏢", color: "#d97706" },
+  { id: "permanent_lighting",    label: "Permanent Exterior LEDs",     icon: "🌟", color: "#fbbf24" },
+];
+
+const CHRISTMAS_LEGEND_SWATCHES = [
+  { label: "Christmas Lighting", bg: "rgba(234,179,8,0.35)", border: "#eab308" },
+];
+
 const MOVING_LEGEND_SWATCHES = [
   { label: "Moving", bg: "rgba(139,92,246,0.35)", border: "#7c3aed" },
 ];
@@ -144,14 +158,17 @@ const MOVING_CATEGORY_BY_ID = {};
 for (const cat of MOVING_CATEGORIES) MOVING_CATEGORY_BY_ID[cat.id] = cat;
 const PEST_CATEGORY_BY_ID = {};
 for (const cat of PEST_CATEGORIES) PEST_CATEGORY_BY_ID[cat.id] = cat;
+const CHRISTMAS_CATEGORY_BY_ID = {};
+for (const cat of CHRISTMAS_CATEGORIES) CHRISTMAS_CATEGORY_BY_ID[cat.id] = cat;
 
 // ── Scoring Constants ──
-const HS_THRESHOLD      = 420;
-const HVAC_THRESHOLD    = 420;
-const NEGATIVE_PENALTY  = 10;
-const ROOFING_THRESHOLD = 420;
-const MOVING_THRESHOLD  = 380;
-const PEST_THRESHOLD    = 380;
+const HS_THRESHOLD        = 420;
+const HVAC_THRESHOLD      = 420;
+const NEGATIVE_PENALTY    = 10;
+const ROOFING_THRESHOLD   = 420;
+const MOVING_THRESHOLD    = 380;
+const PEST_THRESHOLD      = 380;
+const CHRISTMAS_THRESHOLD = 380;
 
 // ── Deep Scan Page Lists ──
 const HS_DEEP_SCAN_PAGES = [
@@ -272,6 +289,32 @@ const PEST_DEEP_SCAN_PAGES = [
   "/contact",
 ];
 
+const CHRISTMAS_DEEP_SCAN_PAGES = [
+  "/",
+  "/services",
+  "/christmas-light-installation",
+  "/christmas-lighting",
+  "/holiday-lighting",
+  "/holiday-light-installation",
+  "/holiday-lights",
+  "/christmas-lights",
+  "/outdoor-lighting",
+  "/exterior-lighting",
+  "/permanent-lighting",
+  "/landscape-lighting",
+  "/residential-lighting",
+  "/commercial-lighting",
+  "/lighting-services",
+  "/packages",
+  "/our-work",
+  "/gallery",
+  "/about",
+  "/about-us",
+  "/our-services",
+  "/contact",
+  "/contact-us",
+];
+
 // ── Address Finder Deep Scan Pages ──
 const ADDR_DEEP_SCAN_PAGES = [
   "/",
@@ -328,6 +371,9 @@ document
 document
   .getElementById("modePestBtn")
   .addEventListener("click", () => setMode("pest"));
+document
+  .getElementById("modeChristmasBtn")
+  ?.addEventListener("click", () => setMode("christmas"));
 
 // Wire Competitor Finder buttons (Single, Bulk & Google Auth)
 document.getElementById("compSubSingleBtn")?.addEventListener("click", () => setCompSubMode("single"));
@@ -396,22 +442,25 @@ function setMode(mode, saveToStorage = true) {
   const isRoof   = mode === "roofing";
   const isMoving = mode === "moving";
   const isPest   = mode === "pest";
+  const isChristmas = mode === "christmas" || mode === "christmas_lighting";
 
   // 2. Safely update button active classes
-  const hvacBtn   = document.getElementById("modeHvacBtn");
-  const hsBtn     = document.getElementById("modeHsBtn");
-  const addrBtn   = document.getElementById("modeAddrBtn");
-  const compBtn   = document.getElementById("modeCompBtn");
-  const roofBtn   = document.getElementById("modeRoofBtn");
-  const movingBtn = document.getElementById("modeMovingBtn");
-  const pestBtn   = document.getElementById("modePestBtn");
-  if (hvacBtn)   hvacBtn.className   = "mode-btn" + (isHvac   ? " active-hvac"   : "");
-  if (hsBtn)     hsBtn.className     = "mode-btn" + (isHs     ? " active-hs"     : "");
-  if (addrBtn)   addrBtn.className   = "mode-btn" + (isAddr   ? " active-addr"   : "");
-  if (compBtn)   compBtn.className   = "mode-btn" + (isComp   ? " active-comp"   : "");
-  if (roofBtn)   roofBtn.className   = "mode-btn" + (isRoof   ? " active-roof"   : "");
-  if (movingBtn) movingBtn.className = "mode-btn" + (isMoving ? " active-moving" : "");
-  if (pestBtn)   pestBtn.className   = "mode-btn" + (isPest   ? " active-pest"   : "");
+  const hvacBtn      = document.getElementById("modeHvacBtn");
+  const hsBtn        = document.getElementById("modeHsBtn");
+  const addrBtn      = document.getElementById("modeAddrBtn");
+  const compBtn      = document.getElementById("modeCompBtn");
+  const roofBtn      = document.getElementById("modeRoofBtn");
+  const movingBtn    = document.getElementById("modeMovingBtn");
+  const pestBtn      = document.getElementById("modePestBtn");
+  const christmasBtn = document.getElementById("modeChristmasBtn");
+  if (hvacBtn)      hvacBtn.className      = "mode-btn" + (isHvac      ? " active-hvac"      : "");
+  if (hsBtn)        hsBtn.className        = "mode-btn" + (isHs        ? " active-hs"        : "");
+  if (addrBtn)      addrBtn.className      = "mode-btn" + (isAddr      ? " active-addr"      : "");
+  if (compBtn)      compBtn.className      = "mode-btn" + (isComp      ? " active-comp"      : "");
+  if (roofBtn)      roofBtn.className      = "mode-btn" + (isRoof      ? " active-roof"      : "");
+  if (movingBtn)    movingBtn.className    = "mode-btn" + (isMoving    ? " active-moving"    : "");
+  if (pestBtn)      pestBtn.className      = "mode-btn" + (isPest      ? " active-pest"      : "");
+  if (christmasBtn) christmasBtn.className = "mode-btn" + (isChristmas ? " active-christmas" : "");
 
   // 3. Safely update Header Title
   if (isHvac) {
@@ -426,6 +475,8 @@ function setMode(mode, saveToStorage = true) {
     updateHeaderTitle("🚛", "Moving", "accent-moving");
   } else if (isPest) {
     updateHeaderTitle("🐞", "Pest Control", "accent-pest");
+  } else if (isChristmas) {
+    updateHeaderTitle("🎄", "Christmas Lighting", "accent-christmas");
   } else {
     updateHeaderTitle("🧱", "Hardscape", "accent-hs");
   }
@@ -515,6 +566,19 @@ function setMode(mode, saveToStorage = true) {
         resContainer.innerHTML = `<div class="status-msg">Click <strong>Quick Scan</strong> to analyze this site for pest control services.</div>`;
       }
       renderLegendSwatches(PEST_LEGEND_SWATCHES);
+    } else if (isChristmas) {
+      if (scanBtn) {
+        scanBtn.className = "btn-scan-primary christmas-mode";
+        scanBtn.textContent = "🔍 Quick Scan";
+      }
+      if (deepScanBtn) {
+        deepScanBtn.className = "btn-scan-secondary christmas-mode";
+        deepScanBtn.textContent = "🌐 Deep Scan";
+      }
+      if (resContainer) {
+        resContainer.innerHTML = `<div class="status-msg">Click <strong>Quick Scan</strong> to analyze this site for Christmas & holiday lighting installation services.</div>`;
+      }
+      renderLegendSwatches(CHRISTMAS_LEGEND_SWATCHES);
     } else if (isHs) {
       if (scanBtn) {
         scanBtn.className = "btn-scan-primary";
@@ -548,12 +612,13 @@ function setMode(mode, saveToStorage = true) {
   const fill = document.getElementById("progressFill");
   if (fill) {
     fill.className = "progress-fill";
-    if (isHvac)        fill.classList.add("hvac-fill");
-    else if (isAddr)   fill.classList.add("addr-fill");
-    else if (isComp)   fill.classList.add("comp-fill");
-    else if (isRoof)   fill.classList.add("roof-fill");
-    else if (isMoving) fill.classList.add("moving-fill");
-    else if (isPest)   fill.classList.add("pest-fill");
+    if (isHvac)             fill.classList.add("hvac-fill");
+    else if (isAddr)        fill.classList.add("addr-fill");
+    else if (isComp)        fill.classList.add("comp-fill");
+    else if (isRoof)        fill.classList.add("roof-fill");
+    else if (isMoving)      fill.classList.add("moving-fill");
+    else if (isPest)        fill.classList.add("pest-fill");
+    else if (isChristmas)   fill.classList.add("christmas-fill");
   }
 
   // 7. Persist mode
@@ -864,10 +929,11 @@ function startDeepScan() {
   }
 
   const pages =
-    currentMode === "hvac"     ? HVAC_DEEP_SCAN_PAGES
+    currentMode === "hvac"       ? HVAC_DEEP_SCAN_PAGES
     : currentMode === "roofing"  ? ROOFING_DEEP_SCAN_PAGES
     : currentMode === "moving"   ? MOVING_DEEP_SCAN_PAGES
     : currentMode === "pest"     ? PEST_DEEP_SCAN_PAGES
+    : (currentMode === "christmas" || currentMode === "christmas_lighting") ? CHRISTMAS_DEEP_SCAN_PAGES
     : HS_DEEP_SCAN_PAGES;
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -954,6 +1020,7 @@ function aggregateFindings(response, mode) {
   if (mode === "roofing") return aggregateRoofingFindings(response);
   if (mode === "moving")  return aggregateMovingFindings(response);
   if (mode === "pest")    return aggregatePestFindings(response);
+  if (mode === "christmas" || mode === "christmas_lighting") return aggregateChristmasFindings(response);
   return aggregateHardscapeFindings(response);
 }
 
@@ -1706,6 +1773,7 @@ function renderDashboard(data) {
   if (data.mode === "roofing") return renderRoofingDashboard(data);
   if (data.mode === "moving")  return renderMovingDashboard(data);
   if (data.mode === "pest")    return renderPestDashboard(data);
+  if (data.mode === "christmas" || data.mode === "christmas_lighting") return renderChristmasDashboard(data);
   return renderHardscapeDashboard(data);
 }
 
@@ -2670,6 +2738,354 @@ function renderPestDashboard(data) {
   wireEvidenceClicks(container);
 }
 
+// ── Christmas & Holiday Lighting Aggregation ─────────────────────────────────
+
+function aggregateChristmasFindings(response) {
+  const findings     = response.findings     || [];
+  const negativeHits = response.negativeHits || [];
+
+  const scoreMap     = {};
+  const evidenceMap  = {};
+  const termFreqMap  = {};
+  const matchedZones = {};
+
+  for (const cat of CHRISTMAS_CATEGORIES) {
+    scoreMap[cat.id]     = 0;
+    evidenceMap[cat.id]  = [];
+    termFreqMap[cat.id]  = {};
+    matchedZones[cat.id] = new Set();
+  }
+
+  const allKeywordsMatched = new Set();
+  const highValueMatched   = [];
+  const tier1Terms         = new Set();
+  const tier2Terms         = new Set();
+  const strongSignalTerms  = new Set();
+  const prominentZones     = new Set([
+    "hero-heading", "hero", "h1", "h2", "nav", "meta", "service-section", "cta",
+  ]);
+  let hasProminentZone = false;
+
+  for (const f of findings) {
+    const catId = f.category;
+    if (!scoreMap.hasOwnProperty(catId)) continue;
+
+    const w = typeof f.weight === "number" ? f.weight : 1;
+    scoreMap[catId] += w;
+
+    const snippet = (f.snippet || "").trim();
+    const already = evidenceMap[catId].some((e) => e.snippet === snippet);
+    if (!already) {
+      evidenceMap[catId].push({
+        snippet,
+        matchedTerm: f.matchedTerm || "?",
+        tier: f.tier || 1,
+        weight: w,
+        label: f.label || f.matchedTerm,
+        zone: f.zone || f.tag || "?",
+        tag: f.tag || "?",
+        url: f.url || "",
+        xpath: f.xpath || "",
+      });
+    }
+
+    const term = f.matchedTerm || "unknown";
+    allKeywordsMatched.add(term);
+    termFreqMap[catId][term] = (termFreqMap[catId][term] || 0) + 1;
+    if (f.zone) {
+      matchedZones[catId].add(f.zone);
+      if (prominentZones.has(f.zone)) hasProminentZone = true;
+    }
+
+    if (f.tier === 1) {
+      tier1Terms.add(term);
+      strongSignalTerms.add(term);
+      if (!highValueMatched.includes(f.label || term)) highValueMatched.push(f.label || term);
+    } else if (f.tier === 2) {
+      tier2Terms.add(term);
+      strongSignalTerms.add(term);
+      if (!highValueMatched.includes(f.label || term)) highValueMatched.push(f.label || term);
+    }
+  }
+
+  const strongSignalCount = strongSignalTerms.size;
+  const tier1Count        = tier1Terms.size;
+  const hasStrongSignal   = strongSignalCount > 0;
+
+  // Check for specific negative indicators (e-commerce, wholesale, DIY)
+  const isEcommerceHit = (h) => /cart|checkout|shop|order online|sku|shipping|price|in stock|buy now/i.test(h);
+  const isWholesaleHit = (h) => /wholesale|manufacturer|distributor|bulk|dealer|oem|b2b/i.test(h);
+  const isDiyHit       = (h) => /diy|how to|tutorial|affiliate|commission|reviews|guide/i.test(h);
+
+  const ecommerceHits = negativeHits.filter(isEcommerceHit);
+  const wholesaleHits = negativeHits.filter(isWholesaleHit);
+  const diyHits       = negativeHits.filter(isDiyHit);
+
+  const ACTIVE_CAT_THRESHOLD = 15;
+  const activeCategoryCount  = CHRISTMAS_CATEGORIES.filter(
+    (c) => (scoreMap[c.id] || 0) >= ACTIVE_CAT_THRESHOLD,
+  ).length;
+
+  const totalPositiveScore = Object.values(scoreMap).reduce((a, b) => a + b, 0);
+  const penaltyScore       = negativeHits.length * NEGATIVE_PENALTY;
+  const netScore           = Math.max(0, totalPositiveScore - penaltyScore);
+  let rawConfidence        = Math.min(100, Math.round((netScore / CHRISTMAS_THRESHOLD) * 100));
+
+  // Gating Rule 1: No Tier 1/2 installation terms at all (only product/contextual terms)
+  if (!hasStrongSignal && rawConfidence > 12) {
+    rawConfidence = 12;
+  }
+
+  // Gating Rule 2: Single isolated term without Tier 1 contractor presence
+  if (strongSignalCount <= 1 && tier1Count === 0 && rawConfidence > 24) {
+    rawConfidence = 24;
+  }
+
+  // Gating Rule 3: E-commerce shopping cart / retail store presence
+  // Product sellers selling lights/decor MUST NOT be classified as installation contractors
+  if (ecommerceHits.length >= 2 && rawConfidence > 18) {
+    rawConfidence = 18;
+  } else if (ecommerceHits.length >= 1 && rawConfidence > 30) {
+    rawConfidence = 30;
+  }
+
+  // Gating Rule 4: Wholesaler, manufacturer, or distributor
+  if (wholesaleHits.length >= 2 && rawConfidence > 18) {
+    rawConfidence = 18;
+  } else if (wholesaleHits.length >= 1 && rawConfidence > 30) {
+    rawConfidence = 30;
+  }
+
+  // Gating Rule 5: DIY / informational blog / tutorial site
+  if (diyHits.length >= 2 && rawConfidence > 20) {
+    rawConfidence = 20;
+  }
+
+  // Gating Rule 6: No prominent zone presence (buried mentions only)
+  if (!hasProminentZone && rawConfidence > 40) {
+    rawConfidence = 40;
+  }
+
+  // Gating Rule 7: YES (≥60) requires legitimate contractor installation proof:
+  // Must have at least 1 Tier 1 installation phrase OR at least 3 strong signals with prominent zone
+  const qualifiesForYes =
+    (tier1Count >= 2 && hasProminentZone && ecommerceHits.length === 0 && wholesaleHits.length === 0) ||
+    (tier1Count >= 1 && strongSignalCount >= 2 && (hasProminentZone || activeCategoryCount >= 2) && ecommerceHits.length === 0) ||
+    (strongSignalCount >= 3 && hasProminentZone && negativeHits.length === 0);
+
+  if (rawConfidence >= 60 && !qualifiesForYes) {
+    rawConfidence = 50;
+  }
+
+  // Gating Rule 8: High confidence (≥80) requires multi-category or full service confirmation
+  if (
+    rawConfidence >= 80 &&
+    (strongSignalCount < 3 || tier1Count < 2 || !hasProminentZone)
+  ) {
+    rawConfidence = 75;
+  }
+
+  // Gating Rule 9: Heavy general negative penalty suppresses product sites
+  if (negativeHits.length >= 3 && rawConfidence > 25) rawConfidence = 25;
+  if (negativeHits.length >= 5 && rawConfidence > 10) rawConfidence = 10;
+
+  const confidence = Math.max(0, rawConfidence);
+
+  let christmasLightingCompany;
+  if (confidence >= 60)      christmasLightingCompany = "YES";
+  else if (confidence >= 25) christmasLightingCompany = "UNCERTAIN";
+  else                       christmasLightingCompany = "NO";
+
+  let confidenceLabel;
+  if (confidence >= 90)      confidenceLabel = "Verified Christmas Lighting Contractor";
+  else if (confidence >= 75) confidenceLabel = "Strong Holiday Lighting Contractor Signals";
+  else if (confidence >= 60) confidenceLabel = "Confirmed Lighting Installation Services";
+  else if (confidence >= 40) confidenceLabel = "Uncertain / Mixed Signals (Possible Services)";
+  else if (confidence >= 25) confidenceLabel = "Weak Lighting Mentions — Unconfirmed";
+  else                       confidenceLabel = "Not an Installation Contractor";
+
+  const catConfidence = {};
+  for (const cat of CHRISTMAS_CATEGORIES) {
+    const s = scoreMap[cat.id];
+    catConfidence[cat.id] =
+      s === 0 ? 0
+              : Math.min(100, Math.round((s / (CHRISTMAS_THRESHOLD / CHRISTMAS_CATEGORIES.length)) * 100));
+  }
+
+  const detectedServices = highValueMatched.slice(0, 24);
+  const reasons = buildChristmasReasons(
+    confidence, scoreMap, matchedZones, negativeHits, detectedServices,
+    catConfidence, hasStrongSignal, strongSignalCount, tier1Count,
+    activeCategoryCount, hasProminentZone, ecommerceHits, wholesaleHits, diyHits
+  );
+
+  return {
+    mode: "christmas",
+    confidence,
+    confidenceLabel,
+    christmasLightingCompany,
+    netScore,
+    totalPositiveScore,
+    penaltyScore,
+    catConfidence,
+    scoreMap,
+    evidenceMap,
+    termFreqMap,
+    matchedZones: Object.fromEntries(
+      Object.entries(matchedZones).map(([k, v]) => [k, [...v]]),
+    ),
+    allKeywordsMatched: [...allKeywordsMatched],
+    highValueMatched,
+    negativeHits,
+    detectedServices,
+    reasons,
+  };
+}
+
+function buildChristmasReasons(
+  confidence, scoreMap, matchedZones, negativeHits, detectedServices,
+  catConfidence, hasStrongSignal, strongSignalCount, tier1Count,
+  activeCategoryCount, hasProminentZone, ecommerceHits, wholesaleHits, diyHits
+) {
+  const reasons = [];
+
+  if (confidence >= 80) {
+    reasons.push("✅ Verified professional Christmas & holiday lighting installation contractor — multiple high-tier service signals confirmed.");
+  } else if (confidence >= 60) {
+    reasons.push("✅ Confirmed lighting installation services — solid contractor evidence found across key website sections.");
+  } else if (confidence >= 40) {
+    reasons.push("🔶 Possible lighting installation work — moderate or incidental signals detected, contractor identity unconfirmed.");
+  } else if (confidence >= 25) {
+    reasons.push("⚠️ Weak holiday lighting presence — isolated mentions or lacking explicit installation service proof.");
+  } else {
+    reasons.push("❌ Not an installation contractor — no sufficient contractor service evidence found.");
+  }
+
+  if (tier1Count >= 2) {
+    reasons.push(`⭐ Explicit installation phrases detected (${tier1Count} distinct Tier-1 contractor phrases confirmed).`);
+  } else if (tier1Count === 1) {
+    reasons.push("ℹ️ Single explicit installation phrase matched — corroborating service evidence needed for full confirmation.");
+  } else if (!hasStrongSignal) {
+    reasons.push("⚠️ No dedicated installation phrases found — only generic or contextual lighting words detected.");
+  }
+
+  if (catConfidence["christmas_install"] >= 30) {
+    reasons.push("🎄 Dedicated Christmas light installation services confirmed (roofline, gutters, trees, or house lighting).");
+  }
+  if (catConfidence["seasonal_full_service"] >= 20) {
+    reasons.push("📦 Complete full-season service evidence detected (takedown, removal, maintenance, and seasonal storage).");
+  }
+  if (catConfidence["permanent_lighting"] >= 25) {
+    reasons.push("🌟 Permanent exterior architectural / LED lighting installation confirmed (year-round roofline lights).");
+  }
+  if (catConfidence["commercial_holiday"] >= 25) {
+    reasons.push("🏢 Commercial holiday lighting services confirmed (retail, shopping centers, HOAs, or municipalities).");
+  }
+
+  if (hasProminentZone) {
+    reasons.push("📋 Lighting installation featured prominently in main navigation, hero banner, or dedicated service section.");
+  }
+
+  if (ecommerceHits && ecommerceHits.length > 0) {
+    reasons.push(`⛔ E-commerce / retail store signals detected (${ecommerceHits.slice(0, 3).join(", ")}) — product sales penalized to exclude non-contractors.`);
+  }
+  if (wholesaleHits && wholesaleHits.length > 0) {
+    reasons.push(`⛔ Lighting product manufacturer / wholesale / distributor indicators detected (${wholesaleHits.slice(0, 3).join(", ")}).`);
+  }
+  if (diyHits && diyHits.length > 0) {
+    reasons.push(`⛔ Informational blog or DIY tutorial signals detected (${diyHits.slice(0, 3).join(", ")}).`);
+  }
+
+  return reasons;
+}
+
+// ── Christmas & Holiday Lighting Dashboard ───────────────────────────────────
+
+function renderChristmasDashboard(data) {
+  const container = document.getElementById("resultContainer");
+  const {
+    confidence,
+    confidenceLabel,
+    catConfidence,
+    evidenceMap,
+    termFreqMap,
+    detectedServices,
+    negativeHits,
+    reasons,
+    christmasLightingCompany,
+  } = data;
+
+  const confClass =
+    confidence >= 60 ? "high" : confidence >= 25 ? "medium" : "low";
+  const verdictClass = christmasLightingCompany === "YES" ? "yes" : christmasLightingCompany === "NO" ? "no" : "uncertain";
+  const verdictIcon  = christmasLightingCompany === "YES" ? "✅" : christmasLightingCompany === "NO" ? "❌" : "⚠️";
+
+  let html = `
+    <div class="primary-card christmas-card">
+      <div class="primary-top">
+        <div>
+          <div class="primary-meta christmas-meta">🎄 Christmas Lighting Installation</div>
+          <div class="primary-name">${document.title || "Target Site"}</div>
+          <div class="hvac-verdict ${verdictClass}">${verdictIcon} Installation Contractor: <strong>${christmasLightingCompany}</strong></div>
+        </div>
+        <div class="score-badge ${confClass}">${confidence}%</div>
+      </div>
+      <div class="bar-bg"><div class="bar-fill ${confClass}" style="width:${confidence}%"></div></div>
+      <div class="confidence-label">${confidenceLabel}</div>
+    </div>
+  `;
+
+  if (detectedServices && detectedServices.length > 0) {
+    const chips = detectedServices
+      .map((s) => `<span class="service-chip" style="background:rgba(234,179,8,0.18);border-color:rgba(234,179,8,0.4);color:#facc15;">${s}</span>`)
+      .join("");
+    html += `
+      <div class="detected-services">
+        <div class="section-label" style="color:#eab308;">🎄 Lighting Services Detected</div>
+        <div class="chip-row">${chips}</div>
+      </div>`;
+  }
+
+  html += `<div class="result-grid three-col">`;
+  for (const cat of CHRISTMAS_CATEGORIES) {
+    const score = catConfidence[cat.id] || 0;
+    const isTop =
+      score === Math.max(...CHRISTMAS_CATEGORIES.map((c) => catConfidence[c.id] || 0)) && score > 0;
+    html += `
+      <div class="service-card" style="${isTop ? "border-color:#eab308;box-shadow:0 0 0 1px rgba(234,179,8,0.25);" : ""}">
+        <div class="service-icon">${cat.icon}</div>
+        <div class="service-name">${cat.label}</div>
+        <div class="service-score" style="color:${cat.color}">${score}%</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${score}%;background:${cat.color}"></div></div>
+        <div class="service-matches">${evidenceMap[cat.id]?.length || 0} hit${(evidenceMap[cat.id]?.length || 0) !== 1 ? "s" : ""}</div>
+      </div>`;
+  }
+  html += `</div>`;
+
+  html += buildReasonsCollapsible(reasons, "💡 Why Classified", "christmas");
+  html += buildEvidenceCollapsible(data, CHRISTMAS_CATEGORIES, "christmas_install", "christmas");
+  html += buildKeywordsCollapsible(data, CHRISTMAS_CATEGORIES, "christmas");
+
+  if (negativeHits && negativeHits.length > 0) {
+    const negChips = negativeHits
+      .map((n) => `<span class="neg-chip">${n}</span>`)
+      .join("");
+    html += `
+      <div class="negative-section">
+        <div class="section-label negative">⛔ Product / E-Commerce / Non-Contractor Signals Detected (−${negativeHits.length * 10} pts)</div>
+        <div class="chip-row">${negChips}</div>
+      </div>`;
+  }
+
+  html += buildPagesFooter(data);
+
+  container.innerHTML = html;
+  container
+    .querySelectorAll(".collapsible")
+    .forEach((el) => makeCollapsible(el));
+  wireEvidenceClicks(container);
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // SHARED HTML BUILDERS
 // ══════════════════════════════════════════════════════════════════════════════
@@ -2881,6 +3297,10 @@ function updateCopyButtons(mode) {
     copyPrimaryBtn.className = "btn-action";
     copyPrimaryBtn.style.cssText = "background:rgba(16,185,129,0.18);border-color:rgba(16,185,129,0.45);color:#34d399;";
     copyPrimaryBtn.textContent = "📋 Copy Pest Control Score";
+  } else if (mode === "christmas" || mode === "christmas_lighting") {
+    copyPrimaryBtn.className = "btn-action";
+    copyPrimaryBtn.style.cssText = "background:rgba(234,179,8,0.18);border-color:rgba(234,179,8,0.45);color:#facc15;";
+    copyPrimaryBtn.textContent = "📋 Copy Lighting Score";
   } else {
     copyPrimaryBtn.className = "btn-action amber";
     copyPrimaryBtn.style.cssText = "";
@@ -2907,6 +3327,8 @@ function copyPrimary() {
     text = `Moving Company: ${d.movingCompany} \u2014 Confidence: ${conf}% \u2014 ${d.confidenceLabel}`;
   } else if (d.mode === "pest") {
     text = `Pest Control Company: ${d.pestCompany} \u2014 Confidence: ${conf}% \u2014 ${d.confidenceLabel}`;
+  } else if (d.mode === "christmas" || d.mode === "christmas_lighting") {
+    text = `Christmas Lighting Contractor: ${d.christmasLightingCompany} \u2014 Confidence: ${conf}% \u2014 ${d.confidenceLabel}`;
   } else {
     const label =
       conf >= 75
@@ -2940,6 +3362,7 @@ function copyAll() {
     : d.mode === "roofing" ? ROOFING_CATEGORIES
     : d.mode === "moving" ? MOVING_CATEGORIES
     : d.mode === "pest" ? PEST_CATEGORIES
+    : (d.mode === "christmas" || d.mode === "christmas_lighting") ? CHRISTMAS_CATEGORIES
     : HS_CATEGORIES;
 
   let text = `====================================\n`;
@@ -3080,6 +3503,37 @@ function copyAll() {
     for (const cat of MOVING_CATEGORIES) {
       text += `  ${cat.icon} ${cat.label}: ${d.catConfidence?.[cat.id] || 0}%\n`;
     }
+  } else if (d.mode === "christmas" || d.mode === "christmas_lighting") {
+    text += `CHRISTMAS & HOLIDAY LIGHTING INSTALLATION FINDER REPORT\n`;
+    text += `====================================\n\n`;
+    text += `Company Website  : ${domain || "Unknown"}\n`;
+    text += `Full URL         : ${d.pages?.[0]?.url || "N/A"}\n`;
+    text += `Detection Mode   : Christmas Lighting Installation\n`;
+    text += `Contractor Status: ${d.christmasLightingCompany}\n`;
+    text += `Confidence Score : ${conf}% — ${d.confidenceLabel}\n`;
+    text += `Positive Score   : ${d.totalPositiveScore || 0} pts\n`;
+    text += `Penalty Score    : −${d.penaltyScore || 0} pts\n`;
+    text += `Net Score        : ${d.netScore || 0} pts\n`;
+    if (currentLocationData) {
+      text += `Company City     : ${currentLocationData.primaryCity || "Not detected"}\n`;
+      text += `Company State    : ${currentLocationData.primaryState || "Not detected"}\n`;
+      text += `Location Conf.   : ${currentLocationData.confidence || "none"}\n`;
+    }
+    text += `\n`;
+
+    text += `LIGHTING SERVICES DETECTED:\n`;
+    if (d.detectedServices && d.detectedServices.length > 0) {
+      d.detectedServices.forEach((s) => {
+        text += `  • ${s}\n`;
+      });
+    } else {
+      text += "  (none detected)\n";
+    }
+
+    text += `\nSERVICE CATEGORY BREAKDOWN:\n`;
+    for (const cat of CHRISTMAS_CATEGORIES) {
+      text += `  ${cat.icon} ${cat.label}: ${d.catConfidence?.[cat.id] || 0}%\n`;
+    }
   } else {
     const label =
       conf >= 75
@@ -3194,12 +3648,24 @@ function updateDebugPanel(data) {
       ? HVAC_CATEGORIES
       : data.mode === "roofing"
       ? ROOFING_CATEGORIES
+      : data.mode === "moving"
+      ? MOVING_CATEGORIES
+      : data.mode === "pest"
+      ? PEST_CATEGORIES
+      : (data.mode === "christmas" || data.mode === "christmas_lighting")
+      ? CHRISTMAS_CATEGORIES
       : HS_CATEGORIES;
   const threshold =
     data.mode === "hvac"
       ? HVAC_THRESHOLD
       : data.mode === "roofing"
       ? ROOFING_THRESHOLD
+      : data.mode === "moving"
+      ? MOVING_THRESHOLD
+      : data.mode === "pest"
+      ? PEST_THRESHOLD
+      : (data.mode === "christmas" || data.mode === "christmas_lighting")
+      ? CHRISTMAS_THRESHOLD
       : HS_THRESHOLD;
 
   const catLines = categories
@@ -3210,7 +3676,7 @@ function updateDebugPanel(data) {
     .join("<br>");
 
   body.innerHTML = `
-    <div class="debug-row"><strong>Mode:</strong> ${data.mode === "hvac" ? "🌡️ HVAC" : data.mode === "roofing" ? "🏠 Roofing" : "🧱 Hardscaping"}</div>
+    <div class="debug-row"><strong>Mode:</strong> ${data.mode === "hvac" ? "🌡️ HVAC" : data.mode === "roofing" ? "🏠 Roofing" : data.mode === "moving" ? "🚛 Moving" : data.mode === "pest" ? "🐞 Pest Control" : (data.mode === "christmas" || data.mode === "christmas_lighting") ? "🎄 Christmas Lighting" : "🧱 Hardscaping"}</div>
     <div class="debug-row"><strong>Nodes:</strong> ${data.totalNodes || 0}</div>
     <div class="debug-row"><strong>Text:</strong> ${(data.totalText || 0).toLocaleString()} chars</div>
     <div class="debug-row"><strong>Hits:</strong> ${data.totalHits || 0}</div>
@@ -3219,7 +3685,7 @@ function updateDebugPanel(data) {
     <div class="debug-row"><strong>Penalty score:</strong> −${data.penaltyScore || 0} pts (${data.negativeHits?.length || 0} signals)</div>
     <div class="debug-row"><strong>Net score:</strong> ${data.netScore || 0} pts → ${data.confidence || 0}%</div>
     <div class="debug-row"><strong>Threshold:</strong> ${threshold} pts = 100%</div>
-    ${data.mode === "hvac" ? `<div class="debug-row"><strong>HVAC Company:</strong> ${data.hvacCompany || "?"}</div>` : data.mode === "roofing" ? `<div class="debug-row"><strong>Roofing Company:</strong> ${data.roofingCompany || "?"}</div>` : ""}
+    ${data.mode === "hvac" ? `<div class="debug-row"><strong>HVAC Company:</strong> ${data.hvacCompany || "?"}</div>` : data.mode === "roofing" ? `<div class="debug-row"><strong>Roofing Company:</strong> ${data.roofingCompany || "?"}</div>` : data.mode === "moving" ? `<div class="debug-row"><strong>Moving Company:</strong> ${data.movingCompany || "?"}</div>` : data.mode === "pest" ? `<div class="debug-row"><strong>Pest Control Company:</strong> ${data.pestCompany || "?"}</div>` : (data.mode === "christmas" || data.mode === "christmas_lighting") ? `<div class="debug-row"><strong>Contractor:</strong> ${data.christmasLightingCompany || "?"}</div>` : ""}
     <hr class="debug-divider">
     <div class="debug-row"><strong>Category scores:</strong><br>${catLines}</div>
     ${
@@ -3286,6 +3752,7 @@ async function autoHighlight(tabId, scanData, mode) {
     : mode === "roofing" ? ROOFING_CATEGORIES
     : mode === "moving"  ? MOVING_CATEGORIES
     : mode === "pest"    ? PEST_CATEGORIES
+    : (mode === "christmas" || mode === "christmas_lighting") ? CHRISTMAS_CATEGORIES
     : HS_CATEGORIES;
   const terms = [];
   const seen = new Set();

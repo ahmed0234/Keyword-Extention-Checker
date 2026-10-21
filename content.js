@@ -4636,6 +4636,357 @@
     "movers reviews",
   ];
 
+  // ════════════════════════════════════════════════════════════════════════
+  // SECTION B5: CHRISTMAS & HOLIDAY LIGHTING INSTALLATION KEYWORD LEXICON
+  //
+  // Purpose: Identify websites of professional Christmas, holiday, and
+  //          exterior lighting INSTALLATION CONTRACTORS — NOT e-commerce
+  //          stores selling lights, product distributors, wholesalers,
+  //          manufacturers, or DIY tutorial blogs.
+  //
+  // Tier 1 (weight=16): Unambiguous contractor installation phrases & service verbs
+  // Tier 2 (weight=10): Strong holiday/exterior lighting contractor signals & packages
+  // Tier 3 (weight=5):  Supporting installation terminology & operational terms
+  // Tier 4 (weight=2):  Contextual lighting terminology (requires strong tiers)
+  // ════════════════════════════════════════════════════════════════════════
+
+  const CHRISTMAS_KEYWORDS = [
+    // ╔════════════════════════════════════════════════════════════════════
+    // TIER 1 — CORE CONTRACTOR INSTALLATION PHRASES (weight=16)
+    // ╚════════════════════════════════════════════════════════════════════
+    // Christmas Light Installation
+    { kw: "christmas light installation",          category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Light Installation" },
+    { kw: "christmas light installations",         category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Light Installation" },
+    { kw: "christmas lighting installation",       category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Lighting Installation" },
+    { kw: "christmas lighting installations",      category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Lighting Installation" },
+    { kw: "christmas light installer",             category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Light Installer" },
+    { kw: "christmas light installers",            category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Light Installer" },
+    { kw: "christmas lighting installer",          category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Lighting Installer" },
+    { kw: "christmas lighting installers",         category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Lighting Installer" },
+    { kw: "christmas light installation company",  category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Light Installation Company" },
+    { kw: "christmas light installation companies",category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Light Installation Company" },
+    { kw: "christmas light installation service",  category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Light Installation Service" },
+    { kw: "christmas light installation services", category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Light Installation Services" },
+    { kw: "christmas light installation contractor",category: "christmas_install",    tier: 1, weight: 16, label: "Christmas Light Contractor" },
+    { kw: "christmas light installation contractors",category: "christmas_install",   tier: 1, weight: 16, label: "Christmas Light Contractor" },
+    { kw: "christmas lighting installation contractor",category: "christmas_install", tier: 1, weight: 16, label: "Christmas Light Contractor" },
+    { kw: "professional christmas light installation",category: "christmas_install",  tier: 1, weight: 16, label: "Professional Christmas Light Installation" },
+    { kw: "professional christmas lighting installation",category: "christmas_install",tier: 1, weight: 16, label: "Professional Christmas Lighting Installation" },
+    { kw: "professional christmas light installers",category: "christmas_install",   tier: 1, weight: 16, label: "Professional Christmas Light Installer" },
+    { kw: "residential christmas light installation",category: "christmas_install",   tier: 1, weight: 16, label: "Residential Christmas Light Installation" },
+    { kw: "commercial christmas light installation",category: "commercial_holiday",   tier: 1, weight: 16, label: "Commercial Christmas Light Installation" },
+    { kw: "commercial christmas lighting installation",category: "commercial_holiday",tier: 1, weight: 16, label: "Commercial Christmas Lighting Installation" },
+    { kw: "christmas light hanging service",       category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Light Hanging Service" },
+    { kw: "christmas light hanging services",      category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Light Hanging Services" },
+    { kw: "christmas light hanging",               category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Light Hanging" },
+    { kw: "christmas light hanger",                category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Light Hanger" },
+    { kw: "christmas light hangers",               category: "christmas_install",     tier: 1, weight: 16, label: "Christmas Light Hangers" },
+    { kw: "hang christmas lights",                 category: "christmas_install",     tier: 1, weight: 16, label: "Hang Christmas Lights" },
+    { kw: "hanging christmas lights",              category: "christmas_install",     tier: 1, weight: 16, label: "Hanging Christmas Lights" },
+    { kw: "we hang christmas lights",              category: "christmas_install",     tier: 1, weight: 16, label: "We Hang Christmas Lights" },
+    { kw: "hire someone to hang christmas lights", category: "christmas_install",     tier: 1, weight: 16, label: "Professional Light Hanging" },
+    { kw: "install christmas lights",              category: "christmas_install",     tier: 1, weight: 16, label: "Install Christmas Lights" },
+    { kw: "installing christmas lights",           category: "christmas_install",     tier: 1, weight: 16, label: "Installing Christmas Lights" },
+    { kw: "schedule christmas light installation", category: "christmas_install",     tier: 1, weight: 16, label: "Schedule Christmas Light Installation" },
+    { kw: "free christmas light installation quote",category: "christmas_install",    tier: 1, weight: 16, label: "Free Christmas Light Quote" },
+    { kw: "free christmas lighting estimate",      category: "christmas_install",     tier: 1, weight: 16, label: "Free Christmas Light Estimate" },
+
+    // Holiday Light Installation
+    { kw: "holiday light installation",            category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Light Installation" },
+    { kw: "holiday light installations",           category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Light Installation" },
+    { kw: "holiday lighting installation",         category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Lighting Installation" },
+    { kw: "holiday lighting installations",        category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Lighting Installation" },
+    { kw: "holiday light installer",               category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Light Installer" },
+    { kw: "holiday light installers",              category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Light Installer" },
+    { kw: "holiday lighting installer",            category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Lighting Installer" },
+    { kw: "holiday lighting installers",           category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Lighting Installer" },
+    { kw: "holiday light installation company",    category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Light Installation Company" },
+    { kw: "holiday light installation companies",  category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Light Installation Company" },
+    { kw: "holiday light installation service",    category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Light Installation Service" },
+    { kw: "holiday light installation services",   category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Light Installation Services" },
+    { kw: "holiday light installation contractor", category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Light Contractor" },
+    { kw: "holiday light installation contractors",category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Light Contractor" },
+    { kw: "holiday lighting installation contractor",category: "holiday_lighting",    tier: 1, weight: 16, label: "Holiday Light Contractor" },
+    { kw: "professional holiday lighting installation",category: "holiday_lighting",  tier: 1, weight: 16, label: "Professional Holiday Lighting Installation" },
+    { kw: "professional holiday light installation",category: "holiday_lighting",     tier: 1, weight: 16, label: "Professional Holiday Light Installation" },
+    { kw: "professional holiday light installers", category: "holiday_lighting",      tier: 1, weight: 16, label: "Professional Holiday Light Installer" },
+    { kw: "residential holiday light installation",category: "holiday_lighting",      tier: 1, weight: 16, label: "Residential Holiday Light Installation" },
+    { kw: "residential holiday lighting installation",category: "holiday_lighting",   tier: 1, weight: 16, label: "Residential Holiday Lighting Installation" },
+    { kw: "commercial holiday light installation", category: "commercial_holiday",    tier: 1, weight: 16, label: "Commercial Holiday Light Installation" },
+    { kw: "commercial holiday lighting installation",category: "commercial_holiday",  tier: 1, weight: 16, label: "Commercial Holiday Lighting Installation" },
+    { kw: "holiday light hanging service",         category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Light Hanging Service" },
+    { kw: "holiday light hanging services",        category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Light Hanging Services" },
+    { kw: "holiday light hanging",                 category: "holiday_lighting",      tier: 1, weight: 16, label: "Holiday Light Hanging" },
+    { kw: "hang holiday lights",                   category: "holiday_lighting",      tier: 1, weight: 16, label: "Hang Holiday Lights" },
+    { kw: "hanging holiday lights",                category: "holiday_lighting",      tier: 1, weight: 16, label: "Hanging Holiday Lights" },
+    { kw: "install holiday lights",                category: "holiday_lighting",      tier: 1, weight: 16, label: "Install Holiday Lights" },
+    { kw: "installing holiday lights",             category: "holiday_lighting",      tier: 1, weight: 16, label: "Installing Holiday Lights" },
+    { kw: "free holiday lighting quote",           category: "holiday_lighting",      tier: 1, weight: 16, label: "Free Holiday Lighting Quote" },
+    { kw: "free holiday lighting estimate",        category: "holiday_lighting",      tier: 1, weight: 16, label: "Free Holiday Lighting Estimate" },
+    { kw: "schedule holiday lighting",             category: "holiday_lighting",      tier: 1, weight: 16, label: "Schedule Holiday Lighting" },
+
+    // Seasonal Installation, Removal & Storage
+    { kw: "christmas light removal",               category: "seasonal_full_service", tier: 1, weight: 16, label: "Christmas Light Removal" },
+    { kw: "christmas light removal service",       category: "seasonal_full_service", tier: 1, weight: 16, label: "Christmas Light Removal Service" },
+    { kw: "christmas light removal and storage",   category: "seasonal_full_service", tier: 1, weight: 16, label: "Light Removal and Storage" },
+    { kw: "christmas lighting removal and storage",category: "seasonal_full_service", tier: 1, weight: 16, label: "Lighting Removal and Storage" },
+    { kw: "holiday light removal",                 category: "seasonal_full_service", tier: 1, weight: 16, label: "Holiday Light Removal" },
+    { kw: "holiday light removal service",         category: "seasonal_full_service", tier: 1, weight: 16, label: "Holiday Light Removal Service" },
+    { kw: "holiday light removal and storage",     category: "seasonal_full_service", tier: 1, weight: 16, label: "Holiday Light Removal & Storage" },
+    { kw: "holiday lighting removal and storage",  category: "seasonal_full_service", tier: 1, weight: 16, label: "Holiday Lighting Removal & Storage" },
+    { kw: "christmas light takedown",              category: "seasonal_full_service", tier: 1, weight: 16, label: "Christmas Light Takedown" },
+    { kw: "christmas light takedown service",      category: "seasonal_full_service", tier: 1, weight: 16, label: "Christmas Light Takedown Service" },
+    { kw: "holiday light takedown",                category: "seasonal_full_service", tier: 1, weight: 16, label: "Holiday Light Takedown" },
+    { kw: "holiday light takedown service",        category: "seasonal_full_service", tier: 1, weight: 16, label: "Holiday Light Takedown Service" },
+    { kw: "installation removal and storage",      category: "seasonal_full_service", tier: 1, weight: 16, label: "Full Service Installation & Removal" },
+    { kw: "installation takedown and storage",      category: "seasonal_full_service", tier: 1, weight: 16, label: "Installation, Takedown & Storage" },
+    { kw: "installation maintenance removal and storage",category: "seasonal_full_service",tier: 1, weight: 16, label: "Full Service Turnkey Lighting" },
+    { kw: "lighting installation and removal",     category: "seasonal_full_service", tier: 1, weight: 16, label: "Lighting Installation & Removal" },
+    { kw: "seasonal lighting removal",             category: "seasonal_full_service", tier: 1, weight: 16, label: "Seasonal Lighting Removal" },
+    { kw: "seasonal lighting takedown",            category: "seasonal_full_service", tier: 1, weight: 16, label: "Seasonal Lighting Takedown" },
+    { kw: "post-holiday takedown",                 category: "seasonal_full_service", tier: 1, weight: 16, label: "Post-Holiday Takedown" },
+    { kw: "take down christmas lights",            category: "seasonal_full_service", tier: 1, weight: 16, label: "Take Down Christmas Lights" },
+    { kw: "taking down christmas lights",           category: "seasonal_full_service", tier: 1, weight: 16, label: "Taking Down Christmas Lights" },
+    { kw: "take down holiday lights",              category: "seasonal_full_service", tier: 1, weight: 16, label: "Take Down Holiday Lights" },
+    { kw: "remove christmas lights",               category: "seasonal_full_service", tier: 1, weight: 16, label: "Remove Christmas Lights" },
+    { kw: "removing christmas lights",             category: "seasonal_full_service", tier: 1, weight: 16, label: "Removing Christmas Lights" },
+
+    // Outdoor & Exterior Lighting Installation
+    { kw: "outdoor lighting installation",         category: "outdoor_exterior",      tier: 1, weight: 16, label: "Outdoor Lighting Installation" },
+    { kw: "outdoor lighting installation service", category: "outdoor_exterior",      tier: 1, weight: 16, label: "Outdoor Lighting Installation Service" },
+    { kw: "outdoor lighting installation services",category: "outdoor_exterior",      tier: 1, weight: 16, label: "Outdoor Lighting Installation Services" },
+    { kw: "outdoor lighting installer",            category: "outdoor_exterior",      tier: 1, weight: 16, label: "Outdoor Lighting Installer" },
+    { kw: "outdoor lighting installers",           category: "outdoor_exterior",      tier: 1, weight: 16, label: "Outdoor Lighting Installer" },
+    { kw: "outdoor lighting contractor",           category: "outdoor_exterior",      tier: 1, weight: 16, label: "Outdoor Lighting Contractor" },
+    { kw: "outdoor lighting contractors",          category: "outdoor_exterior",      tier: 1, weight: 16, label: "Outdoor Lighting Contractor" },
+    { kw: "outdoor lighting company",              category: "outdoor_exterior",      tier: 1, weight: 16, label: "Outdoor Lighting Company" },
+    { kw: "outdoor lighting companies",            category: "outdoor_exterior",      tier: 1, weight: 16, label: "Outdoor Lighting Company" },
+    { kw: "exterior lighting installation",        category: "outdoor_exterior",      tier: 1, weight: 16, label: "Exterior Lighting Installation" },
+    { kw: "exterior lighting installation service",category: "outdoor_exterior",      tier: 1, weight: 16, label: "Exterior Lighting Installation Service" },
+    { kw: "exterior lighting installation services",category: "outdoor_exterior",     tier: 1, weight: 16, label: "Exterior Lighting Installation Services" },
+    { kw: "exterior lighting installer",           category: "outdoor_exterior",      tier: 1, weight: 16, label: "Exterior Lighting Installer" },
+    { kw: "exterior lighting installers",          category: "outdoor_exterior",      tier: 1, weight: 16, label: "Exterior Lighting Installer" },
+    { kw: "exterior lighting contractor",          category: "outdoor_exterior",      tier: 1, weight: 16, label: "Exterior Lighting Contractor" },
+    { kw: "exterior lighting contractors",         category: "outdoor_exterior",      tier: 1, weight: 16, label: "Exterior Lighting Contractor" },
+    { kw: "exterior lighting company",             category: "outdoor_exterior",      tier: 1, weight: 16, label: "Exterior Lighting Company" },
+    { kw: "exterior lighting companies",           category: "outdoor_exterior",      tier: 1, weight: 16, label: "Exterior Lighting Company" },
+    { kw: "architectural lighting installation",   category: "outdoor_exterior",      tier: 1, weight: 16, label: "Architectural Lighting Installation" },
+    { kw: "architectural lighting installer",      category: "outdoor_exterior",      tier: 1, weight: 16, label: "Architectural Lighting Installer" },
+    { kw: "architectural lighting contractor",     category: "outdoor_exterior",      tier: 1, weight: 16, label: "Architectural Lighting Contractor" },
+    { kw: "landscape lighting installation",       category: "outdoor_exterior",      tier: 1, weight: 16, label: "Landscape Lighting Installation" },
+    { kw: "landscape lighting installer",          category: "outdoor_exterior",      tier: 1, weight: 16, label: "Landscape Lighting Installer" },
+    { kw: "landscape lighting installers",         category: "outdoor_exterior",      tier: 1, weight: 16, label: "Landscape Lighting Installer" },
+    { kw: "landscape lighting contractor",         category: "outdoor_exterior",      tier: 1, weight: 16, label: "Landscape Lighting Contractor" },
+    { kw: "landscape lighting contractors",        category: "outdoor_exterior",      tier: 1, weight: 16, label: "Landscape Lighting Contractor" },
+    { kw: "residential outdoor lighting installation",category: "outdoor_exterior",   tier: 1, weight: 16, label: "Residential Outdoor Lighting Installation" },
+    { kw: "commercial outdoor lighting installation", category: "commercial_holiday", tier: 1, weight: 16, label: "Commercial Outdoor Lighting Installation" },
+
+    // Permanent Exterior LED Lighting Installation
+    { kw: "permanent christmas light installation",category: "permanent_lighting",    tier: 1, weight: 16, label: "Permanent Christmas Light Installation" },
+    { kw: "permanent christmas lighting installation",category: "permanent_lighting", tier: 1, weight: 16, label: "Permanent Christmas Lighting Installation" },
+    { kw: "permanent holiday light installation",  category: "permanent_lighting",    tier: 1, weight: 16, label: "Permanent Holiday Light Installation" },
+    { kw: "permanent holiday lighting installation",category: "permanent_lighting",   tier: 1, weight: 16, label: "Permanent Holiday Lighting Installation" },
+    { kw: "permanent exterior lighting installation",category: "permanent_lighting",  tier: 1, weight: 16, label: "Permanent Exterior Lighting Installation" },
+    { kw: "permanent roofline lighting installation",category: "permanent_lighting",  tier: 1, weight: 16, label: "Permanent Roofline Lighting Installation" },
+    { kw: "permanent led lighting installation",   category: "permanent_lighting",    tier: 1, weight: 16, label: "Permanent LED Lighting Installation" },
+    { kw: "permanent outdoor lighting installation",category: "permanent_lighting",   tier: 1, weight: 16, label: "Permanent Outdoor Lighting Installation" },
+    { kw: "permanent track lighting installation", category: "permanent_lighting",    tier: 1, weight: 16, label: "Permanent Track Lighting Installation" },
+    { kw: "permanent holiday lighting",            category: "permanent_lighting",    tier: 1, weight: 16, label: "Permanent Holiday Lighting" },
+    { kw: "permanent christmas lights",            category: "permanent_lighting",    tier: 1, weight: 16, label: "Permanent Christmas Lights" },
+    { kw: "permanent exterior lights",             category: "permanent_lighting",    tier: 1, weight: 16, label: "Permanent Exterior Lights" },
+    { kw: "permanent roofline lights",             category: "permanent_lighting",    tier: 1, weight: 16, label: "Permanent Roofline Lights" },
+    { kw: "year-round holiday lighting",           category: "permanent_lighting",    tier: 1, weight: 16, label: "Year-Round Holiday Lighting" },
+    { kw: "year-round exterior lighting",          category: "permanent_lighting",    tier: 1, weight: 16, label: "Year-Round Exterior Lighting" },
+    { kw: "year round christmas lights",           category: "permanent_lighting",    tier: 1, weight: 16, label: "Year-Round Christmas Lights" },
+    { kw: "trimlight installation",                category: "permanent_lighting",    tier: 1, weight: 16, label: "Trimlight Installation" },
+    { kw: "trimlight installer",                   category: "permanent_lighting",    tier: 1, weight: 16, label: "Trimlight Installer" },
+    { kw: "gemstone lights installation",          category: "permanent_lighting",    tier: 1, weight: 16, label: "Gemstone Lights Installation" },
+    { kw: "gemstone lights installer",             category: "permanent_lighting",    tier: 1, weight: 16, label: "Gemstone Lights Installer" },
+    { kw: "jellyfish lighting installation",       category: "permanent_lighting",    tier: 1, weight: 16, label: "Jellyfish Lighting Installation" },
+    { kw: "jellyfish lighting installer",          category: "permanent_lighting",    tier: 1, weight: 16, label: "Jellyfish Lighting Installer" },
+    { kw: "celebright lighting installer",         category: "permanent_lighting",    tier: 1, weight: 16, label: "Celebright Lighting Installer" },
+    { kw: "celebright installation",               category: "permanent_lighting",    tier: 1, weight: 16, label: "Celebright Installation" },
+    { kw: "everlight installation",                category: "permanent_lighting",    tier: 1, weight: 16, label: "Everlight Installation" },
+    { kw: "invisilight installation",              category: "permanent_lighting",    tier: 1, weight: 16, label: "Invisilight Installation" },
+
+    // Commercial Holiday Lighting
+    { kw: "commercial holiday lighting company",   category: "commercial_holiday",    tier: 1, weight: 16, label: "Commercial Holiday Lighting Company" },
+    { kw: "commercial christmas lighting company", category: "commercial_holiday",    tier: 1, weight: 16, label: "Commercial Christmas Lighting Company" },
+    { kw: "commercial holiday lighting contractor",category: "commercial_holiday",    tier: 1, weight: 16, label: "Commercial Holiday Lighting Contractor" },
+    { kw: "commercial holiday lighting contractors",category: "commercial_holiday",   tier: 1, weight: 16, label: "Commercial Holiday Lighting Contractor" },
+    { kw: "commercial christmas light contractors",category: "commercial_holiday",    tier: 1, weight: 16, label: "Commercial Christmas Light Contractor" },
+    { kw: "municipal holiday lighting",            category: "commercial_holiday",    tier: 1, weight: 16, label: "Municipal Holiday Lighting" },
+    { kw: "municipality holiday lighting",         category: "commercial_holiday",    tier: 1, weight: 16, label: "Municipality Holiday Lighting" },
+    { kw: "shopping center holiday lighting",      category: "commercial_holiday",    tier: 1, weight: 16, label: "Shopping Center Holiday Lighting" },
+    { kw: "retail holiday lighting installation",  category: "commercial_holiday",    tier: 1, weight: 16, label: "Retail Holiday Lighting Installation" },
+    { kw: "commercial property holiday lighting",  category: "commercial_holiday",    tier: 1, weight: 16, label: "Commercial Property Holiday Lighting" },
+    { kw: "hoa holiday lighting installation",     category: "commercial_holiday",    tier: 1, weight: 16, label: "HOA Holiday Lighting Installation" },
+    { kw: "hoa christmas light installation",      category: "commercial_holiday",    tier: 1, weight: 16, label: "HOA Christmas Light Installation" },
+
+    // ╔════════════════════════════════════════════════════════════════════
+    // TIER 2 — STRONG SERVICE-SPECIFIC TERMS & PACKAGES (weight=10)
+    // ╚════════════════════════════════════════════════════════════════════
+    { kw: "christmas light company",               category: "christmas_install",     tier: 2, weight: 10, label: "Christmas Light Company" },
+    { kw: "christmas light companies",             category: "christmas_install",     tier: 2, weight: 10, label: "Christmas Light Company" },
+    { kw: "christmas lighting company",            category: "christmas_install",     tier: 2, weight: 10, label: "Christmas Lighting Company" },
+    { kw: "christmas lighting companies",          category: "christmas_install",     tier: 2, weight: 10, label: "Christmas Lighting Company" },
+    { kw: "christmas light contractor",            category: "christmas_install",     tier: 2, weight: 10, label: "Christmas Light Contractor" },
+    { kw: "christmas light contractors",           category: "christmas_install",     tier: 2, weight: 10, label: "Christmas Light Contractor" },
+    { kw: "christmas lighting contractor",         category: "christmas_install",     tier: 2, weight: 10, label: "Christmas Lighting Contractor" },
+    { kw: "christmas lighting contractors",        category: "christmas_install",     tier: 2, weight: 10, label: "Christmas Lighting Contractor" },
+    { kw: "holiday light company",                 category: "holiday_lighting",      tier: 2, weight: 10, label: "Holiday Light Company" },
+    { kw: "holiday light companies",               category: "holiday_lighting",      tier: 2, weight: 10, label: "Holiday Light Company" },
+    { kw: "holiday lighting company",              category: "holiday_lighting",      tier: 2, weight: 10, label: "Holiday Lighting Company" },
+    { kw: "holiday lighting companies",            category: "holiday_lighting",      tier: 2, weight: 10, label: "Holiday Lighting Company" },
+    { kw: "holiday lighting contractor",           category: "holiday_lighting",      tier: 2, weight: 10, label: "Holiday Lighting Contractor" },
+    { kw: "holiday lighting contractors",          category: "holiday_lighting",      tier: 2, weight: 10, label: "Holiday Lighting Contractor" },
+    { kw: "seasonal lighting installation",        category: "holiday_lighting",      tier: 2, weight: 10, label: "Seasonal Lighting Installation" },
+    { kw: "seasonal light installation",           category: "holiday_lighting",      tier: 2, weight: 10, label: "Seasonal Light Installation" },
+    { kw: "seasonal lighting company",             category: "holiday_lighting",      tier: 2, weight: 10, label: "Seasonal Lighting Company" },
+    { kw: "seasonal lighting contractor",          category: "holiday_lighting",      tier: 2, weight: 10, label: "Seasonal Lighting Contractor" },
+    { kw: "seasonal lighting contractors",         category: "holiday_lighting",      tier: 2, weight: 10, label: "Seasonal Lighting Contractor" },
+    { kw: "christmas lighting packages",           category: "christmas_install",     tier: 2, weight: 10, label: "Christmas Lighting Packages" },
+    { kw: "christmas light packages",              category: "christmas_install",     tier: 2, weight: 10, label: "Christmas Light Packages" },
+    { kw: "holiday lighting packages",             category: "holiday_lighting",      tier: 2, weight: 10, label: "Holiday Lighting Packages" },
+    { kw: "holiday light packages",                category: "holiday_lighting",      tier: 2, weight: 10, label: "Holiday Light Packages" },
+    { kw: "roofline lighting installation",        category: "christmas_install",     tier: 2, weight: 10, label: "Roofline Lighting Installation" },
+    { kw: "gutter lighting installation",          category: "christmas_install",     tier: 2, weight: 10, label: "Gutter Lighting Installation" },
+    { kw: "house lighting installation",           category: "christmas_install",     tier: 2, weight: 10, label: "House Lighting Installation" },
+    { kw: "tree lighting installation",            category: "outdoor_exterior",      tier: 2, weight: 10, label: "Tree Lighting Installation" },
+    { kw: "tree wrapping lights",                  category: "outdoor_exterior",      tier: 2, weight: 10, label: "Tree Wrapping Lights" },
+    { kw: "palm tree lighting",                    category: "outdoor_exterior",      tier: 2, weight: 10, label: "Palm Tree Lighting" },
+    { kw: "landscape lighting installation",       category: "outdoor_exterior",      tier: 2, weight: 10, label: "Landscape Lighting Installation" },
+    { kw: "eave lighting installation",            category: "outdoor_exterior",      tier: 2, weight: 10, label: "Eave Lighting Installation" },
+    { kw: "soffit lighting installation",          category: "outdoor_exterior",      tier: 2, weight: 10, label: "Soffit Lighting Installation" },
+    { kw: "fascia lighting installation",          category: "outdoor_exterior",      tier: 2, weight: 10, label: "Fascia Lighting Installation" },
+    { kw: "patio lighting installation",           category: "outdoor_exterior",      tier: 2, weight: 10, label: "Patio Lighting Installation" },
+    { kw: "bistro string lighting installation",   category: "outdoor_exterior",      tier: 2, weight: 10, label: "Bistro String Lighting Installation" },
+    { kw: "custom cut christmas lights",           category: "christmas_install",     tier: 2, weight: 10, label: "Custom Cut Christmas Lights" },
+    { kw: "custom cut holiday lights",             category: "holiday_lighting",      tier: 2, weight: 10, label: "Custom Cut Holiday Lights" },
+    { kw: "commercial grade christmas lights",     category: "christmas_install",     tier: 2, weight: 10, label: "Commercial Grade Christmas Lights" },
+    { kw: "c9 roofline lights",                    category: "christmas_install",     tier: 2, weight: 10, label: "C9 Roofline Lights" },
+    { kw: "c9 christmas lights",                   category: "christmas_install",     tier: 2, weight: 10, label: "C9 Christmas Lights" },
+    { kw: "all-inclusive christmas lighting",      category: "christmas_install",     tier: 2, weight: 10, label: "All-Inclusive Christmas Lighting" },
+    { kw: "all-inclusive holiday lighting",        category: "holiday_lighting",      tier: 2, weight: 10, label: "All-Inclusive Holiday Lighting" },
+    { kw: "turnkey holiday lighting",              category: "holiday_lighting",      tier: 2, weight: 10, label: "Turnkey Holiday Lighting" },
+    { kw: "turnkey christmas lighting",            category: "christmas_install",     tier: 2, weight: 10, label: "Turnkey Christmas Lighting" },
+    { kw: "christmas light maintenance",           category: "seasonal_full_service", tier: 2, weight: 10, label: "Christmas Light Maintenance" },
+    { kw: "holiday light maintenance",             category: "seasonal_full_service", tier: 2, weight: 10, label: "Holiday Light Maintenance" },
+    { kw: "in-season maintenance",                 category: "seasonal_full_service", tier: 2, weight: 10, label: "In-Season Maintenance" },
+    { kw: "bulb replacement guarantee",            category: "seasonal_full_service", tier: 2, weight: 10, label: "Bulb Replacement Guarantee" },
+    { kw: "seasonal light storage",                category: "seasonal_full_service", tier: 2, weight: 10, label: "Seasonal Light Storage" },
+    { kw: "off-season storage",                    category: "seasonal_full_service", tier: 2, weight: 10, label: "Off-Season Storage" },
+    { kw: "we store your lights",                  category: "seasonal_full_service", tier: 2, weight: 10, label: "Light Storage Service" },
+    { kw: "commercial holiday displays",           category: "commercial_holiday",    tier: 2, weight: 10, label: "Commercial Holiday Displays" },
+    { kw: "residential holiday displays",          category: "holiday_lighting",      tier: 2, weight: 10, label: "Residential Holiday Displays" },
+    { kw: "permanent architectural lighting",      category: "permanent_lighting",    tier: 2, weight: 10, label: "Permanent Architectural Lighting" },
+    { kw: "programmable exterior lighting",        category: "permanent_lighting",    tier: 2, weight: 10, label: "Programmable Exterior Lighting" },
+    { kw: "color changing roofline lights",        category: "permanent_lighting",    tier: 2, weight: 10, label: "Color Changing Roofline Lights" },
+    { kw: "never hang lights again",               category: "permanent_lighting",    tier: 2, weight: 10, label: "Permanent Lighting Solution" },
+    { kw: "never climb a ladder again",            category: "permanent_lighting",    tier: 2, weight: 10, label: "Permanent Lighting Solution" },
+
+    // ╔════════════════════════════════════════════════════════════════════
+    // TIER 3 — SUPPORTING INSTALLATION & SERVICE TERMINOLOGY (weight=5)
+    // ╚════════════════════════════════════════════════════════════════════
+    { kw: "christmas lighting design",             category: "christmas_install",     tier: 3, weight: 5,  label: "Christmas Lighting Design" },
+    { kw: "holiday lighting design",               category: "holiday_lighting",      tier: 3, weight: 5,  label: "Holiday Lighting Design" },
+    { kw: "holiday decor installation",            category: "holiday_lighting",      tier: 3, weight: 5,  label: "Holiday Decor Installation" },
+    { kw: "holiday decoration installation",       category: "holiday_lighting",      tier: 3, weight: 5,  label: "Holiday Decoration Installation" },
+    { kw: "christmas decor installation",          category: "christmas_install",     tier: 3, weight: 5,  label: "Christmas Decor Installation" },
+    { kw: "wreath and garland installation",       category: "holiday_lighting",      tier: 3, weight: 5,  label: "Wreath and Garland Installation" },
+    { kw: "holiday greenery installation",         category: "holiday_lighting",      tier: 3, weight: 5,  label: "Holiday Greenery Installation" },
+    { kw: "illuminated wreaths",                   category: "holiday_lighting",      tier: 3, weight: 5,  label: "Illuminated Wreaths" },
+    { kw: "custom fit christmas lights",           category: "christmas_install",     tier: 3, weight: 5,  label: "Custom Fit Christmas Lights" },
+    { kw: "measured and cut to fit",               category: "christmas_install",     tier: 3, weight: 5,  label: "Measured & Cut to Fit" },
+    { kw: "licensed and insured installers",       category: "christmas_install",     tier: 3, weight: 5,  label: "Licensed & Insured Installers" },
+    { kw: "our lighting technicians",              category: "outdoor_exterior",      tier: 3, weight: 5,  label: "Lighting Technicians" },
+    { kw: "our installation crew",                 category: "christmas_install",     tier: 3, weight: 5,  label: "Installation Crew" },
+    { kw: "professional installation team",        category: "christmas_install",     tier: 3, weight: 5,  label: "Professional Installation Team" },
+    { kw: "takedown service",                      category: "seasonal_full_service", tier: 3, weight: 5,  label: "Takedown Service" },
+    { kw: "removal service",                       category: "seasonal_full_service", tier: 3, weight: 5,  label: "Removal Service" },
+    { kw: "january takedown",                      category: "seasonal_full_service", tier: 3, weight: 5,  label: "January Takedown" },
+    { kw: "january removal",                       category: "seasonal_full_service", tier: 3, weight: 5,  label: "January Removal" },
+    { kw: "storage included",                      category: "seasonal_full_service", tier: 3, weight: 5,  label: "Storage Included" },
+    { kw: "service calls included",                category: "seasonal_full_service", tier: 3, weight: 5,  label: "Service Calls Included" },
+    { kw: "icicle lights installation",            category: "christmas_install",     tier: 3, weight: 5,  label: "Icicle Lights Installation" },
+    { kw: "mini lights installation",              category: "christmas_install",     tier: 3, weight: 5,  label: "Mini Lights Installation" },
+    { kw: "low voltage lighting installation",     category: "outdoor_exterior",      tier: 3, weight: 5,  label: "Low Voltage Lighting Installation" },
+    { kw: "exterior accent lighting",              category: "outdoor_exterior",      tier: 3, weight: 5,  label: "Exterior Accent Lighting" },
+    { kw: "outdoor lighting design",               category: "outdoor_exterior",      tier: 3, weight: 5,  label: "Outdoor Lighting Design" },
+    { kw: "exterior lighting design",              category: "outdoor_exterior",      tier: 3, weight: 5,  label: "Exterior Lighting Design" },
+    { kw: "weatherproof lighting installation",    category: "outdoor_exterior",      tier: 3, weight: 5,  label: "Weatherproof Lighting Installation" },
+    { kw: "app controlled exterior lights",        category: "permanent_lighting",    tier: 3, weight: 5,  label: "App-Controlled Exterior Lights" },
+    { kw: "rgbw exterior lighting",                category: "permanent_lighting",    tier: 3, weight: 5,  label: "RGBW Exterior Lighting" },
+    { kw: "custom channel lighting",               category: "permanent_lighting",    tier: 3, weight: 5,  label: "Custom Channel Lighting" },
+
+    // ╔════════════════════════════════════════════════════════════════════
+    // TIER 4 — CONTEXTUAL LIGHTING WORDS (weight=2)
+    // ╚════════════════════════════════════════════════════════════════════
+    { kw: "roofline lighting",                     category: "christmas_install",     tier: 4, weight: 2,  label: "Roofline Lighting" },
+    { kw: "gutter lighting",                       category: "christmas_install",     tier: 4, weight: 2,  label: "Gutter Lighting" },
+    { kw: "tree wrapping",                         category: "outdoor_exterior",      tier: 4, weight: 2,  label: "Tree Wrapping" },
+    { kw: "patio lights",                          category: "outdoor_exterior",      tier: 4, weight: 2,  label: "Patio Lights" },
+    { kw: "outdoor illumination",                  category: "outdoor_exterior",      tier: 4, weight: 2,  label: "Outdoor Illumination" },
+    { kw: "festive lighting",                      category: "holiday_lighting",      tier: 4, weight: 2,  label: "Festive Lighting" },
+    { kw: "seasonal lights",                       category: "holiday_lighting",      tier: 4, weight: 2,  label: "Seasonal Lights" },
+    { kw: "holiday illumination",                  category: "holiday_lighting",      tier: 4, weight: 2,  label: "Holiday Illumination" },
+    { kw: "decorative exterior lighting",          category: "outdoor_exterior",      tier: 4, weight: 2,  label: "Decorative Exterior Lighting" },
+    { kw: "c9 bulbs",                              category: "christmas_install",     tier: 4, weight: 2,  label: "C9 Bulbs" },
+    { kw: "c7 bulbs",                              category: "christmas_install",     tier: 4, weight: 2,  label: "C7 Bulbs" },
+    { kw: "smart roofline lights",                 category: "permanent_lighting",    tier: 4, weight: 2,  label: "Smart Roofline Lights" },
+  ];
+
+  // ── CHRISTMAS & HOLIDAY LIGHTING NEGATIVE KEYWORDS (PENALTY = −10 pts each) ──
+  // Suppresses product sales, e-commerce shopping carts, wholesalers, manufacturers,
+  // retail stores, Christmas tree lots, and DIY/informational blogs.
+  const CHRISTMAS_NEGATIVE_KEYWORDS = [
+    // E-commerce / Cart / Shopping
+    "add to cart", "add to bag", "add to basket", "buy now", "view cart",
+    "shopping cart", "my cart", "checkout", "secure checkout", "proceed to checkout",
+    "item in cart", "items in cart", "free shipping on orders", "free standard shipping",
+    "flat rate shipping", "shipping & returns", "shipping and returns", "return policy",
+    "refund policy", "30-day return", "money back guarantee", "in stock", "out of stock",
+    "backorder", "item #", "sku:", "product sku", "product details", "customer reviews",
+    "write a review", "star rating", "sort by price", "filter by price",
+    "price: low to high", "price: high to low", "unit price", "pack of", "box of",
+    "case of", "per spool", "1000 ft spool", "500 ft spool", "bulk spool",
+    "sold by the foot", "order online", "shop online", "shop now", "shop all",
+    "shop lights", "shop christmas lights", "shop holiday lights", "shop our products",
+    "product catalog", "lighting catalog", "online store", "lighting store",
+    "christmas store", "holiday store", "decor store", "christmas decor store",
+    "holiday gift store", "buy christmas lights online", "buy holiday lights online",
+
+    // Wholesale / Manufacturers / Distributors
+    "lighting manufacturer", "lighting manufacturers", "light manufacturer",
+    "light manufacturers", "lighting distributor", "lighting distributors",
+    "wholesale christmas lights", "wholesale holiday lights", "wholesale lighting",
+    "wholesale supplier", "wholesale suppliers", "wholesale distributor",
+    "wholesale distributors", "bulk christmas lights", "bulk holiday lights",
+    "buy in bulk", "volume discount", "wholesale pricing", "distributor pricing",
+    "dealer pricing", "dealer portal", "become a dealer", "become a distributor",
+    "b2b lighting", "oem manufacturer", "oem lighting", "lighting factory",
+    "direct manufacturer", "lighting supply company", "lighting supplier",
+    "lighting supplies", "commercial light distributor",
+
+    // DIY / Blog / Informational / Guides
+    "diy christmas lights", "diy holiday lighting", "how to hang christmas lights",
+    "how to install christmas lights yourself", "step by step guide",
+    "lighting tutorial", "christmas lighting tips", "holiday decorating ideas",
+    "diy project", "diy ideas", "affiliate link", "affiliate disclosure",
+    "we may earn a commission", "amazon associate", "sponsored post",
+    "best christmas lights to buy", "top 10 christmas lights", "christmas light reviews",
+    "wirecutter", "buying guide", "product review", "light test",
+
+    // General holiday stores / tree farms without installation
+    "christmas tree farm", "cut your own tree", "fresh cut trees",
+    "christmas tree lot", "buy artificial trees", "artificial christmas trees",
+    "ornament collection", "holiday gift shop", "santa photos",
+
+    // Unrelated interior electrical / plumbing
+    "indoor ceiling fans", "panel replacement", "emergency plumbing",
+    "water heater repair", "drain cleaning",
+  ];
+
   // ══════════════════════════════════════════════════════════════════════════
   // SECTION C: BUILD KEYWORD MAPS
   // ══════════════════════════════════════════════════════════════════════════
@@ -4779,6 +5130,33 @@
   const sortedPestNeg = [...PEST_NEGATIVE_KEYWORDS].sort((a, b) => b.length - a.length);
   for (const kw of sortedPestNeg) {
     PEST_NEGATIVE_MAP.set(kw.toLowerCase(), -10);
+  }
+
+  // -- Christmas & Holiday Lighting Maps & Precompiled Word-Boundary Regexes --
+  const CHRISTMAS_KEYWORD_MAP = new Map();
+  const CHRISTMAS_KEYWORD_REGEXES = [];
+  const sortedChristmasKws = [...CHRISTMAS_KEYWORDS].sort((a, b) => b.kw.length - a.kw.length);
+  for (const entry of sortedChristmasKws) {
+    const lowerKw = entry.kw.toLowerCase();
+    const info = {
+      category: entry.category,
+      tier: entry.tier,
+      weight: entry.weight,
+      label: entry.label,
+    };
+    CHRISTMAS_KEYWORD_MAP.set(lowerKw, info);
+    const escaped = lowerKw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    CHRISTMAS_KEYWORD_REGEXES.push({
+      kw: lowerKw,
+      info,
+      regex: new RegExp(`\\b${escaped}\\b`, "gi"),
+    });
+  }
+
+  const CHRISTMAS_NEGATIVE_MAP = new Map();
+  const sortedChristmasNeg = [...CHRISTMAS_NEGATIVE_KEYWORDS].sort((a, b) => b.length - a.length);
+  for (const kw of sortedChristmasNeg) {
+    CHRISTMAS_NEGATIVE_MAP.set(kw.toLowerCase(), -10);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -5164,6 +5542,41 @@
     return matches;
   }
 
+  function findChristmasMatches(text) {
+    if (!text || typeof text !== "string") return [];
+
+    const matches = [];
+    const matchedSpans = [];
+    const alreadyMatched = new Set();
+
+    // Iterate through precompiled regexes (sorted longest-keyword-first)
+    for (const { kw, info, regex } of CHRISTMAS_KEYWORD_REGEXES) {
+      regex.lastIndex = 0;
+      let m;
+      while ((m = regex.exec(text)) !== null) {
+        const start = m.index;
+        const end   = start + m[0].length;
+
+        // Prevent shorter sub-matches inside an already-matched span
+        const alreadyCovered = matchedSpans.some(
+          (span) => start >= span.start && end <= span.end,
+        );
+        if (alreadyCovered) continue;
+
+        const key = info.category + "|" + kw;
+        if (!alreadyMatched.has(key)) {
+          alreadyMatched.add(key);
+          const snipStart = Math.max(0, start - 40);
+          const snipEnd   = Math.min(text.length, end + 40);
+          const snippet   = text.substring(snipStart, snipEnd).trim();
+          matches.push({ kw, ...info, snippet });
+        }
+        matchedSpans.push({ start, end, tier: info.tier });
+      }
+    }
+    return matches;
+  }
+
   function findNegativesInMap(text, negativeMap) {
     const lower = text.toLowerCase();
     const hits = [];
@@ -5220,9 +5633,10 @@
     const isRoof   = mode === "roofing";
     const isMoving = mode === "moving";
     const isPest   = mode === "pest";
-    const matchFn  = isHvac ? findHvacMatches : isRoof ? findRoofingMatches : isMoving ? findMovingMatches : isPest ? findPestMatches : findHardscapeMatches;
-    const negMap   = isHvac ? HVAC_NEGATIVE_MAP : isRoof ? ROOFING_NEGATIVE_MAP : isMoving ? MOVING_NEGATIVE_MAP : isPest ? PEST_NEGATIVE_MAP : NEGATIVE_MAP;
-    const modeLabel = isHvac ? "HVAC" : isRoof ? "Roofing" : isMoving ? "Moving" : isPest ? "Pest Control" : "Hardscape";
+    const isChristmas = mode === "christmas" || mode === "christmas_lighting";
+    const matchFn  = isHvac ? findHvacMatches : isRoof ? findRoofingMatches : isMoving ? findMovingMatches : isPest ? findPestMatches : isChristmas ? findChristmasMatches : findHardscapeMatches;
+    const negMap   = isHvac ? HVAC_NEGATIVE_MAP : isRoof ? ROOFING_NEGATIVE_MAP : isMoving ? MOVING_NEGATIVE_MAP : isPest ? PEST_NEGATIVE_MAP : isChristmas ? CHRISTMAS_NEGATIVE_MAP : NEGATIVE_MAP;
+    const modeLabel = isHvac ? "HVAC" : isRoof ? "Roofing" : isMoving ? "Moving" : isPest ? "Pest Control" : isChristmas ? "Christmas Lighting Installation" : "Hardscape";
 
     console.log(`\ud83d\udd0d [Finder v5.0] Starting ${modeLabel} scan...`);
 
@@ -5298,8 +5712,8 @@
         if (!negativeHits.includes(neg)) negativeHits.push(neg);
       }
 
-      // Secondary service scan (hardscaping mode only — HVAC, Roofing and Moving don't need these)
-      if (!isHvac && !isRoof && !isMoving && !isPest) {
+      // Secondary service scan (hardscaping mode only — HVAC, Roofing, Moving, Pest, and Christmas don't need these)
+      if (!isHvac && !isRoof && !isMoving && !isPest && !isChristmas) {
         const secMatches = findSecondaryMatches(text);
         for (const sec of secMatches) secondaryFound.add(sec);
       }
@@ -5309,7 +5723,7 @@
     debugLog.push(`Total text extracted: ${totalTextLength} chars`);
     debugLog.push(`Positive keyword hits: ${totalKeywordHits}`);
     debugLog.push(`Negative keyword hits: ${negativeHits.length}`);
-    if (!isHvac && !isRoof && !isMoving && !isPest)
+    if (!isHvac && !isRoof && !isMoving && !isPest && !isChristmas)
       debugLog.push(`Secondary service signals: ${secondaryFound.size}`);
     debugLog.push(`Total findings: ${findings.length}`);
     debugLog.push(`Scan time: ${elapsed}ms`);
@@ -5462,6 +5876,15 @@
     ants_cockroach:  { bg: "rgba(167,243,208,0.35)", border: "#6ee7b7", text: "#022c22" },
   };
 
+  const CHRISTMAS_HIGHLIGHT_STYLES = {
+    christmas_install:     { bg: "rgba(234,179,8,0.35)",  border: "#eab308", text: "#713f12" },
+    holiday_lighting:      { bg: "rgba(250,204,21,0.35)", border: "#facc15", text: "#713f12" },
+    seasonal_full_service: { bg: "rgba(202,138,4,0.35)",  border: "#ca8a04", text: "#451a03" },
+    outdoor_exterior:      { bg: "rgba(253,224,71,0.35)", border: "#eab308", text: "#713f12" },
+    commercial_holiday:    { bg: "rgba(217,119,6,0.35)",  border: "#d97706", text: "#451a03" },
+    permanent_lighting:    { bg: "rgba(251,191,36,0.35)", border: "#f59e0b", text: "#78350f" },
+  };
+
   const HIGHLIGHT_STYLE_ID = "__finder_hl_styles__";
   const HIGHLIGHT_MARK_ATTR = "data-finder-hl";
 
@@ -5469,11 +5892,13 @@
     const existing = document.getElementById(HIGHLIGHT_STYLE_ID);
     if (existing) existing.remove();
 
+    const isChristmas = mode === "christmas" || mode === "christmas_lighting";
     const styles =
       mode === "hvac"    ? HVAC_HIGHLIGHT_STYLES
       : mode === "roofing" ? ROOFING_HIGHLIGHT_STYLES
       : mode === "moving"  ? MOVING_HIGHLIGHT_STYLES
       : mode === "pest"    ? PEST_HIGHLIGHT_STYLES
+      : isChristmas        ? CHRISTMAS_HIGHLIGHT_STYLES
       : HARDSCAPE_HIGHLIGHT_STYLES;
     const style = document.createElement("style");
     style.id = HIGHLIGHT_STYLE_ID;
@@ -5582,7 +6007,7 @@
           match: true,
           catId:
             termCatMap.get(m[0].toLowerCase()) ||
-            (mode === "hvac" ? "cooling" : mode === "roofing" ? "roof_replacement" : mode === "moving" ? "moving_company" : mode === "pest" ? "pest_general" : "patios"),
+            (mode === "hvac" ? "cooling" : mode === "roofing" ? "roof_replacement" : mode === "moving" ? "moving_company" : mode === "pest" ? "pest_general" : (mode === "christmas" || mode === "christmas_lighting") ? "christmas_install" : "patios"),
         });
         last = m.index + m[0].length;
         count++;
